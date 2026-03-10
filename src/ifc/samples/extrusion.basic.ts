@@ -2,7 +2,7 @@ import { Color3, Vector3 } from '@babylonjs/core'
 import type { Scene, Mesh } from '@babylonjs/core'
 import type { SampleDef } from '../../types.ts'
 import { buildExtrusionMesh, buildProfileOutline } from '../operations/extrusion.ts'
-import { createExtrusionMaterial, createProfileMaterial } from '../../engine/materials.ts'
+import { createExtrusionMaterial } from '../../engine/materials.ts'
 import { createArrow, createAxisGizmo } from '../../engine/gizmos.ts'
 
 export const extrusionBasicSample: SampleDef = {
@@ -39,7 +39,7 @@ export const extrusionBasicSample: SampleDef = {
     }
 
     if (stepIndex >= 0) {
-      const outline = buildProfileOutline(scene, solid.sweptArea, createProfileMaterial(scene), 'profile_outline')
+      const outline = buildProfileOutline(scene, solid.sweptArea, 'profile_outline')
       meshes.push(outline as unknown as Mesh)
 
       const axis = createAxisGizmo(scene, Vector3.Zero(), 2)

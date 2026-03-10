@@ -47,7 +47,6 @@ export function buildExtrusionMesh(
 export function buildProfileOutline(
   scene: Scene,
   profile: IfcProfileDef,
-  _material: StandardMaterial,
   name: string
 ): LinesMesh {
   let points: Vector3[]

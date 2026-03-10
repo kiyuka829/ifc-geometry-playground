@@ -13,7 +13,7 @@ export function applyPlacement(mesh: Mesh, placement: IfcAxis2Placement3D): void
     const xAxis = placement.refDirection
       ? new Vector3(placement.refDirection.x, placement.refDirection.y, placement.refDirection.z).normalize()
       : Vector3.Right()
-    const yAxis = Vector3.Cross(zAxis, xAxis).normalize()
+    const yAxis = Vector3.Cross(xAxis, zAxis).normalize()
 
     const rotMatrix = Matrix.FromValues(
       xAxis.x, yAxis.x, zAxis.x, 0,
