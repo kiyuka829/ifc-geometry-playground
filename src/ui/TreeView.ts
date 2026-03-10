@@ -11,9 +11,19 @@ export class TreeView {
     this.container.appendChild(tree)
   }
 
+  private static readonly MAX_DEPTH = 8
+
   private _buildTree(data: unknown, depth: number): HTMLElement {
     const wrapper = document.createElement('div')
     wrapper.style.paddingLeft = depth > 0 ? '16px' : '0'
+
+    if (depth >= TreeView.MAX_DEPTH) {
+      const span = document.createElement('span')
+      span.className = 'tree-value'
+      span.textContent = '[…]'
+      wrapper.appendChild(span)
+      return wrapper
+    }
 
     if (data === null || data === undefined) {
       const text = document.createElement('span')

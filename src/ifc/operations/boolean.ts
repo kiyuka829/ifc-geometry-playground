@@ -34,7 +34,10 @@ export function buildBooleanMesh(scene: Scene, result: IfcBooleanResult, name: s
     return resultMesh
   } catch (err) {
     // CSG operation failed; fall back to showing the first operand
-    console.warn('CSG operation failed, falling back to first operand:', err)
+    console.warn(
+      `CSG ${result.operator} operation failed (ensure both meshes are manifold/non-degenerate). Falling back to first operand:`,
+      err
+    )
     mesh2.dispose()
     mesh1.material = mat
     return mesh1
