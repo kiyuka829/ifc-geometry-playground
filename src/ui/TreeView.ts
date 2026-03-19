@@ -31,10 +31,49 @@ export class TreeView {
       text.textContent = String(data)
       wrapper.appendChild(text)
     } else if (Array.isArray(data)) {
-      const span = document.createElement('span')
-      span.className = 'tree-value'
-      span.textContent = JSON.stringify(data)
-      wrapper.appendChild(span)
+      const toggle = document.createElement('span')
+      toggle.className = 'tree-toggle'
+      toggle.textContent = '▶ '
+      toggle.style.cursor = 'pointer'
+
+      const summary = document.createElement('span')
+      summary.className = 'tree-value'
+      summary.textContent = `[${(data as unknown[]).length}]`
+
+      const child = document.createElement('div')
+      child.style.paddingLeft = '16px'
+      child.style.display = 'none'
+
+      ;(data as unknown[]).forEach((item, idx) => {
+        const row = document.createElement('div')
+        row.className = 'tree-row'
+        const keySpan = document.createElement('span')
+        keySpan.className = 'tree-key'
+        keySpan.textContent = `${idx}: `
+        if (typeof item === 'object' && item !== null) {
+          const subChild = this._buildTree(item, depth + 2)
+          subChild.style.display = 'block'
+          row.appendChild(keySpan)
+          row.appendChild(subChild)
+        } else {
+          const valSpan = document.createElement('span')
+          valSpan.className = 'tree-value'
+          valSpan.textContent = JSON.stringify(item)
+          row.appendChild(keySpan)
+          row.appendChild(valSpan)
+        }
+        child.appendChild(row)
+      })
+
+      toggle.addEventListener('click', () => {
+        const collapsed = child.style.display === 'none'
+        child.style.display = collapsed ? 'block' : 'none'
+        toggle.textContent = collapsed ? '▼ ' : '▶ '
+      })
+
+      wrapper.appendChild(toggle)
+      wrapper.appendChild(summary)
+      wrapper.appendChild(child)
     } else if (typeof data === 'object') {
       for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
         const row = document.createElement('div')

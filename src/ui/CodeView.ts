@@ -1,4 +1,5 @@
-// Matches JSON keys, strings, numbers, booleans, and null values
+// Matches JSON keys (quoted strings followed by colon), quoted string values,
+// boolean literals (true/false), null, and numeric values (including floats/exponents)
 const JSON_TOKEN_RE = /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g
 
 export class CodeView {

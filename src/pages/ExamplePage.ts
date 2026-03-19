@@ -106,6 +106,7 @@ export class ExamplePage {
     stepper.onStepChange(index => {
       this.currentStep = index
       this._rebuildGeometry()
+      this._updateInfoPanels(codeView, treeView)
     })
   }
 
