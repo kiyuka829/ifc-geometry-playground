@@ -1,24 +1,34 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import './style.css';
+import { parseRoute, navigateTo } from './app/router.ts';
+import { renderHomePage } from './pages/HomePage.ts';
+import { renderExamplePage } from './pages/ExamplePage.ts';
+import { allSamples } from './ifc/samples/index.ts';
+import type { BabylonScene } from './engine/scene.ts';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+const app = document.querySelector<HTMLDivElement>('#app')!;
+let currentBabylonScene: BabylonScene | null = null;
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+function render(): void {
+  const route = parseRoute(window.location.hash);
+
+  if (currentBabylonScene) {
+    currentBabylonScene.engine.dispose();
+    currentBabylonScene = null;
+  }
+
+  app.innerHTML = '';
+
+  if (route.type === 'home') {
+    renderHomePage(app, (path) => navigateTo(path));
+  } else if (route.type === 'example') {
+    const sample = allSamples.find(s => s.id === route.sampleId);
+    if (sample) {
+      currentBabylonScene = renderExamplePage(app, sample, (path) => navigateTo(path));
+    } else {
+      navigateTo('#/');
+    }
+  }
+}
+
+window.addEventListener('hashchange', render);
+render();
