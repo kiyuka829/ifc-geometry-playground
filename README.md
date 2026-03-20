@@ -52,7 +52,7 @@ src/
     CodeView.ts         IFC code display
   pages/
     HomePage.ts         Top page
-    ExamplePage.ts      Example page (3-panel layout)
+    ExamplePage.ts      Example page (2-column layout: left panel + canvas)
   app/
     routes.ts           Hash routing definitions
     App.ts              Application controller
