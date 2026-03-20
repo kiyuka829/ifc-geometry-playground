@@ -27,7 +27,7 @@ export class HomePage {
       </nav>
       <div class="home-page">
         <h1>IFC Geometry Playground</h1>
-        <p class="home-desc">IFCの幾何学的な概念をインタラクティブに学習できるプレイグラウンドです。各サンプルをクリックして、3Dビジュアライゼーションをご覧ください。</p>
+        <p class="home-desc">An interactive playground for learning IFC geometry concepts. Click each sample to explore 3D visualizations.</p>
         <div class="examples-grid">
           ${cards}
         </div>

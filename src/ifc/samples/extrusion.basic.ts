@@ -8,7 +8,7 @@ import { createArrow, createAxisGizmo } from '../../engine/gizmos.ts'
 export const extrusionBasicSample: SampleDef = {
   id: 'extrusion-basic',
   title: 'Basic Extrusion (IfcExtrudedAreaSolid)',
-  description: '押出し操作 (IfcExtrudedAreaSolid) の基本例です。2Dプロファイルを指定した方向に押し出して3D形状を作成します。',
+  description: 'A basic example of extrusion (IfcExtrudedAreaSolid). A 2D profile is extruded in a specified direction to create a 3D solid.',
   parameters: [
     { key: 'width', label: 'Width (xDim)', type: 'number', min: 0.5, max: 10, step: 0.1, defaultValue: 4 },
     { key: 'height', label: 'Height (yDim)', type: 'number', min: 0.5, max: 10, step: 0.1, defaultValue: 3 },
@@ -18,9 +18,9 @@ export const extrusionBasicSample: SampleDef = {
     { key: 'dirZ', label: 'Direction Z', type: 'number', min: -1, max: 1, step: 0.1, defaultValue: 0 },
   ],
   steps: [
-    { id: 'profile', label: 'Step 1: 2D Profile', description: '2Dプロファイル（断面形状）を定義します。IfcRectangleProfileDefで幅と高さを指定します。' },
-    { id: 'direction', label: 'Step 2: Extrusion Direction', description: '押出し方向ベクトルを設定します。IfcDirectionで方向比率を指定します。' },
-    { id: 'solid', label: 'Step 3: Extruded Solid', description: '押出しを適用して3Dソリッドを生成します。IfcExtrudedAreaSolidで深さを指定します。' },
+    { id: 'profile', label: 'Step 1: 2D Profile', description: 'Define the 2D profile (cross-section). Specify width and height using IfcRectangleProfileDef.' },
+    { id: 'direction', label: 'Step 2: Extrusion Direction', description: 'Set the extrusion direction vector. Specify direction ratios using IfcDirection.' },
+    { id: 'solid', label: 'Step 3: Extruded Solid', description: 'Apply extrusion to generate a 3D solid. Specify depth using IfcExtrudedAreaSolid.' },
   ],
   buildGeometry: (scene: Scene, params: Record<string, number>, stepIndex: number): Mesh[] => {
     const meshes: Mesh[] = []

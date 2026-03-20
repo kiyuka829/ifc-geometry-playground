@@ -5,7 +5,7 @@ import { buildBooleanVisualization } from '../operations/boolean.ts'
 export const booleanDifferenceSample: SampleDef = {
   id: 'boolean-difference',
   title: 'Boolean Difference (IfcBooleanResult)',
-  description: 'ブール差演算 (IfcBooleanResult) の例です。2つのソリッドの差を取って、開口部や切り欠きを持つ形状を作成します。',
+  description: 'An example of boolean difference (IfcBooleanResult). Creates a shape with openings or notches by subtracting one solid from another.',
   parameters: [
     { key: 'mainWidth', label: 'Main Width', type: 'number', min: 1, max: 10, step: 0.1, defaultValue: 6 },
     { key: 'mainHeight', label: 'Main Height', type: 'number', min: 1, max: 10, step: 0.1, defaultValue: 4 },
@@ -16,9 +16,9 @@ export const booleanDifferenceSample: SampleDef = {
     { key: 'cutterOffsetX', label: 'Cutter Offset X', type: 'number', min: -3, max: 3, step: 0.1, defaultValue: 0 },
   ],
   steps: [
-    { id: 'first', label: 'Step 1: First Operand', description: '最初のソリッド（被演算子）を定義します。これが基本形状になります。' },
-    { id: 'second', label: 'Step 2: Second Operand (Cutter)', description: '2番目のソリッド（カッター）を半透明で表示します。このソリッドで切り取ります。' },
-    { id: 'result', label: 'Step 3: Boolean Result', description: 'ブール差演算の結果を表示します。カッターで切り取られた形状が生成されます。' },
+    { id: 'first', label: 'Step 1: First Operand', description: 'Define the first solid (the operand). This becomes the base shape.' },
+    { id: 'second', label: 'Step 2: Second Operand (Cutter)', description: 'Display the second solid (the cutter) in semi-transparent. This solid will be used to cut.' },
+    { id: 'result', label: 'Step 3: Boolean Result', description: 'Show the result of the boolean difference. The shape cut by the cutter is generated.' },
   ],
   buildGeometry: (scene: Scene, params: Record<string, number>, stepIndex: number): Mesh[] => {
     const booleanResult = {

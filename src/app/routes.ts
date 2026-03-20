@@ -10,13 +10,13 @@ export const routes: Route[] = [
   {
     hash: '#/examples/extrusion',
     title: 'Basic Extrusion',
-    description: '2Dプロファイルを押し出して3Dソリッドを生成します。',
+    description: 'Extrudes a 2D profile into a 3D solid.',
     sampleId: 'extrusion-basic',
   },
   {
     hash: '#/examples/boolean',
     title: 'Boolean Difference',
-    description: '2つのソリッドのブール差演算を可視化します。',
+    description: 'Visualizes a boolean difference operation between two solids.',
     sampleId: 'boolean-difference',
   },
 ]
