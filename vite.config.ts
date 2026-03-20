@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/ifc-geometry-playground/',
+  base: process.env.BASE_URL || '/ifc-geometry-playground/',
 })
