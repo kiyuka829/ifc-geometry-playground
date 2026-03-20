@@ -152,53 +152,10 @@ body {
 }
 
 .stepper-panel {
-  width: 280px;
+  flex: 1;
   background: #16213e;
-  border-right: 1px solid #0f3460;
   padding: 12px;
   overflow-y: auto;
-  flex-shrink: 0;
-}
-
-.info-panel {
-  flex: 1;
-  background: #0d0d1a;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Tab Bar */
-.tab-bar {
-  display: flex;
-  border-bottom: 1px solid #0f3460;
-  flex-shrink: 0;
-}
-
-.tab-btn {
-  padding: 8px 16px;
-  background: none;
-  border: none;
-  color: #90caf9;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  font-size: 0.88em;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.tab-btn.active {
-  color: #4fc3f7;
-  border-bottom-color: #4fc3f7;
-}
-
-.tab-btn:hover:not(.active) {
-  color: #cce;
-}
-
-.tab-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 14px;
 }
 
 /* Parameters */
@@ -284,56 +241,3 @@ body {
   line-height: 1.4;
 }
 
-/* Code View */
-.code-pre {
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 0.82em;
-  line-height: 1.5;
-  background: transparent;
-  white-space: pre;
-}
-
-.json-key {
-  color: #9cdcfe;
-}
-
-.json-string {
-  color: #ce9178;
-}
-
-.json-number {
-  color: #b5cea8;
-}
-
-.json-bool {
-  color: #569cd6;
-}
-
-.json-null {
-  color: #888;
-}
-
-/* Tree View */
-.tree-row {
-  line-height: 1.6;
-  font-size: 0.82em;
-  font-family: 'Consolas', 'Monaco', monospace;
-}
-
-.tree-key {
-  color: #9cdcfe;
-}
-
-.tree-value {
-  color: #b5cea8;
-}
-
-.tree-toggle {
-  color: #4a6a8a;
-  user-select: none;
-  font-size: 0.75em;
-}
-
-.tree-toggle:hover {
-  color: #4fc3f7;
-}
