@@ -1,0 +1,100 @@
+import type { Mesh } from '@babylonjs/core'
+import type { SampleDef } from '../types.ts'
+import { SceneManager } from '../engine/scene.ts'
+import { createArcRotateCamera } from '../engine/camera.ts'
+import { ParameterPanel } from '../ui/ParameterPanel.ts'
+import { Stepper } from '../ui/Stepper.ts'
+
+export class ExamplePage {
+  private appContainer: HTMLElement
+  private sceneManager: SceneManager | null = null
+  private currentMeshes: Mesh[] = []
+  private currentSample: SampleDef | null = null
+  private currentParams: Record<string, number> = {}
+  private currentStep = 0
+
+  constructor(appContainer: HTMLElement) {
+    this.appContainer = appContainer
+  }
+
+  mount(sample: SampleDef) {
+    this.currentSample = sample
+    this.currentStep = 0
+
+    for (const p of sample.parameters) {
+      this.currentParams[p.key] = p.defaultValue
+    }
+
+    this.appContainer.innerHTML = `
+      <nav class="nav">
+        <a href="#/" class="nav-brand">IFC Geometry Playground</a>
+        <span class="nav-sep"> › </span>
+        <span class="nav-current">${sample.title}</span>
+      </nav>
+      <div class="example-page">
+        <div class="example-main">
+          <div class="left-panel">
+            <div class="sample-title">${sample.title}</div>
+            <div class="sample-desc">${sample.description}</div>
+            <div class="params-title">Parameters</div>
+            <div id="param-panel"></div>
+            <div class="params-title left-panel-steps-title">Steps</div>
+            <div id="stepper"></div>
+          </div>
+          <div class="canvas-container">
+            <canvas id="renderCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+    `
+
+    const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
+    this.sceneManager = new SceneManager(canvas)
+    createArcRotateCamera(this.sceneManager.scene, canvas)
+    this.sceneManager.startRenderLoop()
+
+    const paramContainer = document.getElementById('param-panel')!
+    const stepperContainer = document.getElementById('stepper')!
+
+    const paramPanel = new ParameterPanel(paramContainer, sample)
+    const stepper = new Stepper(stepperContainer, sample.steps)
+
+    this._rebuildGeometry()
+
+    paramPanel.onChange(values => {
+      this.currentParams = values
+      this._rebuildGeometry()
+    })
+
+    stepper.onStepChange(index => {
+      this.currentStep = index
+      this._rebuildGeometry()
+    })
+  }
+
+  private _rebuildGeometry() {
+    if (!this.sceneManager || !this.currentSample) return
+
+    for (const mesh of this.currentMeshes) {
+      mesh.dispose()
+    }
+    this.currentMeshes = []
+
+    this.currentMeshes = this.currentSample.buildGeometry(
+      this.sceneManager.scene,
+      this.currentParams,
+      this.currentStep
+    )
+  }
+
+  unmount() {
+    for (const mesh of this.currentMeshes) {
+      mesh.dispose()
+    }
+    this.currentMeshes = []
+    if (this.sceneManager) {
+      this.sceneManager.dispose()
+      this.sceneManager = null
+    }
+  }
+}
