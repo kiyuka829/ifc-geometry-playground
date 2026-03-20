@@ -38,15 +38,11 @@ export class ExamplePage {
             <div class="sample-desc">${sample.description}</div>
             <div class="params-title">Parameters</div>
             <div id="param-panel"></div>
+            <div class="params-title left-panel-steps-title">Steps</div>
+            <div id="stepper"></div>
           </div>
           <div class="canvas-container">
             <canvas id="renderCanvas"></canvas>
-          </div>
-        </div>
-        <div class="bottom-panel">
-          <div class="stepper-panel">
-            <div class="params-title">Steps</div>
-            <div id="stepper"></div>
           </div>
         </div>
       </div>

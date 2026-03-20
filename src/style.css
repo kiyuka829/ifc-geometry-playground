@@ -144,18 +144,8 @@ body {
   touch-action: none;
 }
 
-.bottom-panel {
-  height: 220px;
-  display: flex;
-  border-top: 1px solid #0f3460;
-  flex-shrink: 0;
-}
-
-.stepper-panel {
-  flex: 1;
-  background: #16213e;
-  padding: 12px;
-  overflow-y: auto;
+.left-panel-steps-title {
+  margin-top: 16px;
 }
 
 /* Parameters */
