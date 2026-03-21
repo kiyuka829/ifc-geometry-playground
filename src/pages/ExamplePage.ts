@@ -4,6 +4,8 @@ import { SceneManager } from '../engine/scene.ts'
 import { createArcRotateCamera } from '../engine/camera.ts'
 import { ParameterPanel } from '../ui/ParameterPanel.ts'
 import { Stepper } from '../ui/Stepper.ts'
+import { CodeView } from '../ui/CodeView.ts'
+import { TreeView } from '../ui/TreeView.ts'
 
 export class ExamplePage {
   private appContainer: HTMLElement
@@ -12,6 +14,8 @@ export class ExamplePage {
   private currentSample: SampleDef | null = null
   private currentParams: ParamValues = {}
   private currentStep = 0
+  private codeView: CodeView | null = null
+  private treeView: TreeView | null = null
 
   constructor(appContainer: HTMLElement) {
     this.appContainer = appContainer
@@ -44,6 +48,16 @@ export class ExamplePage {
           <div class="canvas-container">
             <canvas id="renderCanvas"></canvas>
           </div>
+          <div class="right-panel">
+            <div class="right-panel-tabs">
+              <button class="right-tab active" data-tab="code">IFC Code</button>
+              <button class="right-tab" data-tab="tree">IFC Tree</button>
+            </div>
+            <div class="right-panel-content">
+              <div id="ifc-code-view" class="right-tab-pane active"></div>
+              <div id="ifc-tree-view" class="right-tab-pane"></div>
+            </div>
+          </div>
         </div>
       </div>
     `
@@ -55,9 +69,25 @@ export class ExamplePage {
 
     const paramContainer = document.getElementById('param-panel')!
     const stepperContainer = document.getElementById('stepper')!
+    const codeContainer = document.getElementById('ifc-code-view')!
+    const treeContainer = document.getElementById('ifc-tree-view')!
 
     const paramPanel = new ParameterPanel(paramContainer, sample)
     const stepper = new Stepper(stepperContainer, sample.steps)
+    this.codeView = new CodeView(codeContainer)
+    this.treeView = new TreeView(treeContainer)
+
+    const tabs = this.appContainer.querySelectorAll<HTMLButtonElement>('.right-tab')
+    const panes = this.appContainer.querySelectorAll<HTMLElement>('.right-tab-pane')
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab
+        tabs.forEach(t => t.classList.remove('active'))
+        panes.forEach(p => p.classList.remove('active'))
+        tab.classList.add('active')
+        document.getElementById(`ifc-${target}-view`)?.classList.add('active')
+      })
+    })
 
     this._rebuildGeometry()
 
@@ -85,6 +115,10 @@ export class ExamplePage {
       this.currentParams,
       this.currentStep
     )
+
+    const ifcData = this.currentSample.getIFCRepresentation(this.currentParams)
+    this.codeView?.render(ifcData)
+    this.treeView?.render(ifcData)
   }
 
   unmount() {
@@ -96,5 +130,7 @@ export class ExamplePage {
       this.sceneManager.dispose()
       this.sceneManager = null
     }
+    this.codeView = null
+    this.treeView = null
   }
 }
