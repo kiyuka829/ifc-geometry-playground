@@ -26,7 +26,12 @@ export const booleanDifferenceSample: SampleDef = {
     { id: 'result', label: 'Step 3: Boolean Result', description: 'Show the result of the boolean operation. The result depends on the selected operator.' },
   ],
   buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number): Mesh[] => {
-    const operator = params.operator as 'DIFFERENCE' | 'UNION' | 'INTERSECTION'
+    const VALID_OPERATORS = ['DIFFERENCE', 'UNION', 'INTERSECTION'] as const
+    type BooleanOperator = typeof VALID_OPERATORS[number]
+    const raw = params.operator
+    const operator: BooleanOperator = (VALID_OPERATORS as readonly string[]).includes(raw as string)
+      ? (raw as BooleanOperator)
+      : 'DIFFERENCE'
     const booleanResult = {
       type: 'IfcBooleanResult' as const,
       operator,
@@ -58,38 +63,46 @@ export const booleanDifferenceSample: SampleDef = {
 
     return buildBooleanVisualization(scene, booleanResult, 'boolean', stepIndex)
   },
-  getIFCRepresentation: (params: ParamValues) => ({
-    type: 'IfcBooleanResult',
-    operator: params.operator,
-    firstOperand: {
-      type: 'IfcExtrudedAreaSolid',
-      sweptArea: {
-        type: 'IfcRectangleProfileDef',
-        profileType: 'AREA',
-        xDim: params.mainWidth,
-        yDim: params.mainHeight,
+  getIFCRepresentation: (params: ParamValues) => {
+    const VALID_OPERATORS = ['DIFFERENCE', 'UNION', 'INTERSECTION'] as const
+    type BooleanOperator = typeof VALID_OPERATORS[number]
+    const raw = params.operator
+    const operator: BooleanOperator = (VALID_OPERATORS as readonly string[]).includes(raw as string)
+      ? (raw as BooleanOperator)
+      : 'DIFFERENCE'
+    return {
+      type: 'IfcBooleanResult',
+      operator,
+      firstOperand: {
+        type: 'IfcExtrudedAreaSolid',
+        sweptArea: {
+          type: 'IfcRectangleProfileDef',
+          profileType: 'AREA',
+          xDim: params.mainWidth,
+          yDim: params.mainHeight,
+        },
+        position: {
+          type: 'IfcAxis2Placement3D',
+          location: { type: 'IfcCartesianPoint', coordinates: [0, 0, 0] },
+        },
+        extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
+        depth: params.mainDepth,
       },
-      position: {
-        type: 'IfcAxis2Placement3D',
-        location: { type: 'IfcCartesianPoint', coordinates: [0, 0, 0] },
+      secondOperand: {
+        type: 'IfcExtrudedAreaSolid',
+        sweptArea: {
+          type: 'IfcRectangleProfileDef',
+          profileType: 'AREA',
+          xDim: params.cutterWidth,
+          yDim: params.cutterHeight,
+        },
+        position: {
+          type: 'IfcAxis2Placement3D',
+          location: { type: 'IfcCartesianPoint', coordinates: [params.cutterOffsetX, 0, 0] },
+        },
+        extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
+        depth: params.cutterDepth,
       },
-      extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
-      depth: params.mainDepth,
-    },
-    secondOperand: {
-      type: 'IfcExtrudedAreaSolid',
-      sweptArea: {
-        type: 'IfcRectangleProfileDef',
-        profileType: 'AREA',
-        xDim: params.cutterWidth,
-        yDim: params.cutterHeight,
-      },
-      position: {
-        type: 'IfcAxis2Placement3D',
-        location: { type: 'IfcCartesianPoint', coordinates: [params.cutterOffsetX, 0, 0] },
-      },
-      extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
-      depth: params.cutterDepth,
-    },
-  }),
+    }
+  },
 }
