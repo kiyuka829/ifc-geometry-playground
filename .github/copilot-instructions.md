@@ -95,3 +95,29 @@ src/
 - **IFC schema alignment**: New IFC type definitions go in `src/ifc/schema.ts`. Keep type names aligned with the IFC specification (e.g., `IfcExtrudedAreaSolid`, `IfcRectangleProfileDef`).
 - **Naming**: Use camelCase for variables and functions; PascalCase for classes and interfaces; kebab-case for file names of samples (e.g., `extrusion.basic.ts`).
 - **No test framework** is currently set up; validate changes manually via `npm run dev`.
+
+## Creating GitHub Issues and Pull Requests via `gh` CLI
+
+When creating Issues or Pull Requests with the `gh` command, **never pipe body text through stdin** — doing so can corrupt special characters, newlines, and Unicode. Instead, use the wrapper scripts in `.github/skills/`:
+
+### Create an Issue
+
+```bash
+.github/skills/create-issue.sh \
+  --title "Issue title" \
+  --body "Issue body text (Markdown supported)" \
+  [--label "bug"] \
+  [--assignee "@me"]
+```
+
+### Create a Pull Request
+
+```bash
+.github/skills/create-pr.sh \
+  --title "PR title" \
+  --body "PR body text (Markdown supported)" \
+  [--base main] \
+  [--draft]
+```
+
+Both scripts save the body text to a temporary file in the system's default temporary directory (`$TMPDIR`, falling back to `/tmp/`) before invoking `gh`, then pass the file via `--body-file`. The temporary file is cleaned up automatically on exit. Any extra flags supported by `gh issue create` / `gh pr create` can be appended and are forwarded as-is.
