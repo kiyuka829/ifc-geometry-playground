@@ -68,6 +68,12 @@ export class ParameterPanel {
           select.appendChild(option)
         }
 
+        // If the stored value didn't match any option, the browser selects the
+        // first option by default. Sync the internal value so both stay consistent.
+        if (select.value !== this.values[param.key]) {
+          this.values[param.key] = select.value
+        }
+
         select.addEventListener('change', () => {
           this.values[param.key] = select.value
           this._notifyChange()
