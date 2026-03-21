@@ -70,6 +70,22 @@ body {
   margin-bottom: 32px;
 }
 
+/* Category sections */
+.category-section {
+  margin-bottom: 40px;
+}
+
+.category-title {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #81d4fa;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #0f3460;
+}
+
 .examples-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -96,16 +112,72 @@ body {
   background: #1a2a50;
 }
 
+.example-card--planned {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.example-card--planned:hover {
+  border-color: #0f3460;
+  transform: none;
+  background: #16213e;
+}
+
+.example-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .example-card h3 {
   color: #4fc3f7;
-  margin-bottom: 8px;
   font-size: 1.05em;
+  flex: 1;
 }
 
 .example-card p {
   color: #90caf9;
   font-size: 0.88em;
   line-height: 1.5;
+}
+
+.example-card-badge {
+  font-size: 0.68em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.example-card-badge--beginner {
+  background: #0d3b24;
+  color: #66bb6a;
+  border: 1px solid #2e7d32;
+}
+
+.example-card-badge--intermediate {
+  background: #3a2800;
+  color: #ffa726;
+  border: 1px solid #e65100;
+}
+
+.example-card-badge--advanced {
+  background: #3b0d0d;
+  color: #ef5350;
+  border: 1px solid #b71c1c;
+}
+
+.example-card-status {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.75em;
+  color: #4a6080;
+  font-style: italic;
 }
 
 /* Example Page Layout */
