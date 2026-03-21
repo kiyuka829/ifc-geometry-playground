@@ -1,8 +1,8 @@
 import type { Scene } from '@babylonjs/core'
 import type { Mesh } from '@babylonjs/core'
-import type { IfcProfileDef } from './ifc/schema.ts'
+import type { IfcProfileDef, Vec3 } from './ifc/schema.ts'
 
-export type { IfcProfileDef }
+export type { IfcProfileDef, Vec3 }
 
 export interface NumberParameterDef {
   key: string;
@@ -75,6 +75,29 @@ export interface ProfileEditorConfig {
   defaultProfile: IfcProfileDef;
 }
 
+/** Configuration for the path editor widget. */
+export interface PathEditorConfig {
+  /** Initial list of 3-D waypoints defining the sweep path. */
+  defaultPath: Vec3[];
+  /** Minimum number of points the user must keep (default: 2). */
+  minPoints?: number;
+  /** Optional label shown above the editor. */
+  label?: string;
+}
+
+/** Visibility flags passed to buildGeometry for sweep-based samples. */
+export interface SweepViewState {
+  showPath: boolean;
+  showFrames: boolean;
+  showResult: boolean;
+}
+
+/** Configuration for the sweep-view toggle panel. */
+export interface SweepViewConfig {
+  /** Override any of the three default-on/off states. */
+  defaults?: Partial<SweepViewState>;
+}
+
 export interface SampleDef {
   id: string;
   title: string;
@@ -89,6 +112,25 @@ export interface SampleDef {
    * as the optional fourth argument.
    */
   profileEditorConfig?: ProfileEditorConfig;
-  buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number, profile?: IfcProfileDef) => Mesh[];
+  /**
+   * When set, ExamplePage renders a PathEditor widget that lets the user edit
+   * the sweep path. The current Vec3[] path is forwarded to buildGeometry as
+   * the optional fifth argument.
+   */
+  pathEditorConfig?: PathEditorConfig;
+  /**
+   * When set, ExamplePage renders sweep-view toggle buttons (path / local
+   * frames / result). The current SweepViewState is forwarded to buildGeometry
+   * as the optional sixth argument.
+   */
+  sweepViewConfig?: SweepViewConfig;
+  buildGeometry: (
+    scene: Scene,
+    params: ParamValues,
+    stepIndex: number,
+    profile?: IfcProfileDef,
+    path?: Vec3[],
+    sweepView?: SweepViewState,
+  ) => Mesh[];
   getIFCRepresentation: (params: ParamValues) => object;
 }

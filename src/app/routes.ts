@@ -60,6 +60,15 @@ export const routes: Route[] = [
     status: 'available',
   },
   {
+    hash: '#/examples/swept-disk',
+    title: 'Swept Disk Solid',
+    description: 'Sweeps a circular disk along a 3-D polyline path to create a rod or hollow pipe (IfcSweptDiskSolid).',
+    sampleId: 'swept-disk-basic',
+    category: 'Swept Solid',
+    difficulty: 'intermediate',
+    status: 'available',
+  },
+  {
     hash: '#/examples/revolved',
     title: 'Revolved Area Solid',
     description: 'Revolves a 2D profile around an axis to create a 3D solid (IfcRevolvedAreaSolid).',

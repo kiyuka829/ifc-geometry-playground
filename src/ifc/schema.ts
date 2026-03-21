@@ -93,3 +93,22 @@ export interface IfcBooleanResult {
   firstOperand: IfcExtrudedAreaSolid | IfcBooleanResult;
   secondOperand: IfcExtrudedAreaSolid | IfcBooleanResult;
 }
+
+/** A polyline directrix used as the sweep path for swept-solid types. */
+export interface IfcPolyline {
+  type: 'IfcPolyline';
+  points: Vec3[];
+}
+
+/**
+ * Sweeps a circular disk (and optionally a hollow ring) along a polyline
+ * directrix to produce a solid.
+ */
+export interface IfcSweptDiskSolid {
+  type: 'IfcSweptDiskSolid';
+  directrix: IfcPolyline;
+  /** Outer radius of the disk. */
+  radius: number;
+  /** Inner radius for a hollow pipe; omit for a solid rod. */
+  innerRadius?: number;
+}

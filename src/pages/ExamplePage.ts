@@ -1,10 +1,12 @@
 import type { Mesh } from '@babylonjs/core'
-import type { SampleDef, ParamValues, IfcProfileDef } from '../types.ts'
+import type { SampleDef, ParamValues, IfcProfileDef, Vec3, SweepViewState } from '../types.ts'
 import { SceneManager } from '../engine/scene.ts'
 import { createArcRotateCamera } from '../engine/camera.ts'
 import { ParameterPanel } from '../ui/ParameterPanel.ts'
 import { Stepper } from '../ui/Stepper.ts'
 import { ProfileEditor } from '../ui/ProfileEditor.ts'
+import { PathEditor } from '../ui/PathEditor.ts'
+import { SweepViewToggles } from '../ui/SweepViewToggles.ts'
 
 export class ExamplePage {
   private appContainer: HTMLElement
@@ -14,6 +16,8 @@ export class ExamplePage {
   private currentParams: ParamValues = {}
   private currentStep = 0
   private currentProfile: IfcProfileDef | undefined = undefined
+  private currentPath: Vec3[] | undefined = undefined
+  private currentSweepView: SweepViewState | undefined = undefined
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(appContainer: HTMLElement) {
@@ -31,7 +35,23 @@ export class ExamplePage {
     // Seed the current profile from the config default (if any)
     this.currentProfile = sample.profileEditorConfig?.defaultProfile
 
-    const hasProfileEditor = Boolean(sample.profileEditorConfig)
+    // Seed path from config default (if any)
+    this.currentPath = sample.pathEditorConfig
+      ? JSON.parse(JSON.stringify(sample.pathEditorConfig.defaultPath)) as Vec3[]
+      : undefined
+
+    // Seed sweep view state from config defaults (if any)
+    this.currentSweepView = sample.sweepViewConfig
+      ? {
+          showPath:   sample.sweepViewConfig.defaults?.showPath   ?? true,
+          showFrames: sample.sweepViewConfig.defaults?.showFrames ?? false,
+          showResult: sample.sweepViewConfig.defaults?.showResult ?? true,
+        }
+      : undefined
+
+    const hasProfileEditor  = Boolean(sample.profileEditorConfig)
+    const hasPathEditor     = Boolean(sample.pathEditorConfig)
+    const hasSweepToggles   = Boolean(sample.sweepViewConfig)
 
     this.appContainer.innerHTML = `
       <nav class="nav">
@@ -48,8 +68,18 @@ export class ExamplePage {
               <div class="params-title">Profile</div>
               <div id="profile-editor-panel"></div>
             ` : ''}
+            ${hasPathEditor ? `
+              <div class="params-title${hasProfileEditor ? ' left-panel-section-mt' : ''}">
+                ${sample.pathEditorConfig!.label ?? 'Path'}
+              </div>
+              <div id="path-editor-panel"></div>
+            ` : ''}
+            ${hasSweepToggles ? `
+              <div class="params-title left-panel-section-mt">View</div>
+              <div id="sweep-view-toggles"></div>
+            ` : ''}
             ${sample.parameters.length > 0 ? `
-              <div class="params-title${hasProfileEditor ? ' left-panel-section-mt' : ''}">Parameters</div>
+              <div class="params-title${(hasProfileEditor || hasPathEditor || hasSweepToggles) ? ' left-panel-section-mt' : ''}">Parameters</div>
               <div id="param-panel"></div>
             ` : ''}
             <div class="params-title left-panel-steps-title">Steps</div>
@@ -74,6 +104,26 @@ export class ExamplePage {
       profileEditor.onChange(profile => {
         this.currentProfile = profile
         this._scheduleRebuild(sample.debounceMs ?? 0)
+      })
+    }
+
+    // Path editor (optional)
+    const pathEditorContainer = document.getElementById('path-editor-panel')
+    if (pathEditorContainer && sample.pathEditorConfig) {
+      const pathEditor = new PathEditor(pathEditorContainer, sample.pathEditorConfig)
+      pathEditor.onChange(path => {
+        this.currentPath = path
+        this._scheduleRebuild(sample.debounceMs ?? 0)
+      })
+    }
+
+    // Sweep view toggles (optional)
+    const sweepToggleContainer = document.getElementById('sweep-view-toggles')
+    if (sweepToggleContainer && sample.sweepViewConfig) {
+      const sweepToggles = new SweepViewToggles(sweepToggleContainer, sample.sweepViewConfig)
+      sweepToggles.onChange(state => {
+        this.currentSweepView = state
+        this._scheduleRebuild(0)
       })
     }
 
@@ -126,6 +176,8 @@ export class ExamplePage {
       this.currentParams,
       this.currentStep,
       this.currentProfile,
+      this.currentPath,
+      this.currentSweepView,
     )
   }
 
@@ -144,3 +196,4 @@ export class ExamplePage {
     }
   }
 }
+
