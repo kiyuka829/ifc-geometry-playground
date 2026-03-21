@@ -12,6 +12,7 @@ export class ExamplePage {
   private currentSample: SampleDef | null = null
   private currentParams: ParamValues = {}
   private currentStep = 0
+  private _debounceTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(appContainer: HTMLElement) {
     this.appContainer = appContainer
@@ -63,13 +64,28 @@ export class ExamplePage {
 
     paramPanel.onChange(values => {
       this.currentParams = values
-      this._rebuildGeometry()
+      this._scheduleRebuild(sample.debounceMs ?? 0)
     })
 
     stepper.onStepChange(index => {
       this.currentStep = index
       this._rebuildGeometry()
     })
+  }
+
+  private _scheduleRebuild(debounceMs: number) {
+    if (this._debounceTimer !== null) {
+      clearTimeout(this._debounceTimer)
+      this._debounceTimer = null
+    }
+    if (debounceMs <= 0) {
+      this._rebuildGeometry()
+    } else {
+      this._debounceTimer = setTimeout(() => {
+        this._debounceTimer = null
+        this._rebuildGeometry()
+      }, debounceMs)
+    }
   }
 
   private _rebuildGeometry() {
@@ -88,6 +104,10 @@ export class ExamplePage {
   }
 
   unmount() {
+    if (this._debounceTimer !== null) {
+      clearTimeout(this._debounceTimer)
+      this._debounceTimer = null
+    }
     for (const mesh of this.currentMeshes) {
       mesh.dispose()
     }
