@@ -1,0 +1,76 @@
+import { Vector3 } from '@babylonjs/core'
+import type { Scene, Mesh } from '@babylonjs/core'
+import type { SampleDef, ParamValues, IfcProfileDef } from '../../types.ts'
+import { getNumber } from '../../types.ts'
+import { buildExtrusionMesh, buildProfileOutlines } from '../operations/extrusion.ts'
+import { createExtrusionMaterial } from '../../engine/materials.ts'
+import { createAxisGizmo } from '../../engine/gizmos.ts'
+
+const DEFAULT_PROFILE: IfcProfileDef = {
+  type: 'IfcCircleProfileDef',
+  profileType: 'AREA',
+  radius: 2,
+}
+
+export const extrusionCircleSample: SampleDef = {
+  id: 'extrusion-circle',
+  title: 'Circle Profile (IfcCircleProfileDef)',
+  description:
+    'A circular cross-section extruded into a 3D solid using IfcExtrudedAreaSolid. ' +
+    'Adjust the radius in the profile editor and the extrusion depth below.',
+  parameters: [
+    { key: 'depth', label: 'Extrusion Depth', type: 'number', min: 0.5, max: 20, step: 0.1, defaultValue: 5 },
+  ],
+  steps: [
+    {
+      id: 'profile',
+      label: 'Step 1: Circle Profile',
+      description:
+        'IfcCircleProfileDef defines a circular cross-section by its radius. ' +
+        'Edit the radius using the profile editor above.',
+    },
+    {
+      id: 'solid',
+      label: 'Step 2: Extruded Solid',
+      description:
+        'The circle is extruded along the Z-axis by the given depth to produce a cylinder. ' +
+        'This is equivalent to IfcExtrudedAreaSolid applied to an IfcCircleProfileDef.',
+    },
+  ],
+  profileEditorConfig: {
+    allowedTypes: ['circle'],
+    defaultProfile: DEFAULT_PROFILE,
+  },
+  buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number, profile?: IfcProfileDef): Mesh[] => {
+    const meshes: Mesh[] = []
+    const depth = getNumber(params, 'depth')
+    const activeProfile: IfcProfileDef = profile ?? DEFAULT_PROFILE
+
+    const solid = {
+      type: 'IfcExtrudedAreaSolid' as const,
+      sweptArea: activeProfile,
+      position: { location: { x: 0, y: 0, z: 0 } },
+      extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
+      depth,
+    }
+
+    if (stepIndex >= 0) {
+      const outlines = buildProfileOutlines(scene, activeProfile, 'circle_outline')
+      for (const l of outlines) meshes.push(l as unknown as Mesh)
+      meshes.push(createAxisGizmo(scene, Vector3.Zero(), 2))
+    }
+
+    if (stepIndex >= 1) {
+      meshes.push(buildExtrusionMesh(scene, solid, createExtrusionMaterial(scene), 'extrusion_solid'))
+    }
+
+    return meshes
+  },
+  getIFCRepresentation: (params: ParamValues) => ({
+    type: 'IfcExtrudedAreaSolid',
+    sweptArea: { type: 'IfcCircleProfileDef', profileType: 'AREA', radius: '(see profile editor)' },
+    position: { type: 'IfcAxis2Placement3D', location: { type: 'IfcCartesianPoint', coordinates: [0, 0, 0] } },
+    extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
+    depth: getNumber(params, 'depth'),
+  }),
+}

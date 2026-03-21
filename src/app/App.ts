@@ -3,13 +3,23 @@ import { HomePage } from '../pages/HomePage.ts'
 import { ExamplePage } from '../pages/ExamplePage.ts'
 import { extrusionBasicSample } from '../ifc/samples/extrusion.basic.ts'
 import { booleanDifferenceSample } from '../ifc/samples/boolean.difference.ts'
-import { profileEditorSample } from '../ifc/samples/profile.editor.ts'
+import { extrusionCircleSample } from '../ifc/samples/extrusion.circle.ts'
+import { extrusionRectHollowSample } from '../ifc/samples/extrusion.rect-hollow.ts'
+import { extrusionCircleHollowSample } from '../ifc/samples/extrusion.circle-hollow.ts'
+import { extrusionIShapeSample } from '../ifc/samples/extrusion.i-shape.ts'
+import { extrusionLShapeSample } from '../ifc/samples/extrusion.l-shape.ts'
+import { extrusionVoidSample } from '../ifc/samples/extrusion.void.ts'
 import type { SampleDef } from '../types.ts'
 
 const samples: Record<string, SampleDef> = {
-  'extrusion-basic': extrusionBasicSample,
-  'boolean-difference': booleanDifferenceSample,
-  'profile-editor': profileEditorSample,
+  'extrusion-basic':         extrusionBasicSample,
+  'boolean-difference':      booleanDifferenceSample,
+  'extrusion-circle':        extrusionCircleSample,
+  'extrusion-rect-hollow':   extrusionRectHollowSample,
+  'extrusion-circle-hollow': extrusionCircleHollowSample,
+  'extrusion-i-shape':       extrusionIShapeSample,
+  'extrusion-l-shape':       extrusionLShapeSample,
+  'extrusion-void':          extrusionVoidSample,
 }
 
 export class App {

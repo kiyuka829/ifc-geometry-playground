@@ -59,7 +59,14 @@ export interface StepDef {
 }
 
 /** Which profile types the ProfileEditor should expose for a given sample. */
-export type ProfileType = 'rectangle' | 'circle' | 'arbitrary';
+export type ProfileType =
+  | 'rectangle'
+  | 'circle'
+  | 'rect-hollow'
+  | 'circle-hollow'
+  | 'i-shape'
+  | 'l-shape'
+  | 'arbitrary';
 
 export interface ProfileEditorConfig {
   /** Profile types shown as selectable tabs in the editor. */
