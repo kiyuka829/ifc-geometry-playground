@@ -61,6 +61,8 @@ export interface SampleDef {
   description: string;
   parameters: ParameterDef[];
   steps: StepDef[];
+  /** Milliseconds to debounce parameter-driven geometry rebuilds. Defaults to 0 (immediate). */
+  debounceMs?: number;
   buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number) => Mesh[];
   getIFCRepresentation: (params: ParamValues) => object;
 }
