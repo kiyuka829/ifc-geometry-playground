@@ -69,7 +69,7 @@ export class ExamplePage {
 
     stepper.onStepChange(index => {
       this.currentStep = index
-      this._rebuildGeometry()
+      this._scheduleRebuild(0)
     })
   }
 
