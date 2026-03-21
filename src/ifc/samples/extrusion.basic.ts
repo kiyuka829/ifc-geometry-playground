@@ -1,6 +1,7 @@
 import { Color3, Vector3 } from '@babylonjs/core'
 import type { Scene, Mesh } from '@babylonjs/core'
 import type { SampleDef, ParamValues } from '../../types.ts'
+import { getNumber } from '../../types.ts'
 import { buildExtrusionMesh, buildProfileOutline } from '../operations/extrusion.ts'
 import { createExtrusionMaterial } from '../../engine/materials.ts'
 import { createArrow, createAxisGizmo } from '../../engine/gizmos.ts'
@@ -30,12 +31,12 @@ export const extrusionBasicSample: SampleDef = {
       sweptArea: {
         type: 'IfcRectangleProfileDef' as const,
         profileType: 'AREA' as const,
-        xDim: params.width as number,
-        yDim: params.height as number,
+        xDim: getNumber(params, 'width'),
+        yDim: getNumber(params, 'height'),
       },
       position: { location: { x: 0, y: 0, z: 0 } },
-      extrudedDirection: { directionRatios: { x: params.dirX as number, y: params.dirY as number, z: params.dirZ as number } },
-      depth: params.depth as number,
+      extrudedDirection: { directionRatios: { x: getNumber(params, 'dirX'), y: getNumber(params, 'dirY'), z: getNumber(params, 'dirZ') } },
+      depth: getNumber(params, 'depth'),
     }
 
     if (stepIndex >= 0) {
@@ -47,9 +48,9 @@ export const extrusionBasicSample: SampleDef = {
     }
 
     if (stepIndex >= 1) {
-      const dir = new Vector3(params.dirX as number, params.dirY as number, params.dirZ as number)
+      const dir = new Vector3(getNumber(params, 'dirX'), getNumber(params, 'dirY'), getNumber(params, 'dirZ'))
       if (dir.length() > 0.01) {
-        const arrow = createArrow(scene, Vector3.Zero(), dir, params.depth as number, new Color3(0.2, 0.9, 0.2), 'dir_arrow')
+        const arrow = createArrow(scene, Vector3.Zero(), dir, getNumber(params, 'depth'), new Color3(0.2, 0.9, 0.2), 'dir_arrow')
         meshes.push(arrow)
       }
     }
@@ -67,8 +68,8 @@ export const extrusionBasicSample: SampleDef = {
     sweptArea: {
       type: 'IfcRectangleProfileDef',
       profileType: 'AREA',
-      xDim: params.width,
-      yDim: params.height,
+      xDim: getNumber(params, 'width'),
+      yDim: getNumber(params, 'height'),
     },
     position: {
       type: 'IfcAxis2Placement3D',
@@ -76,8 +77,8 @@ export const extrusionBasicSample: SampleDef = {
     },
     extrudedDirection: {
       type: 'IfcDirection',
-      directionRatios: [params.dirX, params.dirY, params.dirZ],
+      directionRatios: [getNumber(params, 'dirX'), getNumber(params, 'dirY'), getNumber(params, 'dirZ')],
     },
-    depth: params.depth,
+    depth: getNumber(params, 'depth'),
   }),
 }

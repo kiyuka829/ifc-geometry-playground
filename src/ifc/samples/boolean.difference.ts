@@ -1,6 +1,10 @@
 import type { Scene, Mesh } from '@babylonjs/core'
 import type { SampleDef, ParamValues } from '../../types.ts'
+import { getNumber, getSelect } from '../../types.ts'
 import { buildBooleanVisualization } from '../operations/boolean.ts'
+
+const BOOLEAN_OPERATORS = ['DIFFERENCE', 'UNION', 'INTERSECTION'] as const
+type BooleanOperator = typeof BOOLEAN_OPERATORS[number]
 
 export const booleanDifferenceSample: SampleDef = {
   id: 'boolean-difference',
@@ -26,12 +30,7 @@ export const booleanDifferenceSample: SampleDef = {
     { id: 'result', label: 'Step 3: Boolean Result', description: 'Show the result of the boolean operation. The result depends on the selected operator.' },
   ],
   buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number): Mesh[] => {
-    const VALID_OPERATORS = ['DIFFERENCE', 'UNION', 'INTERSECTION'] as const
-    type BooleanOperator = typeof VALID_OPERATORS[number]
-    const raw = params.operator
-    const operator: BooleanOperator = (VALID_OPERATORS as readonly string[]).includes(raw as string)
-      ? (raw as BooleanOperator)
-      : 'DIFFERENCE'
+    const operator = getSelect(params, 'operator', BOOLEAN_OPERATORS, 'DIFFERENCE')
     const booleanResult = {
       type: 'IfcBooleanResult' as const,
       operator,
@@ -40,36 +39,31 @@ export const booleanDifferenceSample: SampleDef = {
         sweptArea: {
           type: 'IfcRectangleProfileDef' as const,
           profileType: 'AREA' as const,
-          xDim: params.mainWidth as number,
-          yDim: params.mainHeight as number,
+          xDim: getNumber(params, 'mainWidth'),
+          yDim: getNumber(params, 'mainHeight'),
         },
         position: { location: { x: 0, y: 0, z: 0 } },
         extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
-        depth: params.mainDepth as number,
+        depth: getNumber(params, 'mainDepth'),
       },
       secondOperand: {
         type: 'IfcExtrudedAreaSolid' as const,
         sweptArea: {
           type: 'IfcRectangleProfileDef' as const,
           profileType: 'AREA' as const,
-          xDim: params.cutterWidth as number,
-          yDim: params.cutterHeight as number,
+          xDim: getNumber(params, 'cutterWidth'),
+          yDim: getNumber(params, 'cutterHeight'),
         },
-        position: { location: { x: params.cutterOffsetX as number, y: 0, z: 0 } },
+        position: { location: { x: getNumber(params, 'cutterOffsetX'), y: 0, z: 0 } },
         extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
-        depth: params.cutterDepth as number,
+        depth: getNumber(params, 'cutterDepth'),
       },
     }
 
     return buildBooleanVisualization(scene, booleanResult, 'boolean', stepIndex)
   },
   getIFCRepresentation: (params: ParamValues) => {
-    const VALID_OPERATORS = ['DIFFERENCE', 'UNION', 'INTERSECTION'] as const
-    type BooleanOperator = typeof VALID_OPERATORS[number]
-    const raw = params.operator
-    const operator: BooleanOperator = (VALID_OPERATORS as readonly string[]).includes(raw as string)
-      ? (raw as BooleanOperator)
-      : 'DIFFERENCE'
+    const operator: BooleanOperator = getSelect(params, 'operator', BOOLEAN_OPERATORS, 'DIFFERENCE')
     return {
       type: 'IfcBooleanResult',
       operator,
@@ -78,30 +72,30 @@ export const booleanDifferenceSample: SampleDef = {
         sweptArea: {
           type: 'IfcRectangleProfileDef',
           profileType: 'AREA',
-          xDim: params.mainWidth,
-          yDim: params.mainHeight,
+          xDim: getNumber(params, 'mainWidth'),
+          yDim: getNumber(params, 'mainHeight'),
         },
         position: {
           type: 'IfcAxis2Placement3D',
           location: { type: 'IfcCartesianPoint', coordinates: [0, 0, 0] },
         },
         extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
-        depth: params.mainDepth,
+        depth: getNumber(params, 'mainDepth'),
       },
       secondOperand: {
         type: 'IfcExtrudedAreaSolid',
         sweptArea: {
           type: 'IfcRectangleProfileDef',
           profileType: 'AREA',
-          xDim: params.cutterWidth,
-          yDim: params.cutterHeight,
+          xDim: getNumber(params, 'cutterWidth'),
+          yDim: getNumber(params, 'cutterHeight'),
         },
         position: {
           type: 'IfcAxis2Placement3D',
-          location: { type: 'IfcCartesianPoint', coordinates: [params.cutterOffsetX, 0, 0] },
+          location: { type: 'IfcCartesianPoint', coordinates: [getNumber(params, 'cutterOffsetX'), 0, 0] },
         },
         extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
-        depth: params.cutterDepth,
+        depth: getNumber(params, 'cutterDepth'),
       },
     }
   },
