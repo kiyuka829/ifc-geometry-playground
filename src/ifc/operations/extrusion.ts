@@ -4,6 +4,8 @@ import earcut from 'earcut'
 import type { IfcExtrudedAreaSolid, IfcProfileDef } from '../schema.ts'
 import { applyPlacement } from './placement.ts'
 
+const CIRCLE_SEGMENTS = 48
+
 export function buildExtrusionMesh(
   scene: Scene,
   solid: IfcExtrudedAreaSolid,
@@ -20,6 +22,23 @@ export function buildExtrusionMesh(
       depth: profile.yDim,
     }, scene)
     // Position center of box at placement + direction * depth/2
+    const dir = new Vector3(
+      solid.extrudedDirection.directionRatios.x,
+      solid.extrudedDirection.directionRatios.y,
+      solid.extrudedDirection.directionRatios.z
+    ).normalize()
+    const loc = solid.position.location
+    mesh.position = new Vector3(
+      loc.x + dir.x * solid.depth / 2,
+      loc.y + dir.y * solid.depth / 2,
+      loc.z + dir.z * solid.depth / 2
+    )
+  } else if (profile.type === 'IfcCircleProfileDef') {
+    mesh = MeshBuilder.CreateCylinder(name, {
+      diameter: profile.radius * 2,
+      height: solid.depth,
+      tessellation: CIRCLE_SEGMENTS,
+    }, scene)
     const dir = new Vector3(
       solid.extrudedDirection.directionRatios.x,
       solid.extrudedDirection.directionRatios.y,
@@ -61,7 +80,18 @@ export function buildProfileOutline(
       new Vector3(-hw, 0, hd),
       new Vector3(-hw, 0, -hd),
     ]
+  } else if (profile.type === 'IfcCircleProfileDef') {
+    points = []
+    for (let i = 0; i <= CIRCLE_SEGMENTS; i++) {
+      const angle = (i / CIRCLE_SEGMENTS) * Math.PI * 2
+      points.push(new Vector3(
+        Math.cos(angle) * profile.radius,
+        0,
+        Math.sin(angle) * profile.radius
+      ))
+    }
   } else {
+    // IfcArbitraryClosedProfileDef | IfcArbitraryProfileDefWithVoids
     points = profile.outerCurve.map(p => new Vector3(p.x, 0, p.y))
     points.push(points[0].clone())
   }

@@ -17,13 +17,31 @@ export interface IfcRectangleProfileDef {
   yDim: number;
 }
 
+export interface IfcCircleProfileDef {
+  type: 'IfcCircleProfileDef';
+  profileType: IfcProfileType;
+  radius: number;
+}
+
 export interface IfcArbitraryClosedProfileDef {
   type: 'IfcArbitraryClosedProfileDef';
   profileType: IfcProfileType;
   outerCurve: Vec2[];
 }
 
-export type IfcProfileDef = IfcRectangleProfileDef | IfcArbitraryClosedProfileDef;
+/** Closed profile with one or more inner voids (holes). Reserved for hollow sections. */
+export interface IfcArbitraryProfileDefWithVoids {
+  type: 'IfcArbitraryProfileDefWithVoids';
+  profileType: IfcProfileType;
+  outerCurve: Vec2[];
+  innerCurves: Vec2[][];
+}
+
+export type IfcProfileDef =
+  | IfcRectangleProfileDef
+  | IfcCircleProfileDef
+  | IfcArbitraryClosedProfileDef
+  | IfcArbitraryProfileDefWithVoids;
 
 export interface IfcExtrudedAreaSolid {
   type: 'IfcExtrudedAreaSolid';

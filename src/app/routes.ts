@@ -85,6 +85,15 @@ export const routes: Route[] = [
     status: 'planned',
   },
   {
+    hash: '#/examples/profile-editor',
+    title: 'Profile Editor',
+    description: 'Interactive 2D cross-section editor supporting rectangle, circle, and arbitrary closed profiles extruded into 3D solids.',
+    sampleId: 'profile-editor',
+    category: 'Profile',
+    difficulty: 'beginner',
+    status: 'available',
+  },
+  {
     hash: '#/examples/profile-circle',
     title: 'Circle Profile',
     description: 'Demonstrates a circular cross-section using IfcCircleProfileDef.',
