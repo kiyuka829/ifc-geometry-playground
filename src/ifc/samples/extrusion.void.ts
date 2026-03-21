@@ -95,8 +95,8 @@ export const extrusionVoidSample: SampleDef = {
   getIFCRepresentation: (params: ParamValues) => {
     const ow = getNumber(params, 'outerWidth')
     const oh = getNumber(params, 'outerHeight')
-    const vw = getNumber(params, 'voidWidth')
-    const vh = getNumber(params, 'voidHeight')
+    const vw = Math.min(getNumber(params, 'voidWidth'), ow - 0.4)
+    const vh = Math.min(getNumber(params, 'voidHeight'), oh - 0.4)
     return {
       type: 'IfcExtrudedAreaSolid',
       sweptArea: {

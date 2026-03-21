@@ -27,10 +27,15 @@ export class ProfileEditor {
   private currentProfile: IfcProfileDef
   private changeCallbacks: Array<(profile: IfcProfileDef) => void> = []
 
+  // Create a deep clone of a profile so that mutations do not affect shared defaults.
+  private _cloneProfile(profile: IfcProfileDef): IfcProfileDef {
+    return JSON.parse(JSON.stringify(profile)) as IfcProfileDef
+  }
+
   constructor(container: HTMLElement, config: ProfileEditorConfig) {
     this.container = container
     this.config = config
-    this.currentProfile = config.defaultProfile
+    this.currentProfile = this._cloneProfile(config.defaultProfile)
     this._render()
   }
 
@@ -65,43 +70,43 @@ export class ProfileEditor {
     if (this._activeType() === newType) return
     switch (newType) {
       case 'rectangle':
-        this.currentProfile = {
+        this.currentProfile = this._cloneProfile({
           type: 'IfcRectangleProfileDef', profileType: 'AREA', xDim: 4, yDim: 3,
-        } satisfies IfcRectangleProfileDef
+        } satisfies IfcRectangleProfileDef)
         break
       case 'circle':
-        this.currentProfile = {
+        this.currentProfile = this._cloneProfile({
           type: 'IfcCircleProfileDef', profileType: 'AREA', radius: 2,
-        } satisfies IfcCircleProfileDef
+        } satisfies IfcCircleProfileDef)
         break
       case 'rect-hollow':
-        this.currentProfile = {
+        this.currentProfile = this._cloneProfile({
           type: 'IfcRectangleHollowProfileDef', profileType: 'AREA', xDim: 4, yDim: 3, wallThickness: 0.3,
-        } satisfies IfcRectangleHollowProfileDef
+        } satisfies IfcRectangleHollowProfileDef)
         break
       case 'circle-hollow':
-        this.currentProfile = {
+        this.currentProfile = this._cloneProfile({
           type: 'IfcCircleHollowProfileDef', profileType: 'AREA', radius: 2, wallThickness: 0.3,
-        } satisfies IfcCircleHollowProfileDef
+        } satisfies IfcCircleHollowProfileDef)
         break
       case 'i-shape':
-        this.currentProfile = {
+        this.currentProfile = this._cloneProfile({
           type: 'IfcIShapeProfileDef', profileType: 'AREA',
           overallWidth: 3, overallDepth: 5, webThickness: 0.2, flangeThickness: 0.3,
-        } satisfies IfcIShapeProfileDef
+        } satisfies IfcIShapeProfileDef)
         break
       case 'l-shape':
-        this.currentProfile = {
+        this.currentProfile = this._cloneProfile({
           type: 'IfcLShapeProfileDef', profileType: 'AREA',
           depth: 4, width: 3, thickness: 0.4,
-        } satisfies IfcLShapeProfileDef
+        } satisfies IfcLShapeProfileDef)
         break
       case 'arbitrary':
-        this.currentProfile = {
+        this.currentProfile = this._cloneProfile({
           type: 'IfcArbitraryClosedProfileDef',
           profileType: 'AREA',
           outerCurve: DEFAULT_ARBITRARY_CURVE.map(p => ({ ...p })),
-        } satisfies IfcArbitraryClosedProfileDef
+        } satisfies IfcArbitraryClosedProfileDef)
         break
     }
     this._render()
@@ -199,8 +204,11 @@ export class ProfileEditor {
       ).join('')
     }
 
+    const axisHalfW = Math.max(Math.abs(minX), Math.abs(maxX)) + PAD
+    const axisHalfH = Math.max(Math.abs(minY), Math.abs(maxY)) + PAD
+
     return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">
-      ${this._svgAxes(maxX + PAD, maxY + PAD)}
+      ${this._svgAxes(axisHalfW, axisHalfH)}
       <polygon points="${outerPts}"
                fill="rgba(255,128,26,0.18)" stroke="#ff801a" stroke-width="${sw}"/>
       ${innerPaths}
@@ -236,34 +244,61 @@ export class ProfileEditor {
     }
 
     if (p.type === 'IfcRectangleHollowProfileDef') {
+      const rhWallMin = 0.05
+      const rhWallRawMax = Math.min(p.xDim, p.yDim) / 2 - rhWallMin
+      const rhWallMax = Math.max(rhWallMin, rhWallRawMax)
+      const rhWall = Math.min(Math.max(p.wallThickness, rhWallMin), rhWallMax)
+      p.wallThickness = rhWall
       return `
         ${this._sliderHTML('rh-w', 'Width (xDim)', p.xDim, 1, 10, 0.1)}
         ${this._sliderHTML('rh-h', 'Height (yDim)', p.yDim, 1, 10, 0.1)}
-        ${this._sliderHTML('rh-t', 'Wall Thickness', p.wallThickness, 0.05, Math.min(p.xDim, p.yDim) / 2 - 0.05, 0.05)}
+        ${this._sliderHTML('rh-t', 'Wall Thickness', rhWall, rhWallMin, rhWallMax, 0.05)}
       `
     }
 
     if (p.type === 'IfcCircleHollowProfileDef') {
+      const chWallMin = 0.05
+      const chWallRawMax = p.radius - chWallMin
+      const chWallMax = Math.max(chWallMin, chWallRawMax)
+      const chWall = Math.min(Math.max(p.wallThickness, chWallMin), chWallMax)
+      p.wallThickness = chWall
       return `
         ${this._sliderHTML('ch-r', 'Radius', p.radius, 0.5, 10, 0.1)}
-        ${this._sliderHTML('ch-t', 'Wall Thickness', p.wallThickness, 0.05, p.radius - 0.05, 0.05)}
+        ${this._sliderHTML('ch-t', 'Wall Thickness', chWall, chWallMin, chWallMax, 0.05)}
       `
     }
 
     if (p.type === 'IfcIShapeProfileDef') {
+      const isWebMin = 0.05
+      const isWebRawMax = p.overallWidth / 2 - isWebMin
+      const isWebMax = Math.max(isWebMin, isWebRawMax)
+      const isWeb = Math.min(Math.max(p.webThickness, isWebMin), isWebMax)
+
+      const isFlangeMin = 0.05
+      const isFlangeRawMax = p.overallDepth / 2 - isFlangeMin
+      const isFlangeMax = Math.max(isFlangeMin, isFlangeRawMax)
+      const isFlange = Math.min(Math.max(p.flangeThickness, isFlangeMin), isFlangeMax)
+
+      p.webThickness = isWeb
+      p.flangeThickness = isFlange
       return `
         ${this._sliderHTML('is-ow', 'Overall Width', p.overallWidth, 0.5, 8, 0.1)}
         ${this._sliderHTML('is-od', 'Overall Depth', p.overallDepth, 0.5, 10, 0.1)}
-        ${this._sliderHTML('is-wt', 'Web Thickness', p.webThickness, 0.05, p.overallWidth / 2 - 0.05, 0.05)}
-        ${this._sliderHTML('is-ft', 'Flange Thickness', p.flangeThickness, 0.05, p.overallDepth / 2 - 0.05, 0.05)}
+        ${this._sliderHTML('is-wt', 'Web Thickness', isWeb, isWebMin, isWebMax, 0.05)}
+        ${this._sliderHTML('is-ft', 'Flange Thickness', isFlange, isFlangeMin, isFlangeMax, 0.05)}
       `
     }
 
     if (p.type === 'IfcLShapeProfileDef') {
+      const lsThkMin = 0.05
+      const lsThkRawMax = Math.min(p.depth, p.width) / 2
+      const lsThkMax = Math.max(lsThkMin, lsThkRawMax)
+      const lsThk = Math.min(Math.max(p.thickness, lsThkMin), lsThkMax)
+      p.thickness = lsThk
       return `
         ${this._sliderHTML('ls-d', 'Depth', p.depth, 0.5, 10, 0.1)}
         ${this._sliderHTML('ls-w', 'Width', p.width, 0.5, 10, 0.1)}
-        ${this._sliderHTML('ls-t', 'Thickness', p.thickness, 0.05, Math.min(p.depth, p.width) / 2, 0.05)}
+        ${this._sliderHTML('ls-t', 'Thickness', lsThk, lsThkMin, lsThkMax, 0.05)}
       `
     }
 
@@ -370,10 +405,16 @@ export class ProfileEditor {
 
     // ── Rectangle Hollow ──
     this._bindSlider('rh-w', v => {
-      (this.currentProfile as IfcRectangleHollowProfileDef).xDim = v
+      const prof = this.currentProfile as IfcRectangleHollowProfileDef
+      prof.xDim = v
+      const max = Math.max(0.05, Math.min(prof.xDim, prof.yDim) / 2 - 0.05)
+      prof.wallThickness = this._clampDependentSlider('rh-t', max)
     })
     this._bindSlider('rh-h', v => {
-      (this.currentProfile as IfcRectangleHollowProfileDef).yDim = v
+      const prof = this.currentProfile as IfcRectangleHollowProfileDef
+      prof.yDim = v
+      const max = Math.max(0.05, Math.min(prof.xDim, prof.yDim) / 2 - 0.05)
+      prof.wallThickness = this._clampDependentSlider('rh-t', max)
     })
     this._bindSlider('rh-t', v => {
       (this.currentProfile as IfcRectangleHollowProfileDef).wallThickness = v
@@ -381,7 +422,10 @@ export class ProfileEditor {
 
     // ── Circle Hollow ──
     this._bindSlider('ch-r', v => {
-      (this.currentProfile as IfcCircleHollowProfileDef).radius = v
+      const prof = this.currentProfile as IfcCircleHollowProfileDef
+      prof.radius = v
+      const max = Math.max(0.05, prof.radius - 0.05)
+      prof.wallThickness = this._clampDependentSlider('ch-t', max)
     })
     this._bindSlider('ch-t', v => {
       (this.currentProfile as IfcCircleHollowProfileDef).wallThickness = v
@@ -389,10 +433,16 @@ export class ProfileEditor {
 
     // ── I-Shape ──
     this._bindSlider('is-ow', v => {
-      (this.currentProfile as IfcIShapeProfileDef).overallWidth = v
+      const prof = this.currentProfile as IfcIShapeProfileDef
+      prof.overallWidth = v
+      const max = Math.max(0.05, prof.overallWidth / 2 - 0.05)
+      prof.webThickness = this._clampDependentSlider('is-wt', max)
     })
     this._bindSlider('is-od', v => {
-      (this.currentProfile as IfcIShapeProfileDef).overallDepth = v
+      const prof = this.currentProfile as IfcIShapeProfileDef
+      prof.overallDepth = v
+      const max = Math.max(0.05, prof.overallDepth / 2 - 0.05)
+      prof.flangeThickness = this._clampDependentSlider('is-ft', max)
     })
     this._bindSlider('is-wt', v => {
       (this.currentProfile as IfcIShapeProfileDef).webThickness = v
@@ -403,10 +453,16 @@ export class ProfileEditor {
 
     // ── L-Shape ──
     this._bindSlider('ls-d', v => {
-      (this.currentProfile as IfcLShapeProfileDef).depth = v
+      const prof = this.currentProfile as IfcLShapeProfileDef
+      prof.depth = v
+      const max = Math.max(0.05, Math.min(prof.depth, prof.width) / 2)
+      prof.thickness = this._clampDependentSlider('ls-t', max)
     })
     this._bindSlider('ls-w', v => {
-      (this.currentProfile as IfcLShapeProfileDef).width = v
+      const prof = this.currentProfile as IfcLShapeProfileDef
+      prof.width = v
+      const max = Math.max(0.05, Math.min(prof.depth, prof.width) / 2)
+      prof.thickness = this._clampDependentSlider('ls-t', max)
     })
     this._bindSlider('ls-t', v => {
       (this.currentProfile as IfcLShapeProfileDef).thickness = v
@@ -415,12 +471,14 @@ export class ProfileEditor {
     // ── Arbitrary point inputs ──
     for (const input of this.container.querySelectorAll<HTMLInputElement>('.point-x-input, .point-y-input')) {
       input.addEventListener('input', () => {
+        const newVal = Number(input.value)
+        if (!Number.isFinite(newVal)) return
         const idx = Number(input.dataset.index)
         const profile = this.currentProfile as IfcArbitraryClosedProfileDef
         if (input.classList.contains('point-x-input')) {
-          profile.outerCurve[idx] = { ...profile.outerCurve[idx], x: Number(input.value) }
+          profile.outerCurve[idx] = { ...profile.outerCurve[idx], x: newVal }
         } else {
-          profile.outerCurve[idx] = { ...profile.outerCurve[idx], y: Number(input.value) }
+          profile.outerCurve[idx] = { ...profile.outerCurve[idx], y: newVal }
         }
         this._refreshPreview()
         this._notify()
@@ -463,5 +521,24 @@ export class ProfileEditor {
       this._refreshPreview()
       this._notify()
     })
+  }
+
+  /**
+   * Update a dependent slider's max to `newMax` and clamp its current value if
+   * it exceeds that max. Returns the (possibly clamped) current value.
+   */
+  private _clampDependentSlider(elementId: string, newMax: number): number {
+    const slider = this.container.querySelector<HTMLInputElement>(`#${elementId}`)
+    const valEl = this.container.querySelector<HTMLElement>(`#${elementId}-val`)
+    if (!slider) return newMax
+    const safeMax = Math.max(Number(slider.min), newMax)
+    slider.max = String(safeMax)
+    const current = Number(slider.value)
+    if (current > safeMax) {
+      slider.value = String(safeMax)
+      if (valEl) valEl.textContent = safeMax.toFixed(2)
+      return safeMax
+    }
+    return current
   }
 }
