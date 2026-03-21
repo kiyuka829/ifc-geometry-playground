@@ -5,12 +5,7 @@
 # avoiding text corruption that can occur when piping body through stdin.
 #
 # Usage:
-#   .github/skills/create-pr.sh --title "PR title" --body "PR body text" [--base main] [--draft]
-#
-# Any additional flags supported by `gh pr create` can be appended.
-#
-# The body text is written to a temporary file so that special characters,
-# newlines, and Unicode are preserved correctly.
+#   .github/skills/create-github-pr/create-pr.sh --title "PR title" --body "PR body" [extra gh flags]
 
 set -euo pipefail
 
@@ -18,7 +13,6 @@ TITLE=""
 BODY=""
 EXTRA_ARGS=()
 
-# Parse known arguments; collect the rest to pass through to gh
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --title)
@@ -41,7 +35,6 @@ if [[ -z "$TITLE" ]]; then
   exit 1
 fi
 
-# Write the body to a temporary file to avoid stdin/pipe text corruption
 BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/gh-pr-body-XXXXXX.md")
 trap 'rm -f "$BODY_FILE"' EXIT
 

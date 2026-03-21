@@ -103,7 +103,7 @@ When creating Issues or Pull Requests with the `gh` command, **never pipe body t
 ### Create an Issue
 
 ```bash
-.github/skills/create-issue.sh \
+.github/skills/create-github-issue/create-issue.sh \
   --title "Issue title" \
   --body "Issue body text (Markdown supported)" \
   [--label "bug"] \
@@ -113,7 +113,7 @@ When creating Issues or Pull Requests with the `gh` command, **never pipe body t
 ### Create a Pull Request
 
 ```bash
-.github/skills/create-pr.sh \
+.github/skills/create-github-pr/create-pr.sh \
   --title "PR title" \
   --body "PR body text (Markdown supported)" \
   [--base main] \
