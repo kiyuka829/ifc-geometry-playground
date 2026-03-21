@@ -76,7 +76,7 @@ export class HomePage {
 
     container.innerHTML = `
       <nav class="nav">
-        <span class="nav-brand">IFC Geometry Playground</span>
+        <a href="#/" class="nav-brand">IFC Geometry Playground</a>
       </nav>
       <div class="home-page">
         <h1>IFC Geometry Playground</h1>

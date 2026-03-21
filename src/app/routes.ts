@@ -17,17 +17,36 @@ export const GEOMETRY_CATEGORIES: GeometryCategory[] = [
 
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 
-export type RouteStatus = 'available' | 'planned'
-
-export interface Route {
+interface BaseRoute {
   hash: string;
   title: string;
   description?: string;
-  sampleId?: string;
-  category?: GeometryCategory;
-  difficulty?: Difficulty;
-  status?: RouteStatus;
 }
+
+export interface StaticRoute extends BaseRoute {
+  sampleId?: undefined;
+  category?: undefined;
+  difficulty?: undefined;
+  status?: undefined;
+}
+
+export interface AvailableRoute extends BaseRoute {
+  description: string;
+  sampleId: string;
+  category: GeometryCategory;
+  difficulty: Difficulty;
+  status: 'available';
+}
+
+export interface PlannedRoute extends BaseRoute {
+  description: string;
+  sampleId?: undefined;
+  category: GeometryCategory;
+  difficulty: Difficulty;
+  status: 'planned';
+}
+
+export type Route = StaticRoute | AvailableRoute | PlannedRoute;
 
 export const routes: Route[] = [
   { hash: '#/', title: 'Home' },
