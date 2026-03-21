@@ -13,13 +13,31 @@ Designed for developers and anyone looking to deepen their understanding of IFC,
 
 ## Supported Shape Types
 
-- [x] **IfcExtrudedAreaSolid** – Extrusion (basic rectangular profile)
-- [x] **IfcBooleanResult** – Boolean difference (DIFFERENCE)
+See [docs/ifc-geometry-types.md](docs/ifc-geometry-types.md) for a comprehensive list of IFC geometry types and their implementation status.
+
+### Currently Implemented
+
+- [x] **IfcExtrudedAreaSolid** – Extrusion (rectangular / arbitrary closed profile)
+- [x] **IfcBooleanResult** – Boolean DIFFERENCE
+
+### Planned (Phase 1)
+
 - [ ] IfcRevolvedAreaSolid – Revolved solid
-- [ ] IfcSweptDiskSolid – Sweep
+- [ ] IfcExtrudedAreaSolidTapered – Tapered extrusion
+- [ ] IfcCircleProfileDef / IfcCircleHollowProfileDef – Circular profiles
+- [ ] IfcRectangleHollowProfileDef – Hollow rectangular profile
+- [ ] IfcIShapeProfileDef – I-shape (H-beam)
+- [ ] IfcLShapeProfileDef – L-shape (angle)
+- [ ] IfcArbitraryProfileDefWithVoids – Profile with voids
+
+### Planned (Phase 2)
+
+- [ ] IfcSweptDiskSolid – Disk sweep (pipes)
+- [ ] IfcSphere / IfcRightCircularCylinder – Primitive solids
 - [ ] IfcBooleanResult (UNION / INTERSECTION)
+- [ ] IfcHalfSpaceSolid / IfcPolygonalBoundedHalfSpace – Clipping
+- [ ] IfcTriangulatedFaceSet / IfcPolygonalFaceSet – Tessellated meshes
 - [ ] IfcMappedItem – Repeated placement
-- [ ] IfcArbitraryClosedProfileDef – Arbitrary profile shape
 
 ## Design Principles
 
