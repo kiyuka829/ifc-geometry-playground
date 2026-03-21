@@ -197,6 +197,19 @@ body {
   cursor: pointer;
 }
 
+.param-select {
+  width: 100%;
+  margin: 2px 0;
+  background: #0d1b2e;
+  color: #c0cce0;
+  border: 1px solid #1a2a4a;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.82em;
+  cursor: pointer;
+  accent-color: #4fc3f7;
+}
+
 /* Stepper */
 .step-btn {
   display: block;

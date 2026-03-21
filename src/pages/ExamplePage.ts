@@ -1,5 +1,5 @@
 import type { Mesh } from '@babylonjs/core'
-import type { SampleDef } from '../types.ts'
+import type { SampleDef, ParamValues } from '../types.ts'
 import { SceneManager } from '../engine/scene.ts'
 import { createArcRotateCamera } from '../engine/camera.ts'
 import { ParameterPanel } from '../ui/ParameterPanel.ts'
@@ -10,7 +10,7 @@ export class ExamplePage {
   private sceneManager: SceneManager | null = null
   private currentMeshes: Mesh[] = []
   private currentSample: SampleDef | null = null
-  private currentParams: Record<string, number> = {}
+  private currentParams: ParamValues = {}
   private currentStep = 0
 
   constructor(appContainer: HTMLElement) {
