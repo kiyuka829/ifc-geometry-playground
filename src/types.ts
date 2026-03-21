@@ -1,5 +1,8 @@
 import type { Scene } from '@babylonjs/core'
 import type { Mesh } from '@babylonjs/core'
+import type { IfcProfileDef } from './ifc/schema.ts'
+
+export type { IfcProfileDef }
 
 export interface NumberParameterDef {
   key: string;
@@ -55,6 +58,23 @@ export interface StepDef {
   description: string;
 }
 
+/** Which profile types the ProfileEditor should expose for a given sample. */
+export type ProfileType =
+  | 'rectangle'
+  | 'circle'
+  | 'rect-hollow'
+  | 'circle-hollow'
+  | 'i-shape'
+  | 'l-shape'
+  | 'arbitrary';
+
+export interface ProfileEditorConfig {
+  /** Profile types shown as selectable tabs in the editor. */
+  allowedTypes: ProfileType[];
+  /** Profile used when the editor is first mounted. */
+  defaultProfile: IfcProfileDef;
+}
+
 export interface SampleDef {
   id: string;
   title: string;
@@ -63,6 +83,12 @@ export interface SampleDef {
   steps: StepDef[];
   /** Milliseconds to debounce parameter-driven geometry rebuilds. Defaults to 0 (immediate). */
   debounceMs?: number;
-  buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number) => Mesh[];
+  /**
+   * When set, ExamplePage renders a shared ProfileEditor widget above the
+   * parameter sliders. The current IfcProfileDef is forwarded to buildGeometry
+   * as the optional fourth argument.
+   */
+  profileEditorConfig?: ProfileEditorConfig;
+  buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number, profile?: IfcProfileDef) => Mesh[];
   getIFCRepresentation: (params: ParamValues) => object;
 }

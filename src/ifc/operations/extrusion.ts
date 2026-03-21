@@ -1,16 +1,125 @@
 import { MeshBuilder, Vector3, Color3 } from '@babylonjs/core'
 import type { Scene, StandardMaterial, Mesh, LinesMesh } from '@babylonjs/core'
 import earcut from 'earcut'
-import type { IfcExtrudedAreaSolid, IfcProfileDef } from '../schema.ts'
+import type {
+  IfcExtrudedAreaSolid,
+  IfcProfileDef,
+  IfcIShapeProfileDef,
+  IfcLShapeProfileDef,
+  Vec2,
+} from '../schema.ts'
 import { applyPlacement } from './placement.ts'
+
+const CIRCLE_SEGMENTS = 48
+
+// ── Polygon generators ─────────────────────────────────────────────────────
+
+function circleVec2(radius: number, segments = CIRCLE_SEGMENTS): Vec2[] {
+  const pts: Vec2[] = []
+  for (let i = 0; i < segments; i++) {
+    const angle = (i / segments) * Math.PI * 2
+    pts.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius })
+  }
+  return pts
+}
+
+function iShapeVec2(p: IfcIShapeProfileDef): Vec2[] {
+  const hw = p.overallWidth / 2
+  const hd = p.overallDepth / 2
+  const htw = p.webThickness / 2
+  const tf = p.flangeThickness
+  return [
+    { x: -hw,  y: -hd },
+    { x:  hw,  y: -hd },
+    { x:  hw,  y: -hd + tf },
+    { x:  htw, y: -hd + tf },
+    { x:  htw, y:  hd - tf },
+    { x:  hw,  y:  hd - tf },
+    { x:  hw,  y:  hd },
+    { x: -hw,  y:  hd },
+    { x: -hw,  y:  hd - tf },
+    { x: -htw, y:  hd - tf },
+    { x: -htw, y: -hd + tf },
+    { x: -hw,  y: -hd + tf },
+  ]
+}
+
+function lShapeVec2(p: IfcLShapeProfileDef): Vec2[] {
+  const cx = p.width / 2
+  const cy = p.depth / 2
+  const t = p.thickness
+  return [
+    { x: 0 - cx,       y: 0 - cy },
+    { x: p.width - cx, y: 0 - cy },
+    { x: p.width - cx, y: t - cy },
+    { x: t - cx,       y: t - cy },
+    { x: t - cx,       y: p.depth - cy },
+    { x: 0 - cx,       y: p.depth - cy },
+  ]
+}
+
+// ── Public polygon accessors ───────────────────────────────────────────────
+
+/** Outer boundary of any profile as Vec2 list. */
+export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
+  switch (profile.type) {
+    case 'IfcRectangleProfileDef': {
+      const hw = profile.xDim / 2, hd = profile.yDim / 2
+      return [{ x: -hw, y: -hd }, { x: hw, y: -hd }, { x: hw, y: hd }, { x: -hw, y: hd }]
+    }
+    case 'IfcRectangleHollowProfileDef': {
+      const hw = profile.xDim / 2, hd = profile.yDim / 2
+      return [{ x: -hw, y: -hd }, { x: hw, y: -hd }, { x: hw, y: hd }, { x: -hw, y: hd }]
+    }
+    case 'IfcCircleProfileDef':
+      return circleVec2(profile.radius)
+    case 'IfcCircleHollowProfileDef':
+      return circleVec2(profile.radius)
+    case 'IfcIShapeProfileDef':
+      return iShapeVec2(profile)
+    case 'IfcLShapeProfileDef':
+      return lShapeVec2(profile)
+    case 'IfcArbitraryClosedProfileDef':
+    case 'IfcArbitraryProfileDefWithVoids':
+      return profile.outerCurve
+  }
+}
+
+/** Inner boundary polygons (holes) for hollow profiles; empty array for solids. */
+export function profileInnerVec2s(profile: IfcProfileDef): Vec2[][] {
+  switch (profile.type) {
+    case 'IfcRectangleHollowProfileDef': {
+      const ihw = profile.xDim / 2 - profile.wallThickness
+      const ihd = profile.yDim / 2 - profile.wallThickness
+      return [[
+        { x: -ihw, y: -ihd }, { x: -ihw, y: ihd },
+        { x:  ihw, y:  ihd }, { x:  ihw, y: -ihd },
+      ]]
+    }
+    case 'IfcCircleHollowProfileDef':
+      return [circleVec2(profile.radius - profile.wallThickness).reverse()]
+    case 'IfcArbitraryProfileDefWithVoids':
+      return profile.innerCurves.map(curve => [...curve].reverse())
+    default:
+      return []
+  }
+}
+
+// ── Mesh building ──────────────────────────────────────────────────────────
 
 export function buildExtrusionMesh(
   scene: Scene,
   solid: IfcExtrudedAreaSolid,
   material: StandardMaterial,
-  name: string
+  name: string,
 ): Mesh {
   const profile = solid.sweptArea
+  const dir = new Vector3(
+    solid.extrudedDirection.directionRatios.x,
+    solid.extrudedDirection.directionRatios.y,
+    solid.extrudedDirection.directionRatios.z,
+  ).normalize()
+  const loc = solid.position.location
   let mesh: Mesh
 
   if (profile.type === 'IfcRectangleProfileDef') {
@@ -19,24 +128,30 @@ export function buildExtrusionMesh(
       height: solid.depth,
       depth: profile.yDim,
     }, scene)
-    // Position center of box at placement + direction * depth/2
-    const dir = new Vector3(
-      solid.extrudedDirection.directionRatios.x,
-      solid.extrudedDirection.directionRatios.y,
-      solid.extrudedDirection.directionRatios.z
-    ).normalize()
-    const loc = solid.position.location
     mesh.position = new Vector3(
       loc.x + dir.x * solid.depth / 2,
       loc.y + dir.y * solid.depth / 2,
-      loc.z + dir.z * solid.depth / 2
+      loc.z + dir.z * solid.depth / 2,
+    )
+  } else if (profile.type === 'IfcCircleProfileDef') {
+    mesh = MeshBuilder.CreateCylinder(name, {
+      diameter: profile.radius * 2,
+      height: solid.depth,
+      tessellation: CIRCLE_SEGMENTS,
+    }, scene)
+    mesh.position = new Vector3(
+      loc.x + dir.x * solid.depth / 2,
+      loc.y + dir.y * solid.depth / 2,
+      loc.z + dir.z * solid.depth / 2,
     )
   } else {
-    const points = profile.outerCurve.map(p => new Vector3(p.x, 0, p.y))
-    mesh = MeshBuilder.ExtrudePolygon(name, {
-      shape: points,
-      depth: solid.depth,
-    }, scene, earcut)
+    // All polygon-based profiles (hollow, I/L-shape, arbitrary)
+    const shape = profileOuterVec2(profile).map(p => new Vector3(p.x, 0, p.y))
+    const innerCurves = profileInnerVec2s(profile)
+    const holes = innerCurves.length > 0
+      ? innerCurves.map(inner => inner.map(p => new Vector3(p.x, 0, p.y)))
+      : undefined
+    mesh = MeshBuilder.ExtrudePolygon(name, { shape, depth: solid.depth, holes }, scene, earcut)
     applyPlacement(mesh, solid.position)
   }
 
@@ -44,29 +159,49 @@ export function buildExtrusionMesh(
   return mesh
 }
 
+// ── Outline helpers ────────────────────────────────────────────────────────
+
+function vec2ToV3Closed(pts: Vec2[]): Vector3[] {
+  const v = pts.map(p => new Vector3(p.x, 0, p.y))
+  if (v.length > 0) v.push(v[0].clone())
+  return v
+}
+
+/** Returns one LinesMesh per boundary (outer + each inner hole). */
+export function buildProfileOutlines(
+  scene: Scene,
+  profile: IfcProfileDef,
+  namePrefix: string,
+): LinesMesh[] {
+  const color = new Color3(1, 0.5, 0.1)
+  const result: LinesMesh[] = []
+
+  const outer = MeshBuilder.CreateLines(
+    `${namePrefix}_outer`,
+    { points: vec2ToV3Closed(profileOuterVec2(profile)) },
+    scene,
+  )
+  outer.color = color
+  result.push(outer)
+
+  profileInnerVec2s(profile).forEach((inner, i) => {
+    const line = MeshBuilder.CreateLines(
+      `${namePrefix}_inner${i}`,
+      { points: vec2ToV3Closed(inner) },
+      scene,
+    )
+    line.color = color
+    result.push(line)
+  })
+
+  return result
+}
+
+/** @deprecated Use buildProfileOutlines (returns LinesMesh[]) for hollow-aware outlines. */
 export function buildProfileOutline(
   scene: Scene,
   profile: IfcProfileDef,
-  name: string
+  name: string,
 ): LinesMesh {
-  let points: Vector3[]
-
-  if (profile.type === 'IfcRectangleProfileDef') {
-    const hw = profile.xDim / 2
-    const hd = profile.yDim / 2
-    points = [
-      new Vector3(-hw, 0, -hd),
-      new Vector3(hw, 0, -hd),
-      new Vector3(hw, 0, hd),
-      new Vector3(-hw, 0, hd),
-      new Vector3(-hw, 0, -hd),
-    ]
-  } else {
-    points = profile.outerCurve.map(p => new Vector3(p.x, 0, p.y))
-    points.push(points[0].clone())
-  }
-
-  const lines = MeshBuilder.CreateLines(name, { points }, scene)
-  lines.color = new Color3(1, 0.5, 0.1)
-  return lines
+  return buildProfileOutlines(scene, profile, name)[0]
 }

@@ -1,9 +1,10 @@
 import type { Mesh } from '@babylonjs/core'
-import type { SampleDef, ParamValues } from '../types.ts'
+import type { SampleDef, ParamValues, IfcProfileDef } from '../types.ts'
 import { SceneManager } from '../engine/scene.ts'
 import { createArcRotateCamera } from '../engine/camera.ts'
 import { ParameterPanel } from '../ui/ParameterPanel.ts'
 import { Stepper } from '../ui/Stepper.ts'
+import { ProfileEditor } from '../ui/ProfileEditor.ts'
 
 export class ExamplePage {
   private appContainer: HTMLElement
@@ -12,6 +13,7 @@ export class ExamplePage {
   private currentSample: SampleDef | null = null
   private currentParams: ParamValues = {}
   private currentStep = 0
+  private currentProfile: IfcProfileDef | undefined = undefined
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(appContainer: HTMLElement) {
@@ -26,6 +28,11 @@ export class ExamplePage {
       this.currentParams[p.key] = p.defaultValue
     }
 
+    // Seed the current profile from the config default (if any)
+    this.currentProfile = sample.profileEditorConfig?.defaultProfile
+
+    const hasProfileEditor = Boolean(sample.profileEditorConfig)
+
     this.appContainer.innerHTML = `
       <nav class="nav">
         <a href="#/" class="nav-brand">IFC Geometry Playground</a>
@@ -37,8 +44,14 @@ export class ExamplePage {
           <div class="left-panel">
             <div class="sample-title">${sample.title}</div>
             <div class="sample-desc">${sample.description}</div>
-            <div class="params-title">Parameters</div>
-            <div id="param-panel"></div>
+            ${hasProfileEditor ? `
+              <div class="params-title">Profile</div>
+              <div id="profile-editor-panel"></div>
+            ` : ''}
+            ${sample.parameters.length > 0 ? `
+              <div class="params-title${hasProfileEditor ? ' left-panel-section-mt' : ''}">Parameters</div>
+              <div id="param-panel"></div>
+            ` : ''}
             <div class="params-title left-panel-steps-title">Steps</div>
             <div id="stepper"></div>
           </div>
@@ -54,18 +67,30 @@ export class ExamplePage {
     createArcRotateCamera(this.sceneManager.scene, canvas)
     this.sceneManager.startRenderLoop()
 
-    const paramContainer = document.getElementById('param-panel')!
-    const stepperContainer = document.getElementById('stepper')!
+    // Profile editor (optional)
+    const profileEditorContainer = document.getElementById('profile-editor-panel')
+    if (profileEditorContainer && sample.profileEditorConfig) {
+      const profileEditor = new ProfileEditor(profileEditorContainer, sample.profileEditorConfig)
+      profileEditor.onChange(profile => {
+        this.currentProfile = profile
+        this._scheduleRebuild(sample.debounceMs ?? 0)
+      })
+    }
 
-    const paramPanel = new ParameterPanel(paramContainer, sample)
+    // Parameter panel (optional – only rendered when there are params)
+    const paramContainer = document.getElementById('param-panel')
+    if (paramContainer && sample.parameters.length > 0) {
+      const paramPanel = new ParameterPanel(paramContainer, sample)
+      paramPanel.onChange(values => {
+        this.currentParams = values
+        this._scheduleRebuild(sample.debounceMs ?? 0)
+      })
+    }
+
+    const stepperContainer = document.getElementById('stepper')!
     const stepper = new Stepper(stepperContainer, sample.steps)
 
     this._rebuildGeometry()
-
-    paramPanel.onChange(values => {
-      this.currentParams = values
-      this._scheduleRebuild(sample.debounceMs ?? 0)
-    })
 
     stepper.onStepChange(index => {
       this.currentStep = index
@@ -99,7 +124,8 @@ export class ExamplePage {
     this.currentMeshes = this.currentSample.buildGeometry(
       this.sceneManager.scene,
       this.currentParams,
-      this.currentStep
+      this.currentStep,
+      this.currentProfile,
     )
   }
 
