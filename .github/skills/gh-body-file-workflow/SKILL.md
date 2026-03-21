@@ -19,6 +19,7 @@ Produce reliable `gh` commands for Issue/PR operations by writing body text to a
 - Do not pass long body text directly via stdin when reliability is important.
 - Always save body text to a file under `tmp/` or `.workspace/` first.
 - Always use `--body-file <path>` for `gh issue` and `gh pr` body content.
+- Delete temporary body files after successful command execution.
 
 ## Procedure
 1. Define the operation target.
@@ -83,9 +84,17 @@ gh pr edit 45 \
 - Confirm the command references the expected file.
 - For batch runs, ensure each title maps to the correct body file.
 
-6. Optional cleanup.
-- Remove transient files in `tmp/` after completion.
-- Keep reusable templates in `.workspace/` when future edits are expected.
+6. Cleanup (required).
+- Remove transient body files after successful command execution.
+- If the body file is temporary, delete it regardless of whether it was in `tmp/` or `.workspace/`.
+
+Example:
+```bash
+gh issue create \
+  --title "Create reusable profile editor" \
+  --body-file tmp/issue-geometry-editor.md && \
+rm -f tmp/issue-geometry-editor.md
+```
 
 ## Branching Rules
 - If the text is one short sentence and formatting risk is negligible, inline flags may be acceptable.
@@ -95,5 +104,5 @@ gh pr edit 45 \
 ## Completion Checks
 - Every `gh issue/pr` command includes `--body-file`.
 - No long Markdown body is passed by stdin.
-- Body files are stored under `tmp/` or `.workspace/`.
+- Temporary body files are deleted after command completion.
 - Command intent and file naming are traceable.
