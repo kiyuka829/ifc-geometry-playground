@@ -16,10 +16,20 @@ EXTRA_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --title)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: --title requires a value" >&2
+        echo "Usage: .github/skills/create-github-pr/create-pr.sh --title \"PR title\" --body \"PR body\" [extra gh flags]" >&2
+        exit 1
+      fi
       TITLE="$2"
       shift 2
       ;;
     --body)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: --body requires a value" >&2
+        echo "Usage: .github/skills/create-github-pr/create-pr.sh --title \"PR title\" --body \"PR body\" [extra gh flags]" >&2
+        exit 1
+      fi
       BODY="$2"
       shift 2
       ;;
@@ -35,7 +45,7 @@ if [[ -z "$TITLE" ]]; then
   exit 1
 fi
 
-BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/gh-pr-body-XXXXXX.md")
+BODY_FILE=$(mktemp -t gh-pr-body-XXXXXX)
 trap 'rm -f "$BODY_FILE"' EXIT
 
 printf '%s' "$BODY" > "$BODY_FILE"

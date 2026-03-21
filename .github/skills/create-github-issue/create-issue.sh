@@ -16,12 +16,30 @@ EXTRA_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --title)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: --title requires a value" >&2
+        echo "Usage: .github/skills/create-github-issue/create-issue.sh --title \"Issue title\" --body \"Issue body\" [extra gh flags]" >&2
+        exit 1
+      fi
       TITLE="$2"
       shift 2
       ;;
+    --title=*)
+      TITLE="${1#--title=}"
+      shift
+      ;;
     --body)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: --body requires a value" >&2
+        echo "Usage: .github/skills/create-github-issue/create-issue.sh --title \"Issue title\" --body \"Issue body\" [extra gh flags]" >&2
+        exit 1
+      fi
       BODY="$2"
       shift 2
+      ;;
+    --body=*)
+      BODY="${1#--body=}"
+      shift
       ;;
     *)
       EXTRA_ARGS+=("$1")
@@ -35,7 +53,7 @@ if [[ -z "$TITLE" ]]; then
   exit 1
 fi
 
-BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/gh-issue-body-XXXXXX.md")
+BODY_FILE=$(mktemp -t gh-issue-body-XXXXXX)
 trap 'rm -f "$BODY_FILE"' EXIT
 
 printf '%s' "$BODY" > "$BODY_FILE"
