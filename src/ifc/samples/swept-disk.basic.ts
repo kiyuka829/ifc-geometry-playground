@@ -85,7 +85,9 @@ export const sweptDiskBasicSample: SampleDef = {
     const meshes: Mesh[] = []
     const pts = (path && path.length >= 2) ? path : DEFAULT_PATH
     const radius      = getNumber(params, 'radius')
-    const innerRadius = getNumber(params, 'innerRadius')
+    // Clamp innerRadius so it stays strictly below radius; values >= radius are
+    // treated as solid rod (0) to prevent inside-out geometry.
+    const innerRadius = Math.min(getNumber(params, 'innerRadius'), Math.max(0, radius - 0.001))
 
     const showPath   = sweepView?.showPath   ?? true
     const showFrames = sweepView?.showFrames ?? false

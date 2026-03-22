@@ -95,10 +95,13 @@ export class PathEditor {
       input.className = 'point-coord-input'
       input.value = String(pt[axis])
       input.step = String(DEFAULT_COORD_STEP)
-      input.addEventListener('change', () => {
-        this.path[index][axis] = parseFloat(input.value) || 0
-        this._refreshPreview()
-        this._notify()
+      input.addEventListener('input', () => {
+        const parsed = Number(input.value)
+        if (Number.isFinite(parsed)) {
+          this.path[index][axis] = parsed
+          this._refreshPreview()
+          this._notify()
+        }
       })
       row.appendChild(input)
     }
