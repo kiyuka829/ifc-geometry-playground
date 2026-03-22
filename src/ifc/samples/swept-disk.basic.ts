@@ -1,6 +1,5 @@
 import type { Scene, Mesh } from '@babylonjs/core'
-import type { SampleDef, ParamValues, Vec3, SweepViewState } from '../../types.ts'
-import type { IfcProfileDef } from '../../types.ts'
+import type { SampleDef, ParamValues, Vec3, SweepViewState, IfcProfileDef } from '../../types.ts'
 import { getNumber } from '../../types.ts'
 import { createSolidMaterial } from '../../engine/materials.ts'
 import { Color3 } from '@babylonjs/core'
