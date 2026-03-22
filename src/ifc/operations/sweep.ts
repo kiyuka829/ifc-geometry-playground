@@ -63,7 +63,7 @@ export function buildPathLines(scene: Scene, path: Vec3[], name: string): Mesh {
   const pts = path.map(p => new Vector3(p.x, p.y, p.z))
   const lines = MeshBuilder.CreateLines(name, { points: pts }, scene)
   lines.color = new Color3(0.2, 0.9, 0.2)
-  return lines as unknown as Mesh
+  return lines
 }
 
 /**
