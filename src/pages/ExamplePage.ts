@@ -1,7 +1,8 @@
 import type { Mesh } from '@babylonjs/core'
 import type { SampleDef, ParamValues, IfcProfileDef, Vec3, SweepViewState } from '../types.ts'
 import { SceneManager } from '../engine/scene.ts'
-import { createArcRotateCamera } from '../engine/camera.ts'
+import { ViewportCamera } from '../engine/viewport-camera.ts'
+import { ViewportControls } from '../ui/ViewportControls.ts'
 import { ParameterPanel } from '../ui/ParameterPanel.ts'
 import { Stepper } from '../ui/Stepper.ts'
 import { ProfileEditor } from '../ui/ProfileEditor.ts'
@@ -11,6 +12,8 @@ import { SweepViewToggles } from '../ui/SweepViewToggles.ts'
 export class ExamplePage {
   private appContainer: HTMLElement
   private sceneManager: SceneManager | null = null
+  private viewportCamera: ViewportCamera | null = null
+  private viewportControls: ViewportControls | null = null
   private currentMeshes: Mesh[] = []
   private currentSample: SampleDef | null = null
   private currentParams: ParamValues = {}
@@ -85,7 +88,7 @@ export class ExamplePage {
             <div class="params-title left-panel-steps-title">Steps</div>
             <div id="stepper"></div>
           </div>
-          <div class="canvas-container">
+          <div class="canvas-container" id="canvas-container">
             <canvas id="renderCanvas"></canvas>
           </div>
         </div>
@@ -94,8 +97,15 @@ export class ExamplePage {
 
     const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
     this.sceneManager = new SceneManager(canvas)
-    createArcRotateCamera(this.sceneManager.scene, canvas)
+    this.viewportCamera = new ViewportCamera(this.sceneManager.scene, canvas)
     this.sceneManager.startRenderLoop()
+
+    const canvasContainer = document.getElementById('canvas-container') as HTMLElement
+    this.viewportControls = new ViewportControls(
+      canvasContainer,
+      this.viewportCamera,
+      () => this.currentMeshes,
+    )
 
     // Profile editor (optional)
     const profileEditorContainer = document.getElementById('profile-editor-panel')
@@ -190,6 +200,11 @@ export class ExamplePage {
       mesh.dispose()
     }
     this.currentMeshes = []
+    // Dispose controls before camera since controls hold a reference to the camera
+    this.viewportControls?.dispose()
+    this.viewportControls = null
+    this.viewportCamera?.dispose()
+    this.viewportCamera = null
     if (this.sceneManager) {
       this.sceneManager.dispose()
       this.sceneManager = null
