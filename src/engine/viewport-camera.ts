@@ -1,5 +1,5 @@
 import { ArcRotateCamera, Camera, Vector3 } from '@babylonjs/core'
-import type { Scene, AbstractMesh } from '@babylonjs/core'
+import type { Scene, AbstractMesh, Observer, AbstractEngine } from '@babylonjs/core'
 
 export type ProjectionMode = 'perspective' | 'orthographic'
 export type AxisView = '+x' | '-x' | '+y' | '-y' | '+z' | '-z'
@@ -28,6 +28,9 @@ export class ViewportCamera {
   private _mode: ProjectionMode = 'perspective'
   private _scene: Scene
   private _modeCallbacks: Array<(mode: ProjectionMode) => void> = []
+  // Stored so they can be removed in dispose()
+  private _viewMatrixObserver: Observer<Camera> | null = null
+  private _resizeObserver: Observer<AbstractEngine> | null = null
 
   constructor(scene: Scene, canvas: HTMLCanvasElement) {
     this._scene = scene
@@ -44,12 +47,12 @@ export class ViewportCamera {
     this.camera.upperRadiusLimit = 50
 
     // Keep ortho bounds synchronised with the current radius and viewport size
-    this.camera.onViewMatrixChangedObservable.add(() => {
+    this._viewMatrixObserver = this.camera.onViewMatrixChangedObservable.add(() => {
       if (this._mode === 'orthographic') {
         this._syncOrthoBounds()
       }
     })
-    scene.getEngine().onResizeObservable.add(() => {
+    this._resizeObserver = scene.getEngine().onResizeObservable.add(() => {
       if (this._mode === 'orthographic') {
         this._syncOrthoBounds()
       }
@@ -131,11 +134,32 @@ export class ViewportCamera {
     }
   }
 
-  onModeChange(callback: (mode: ProjectionMode) => void): void {
+  /**
+   * Register a callback to be notified when the projection mode changes.
+   * Returns an unsubscribe function to deregister the callback.
+   */
+  onModeChange(callback: (mode: ProjectionMode) => void): () => void {
     this._modeCallbacks.push(callback)
+    let active = true
+    return () => {
+      if (!active) return
+      active = false
+      const idx = this._modeCallbacks.indexOf(callback)
+      if (idx !== -1) this._modeCallbacks.splice(idx, 1)
+    }
   }
 
   dispose(): void {
+    // Remove engine/camera observers before disposing to prevent retention
+    if (this._viewMatrixObserver !== null) {
+      this.camera.onViewMatrixChangedObservable.remove(this._viewMatrixObserver)
+      this._viewMatrixObserver = null
+    }
+    if (this._resizeObserver !== null) {
+      this._scene.getEngine().onResizeObservable.remove(this._resizeObserver)
+      this._resizeObserver = null
+    }
+    this._modeCallbacks.length = 0
     this.camera.dispose()
   }
 

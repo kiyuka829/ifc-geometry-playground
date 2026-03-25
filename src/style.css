@@ -219,7 +219,9 @@ body {
   align-items: stretch;
   gap: 4px;
   z-index: 10;
-  pointer-events: auto;
+  /* Transparent to pointer events so dragging the canvas still works in the
+     gaps between buttons; only the interactive children re-enable events. */
+  pointer-events: none;
   user-select: none;
 }
 
@@ -235,6 +237,7 @@ body {
   white-space: nowrap;
   text-align: center;
   backdrop-filter: blur(4px);
+  pointer-events: auto;
 }
 
 .vp-btn:hover {

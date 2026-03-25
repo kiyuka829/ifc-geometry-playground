@@ -1,5 +1,5 @@
 import { Vector3 } from '@babylonjs/core'
-import type { AbstractMesh } from '@babylonjs/core'
+import type { AbstractMesh, Observer, Camera } from '@babylonjs/core'
 import type { ViewportCamera, AxisView } from '../engine/viewport-camera.ts'
 
 const AXIS_DEFS: Array<{ dir: AxisView; label: string; title: string }> = [
@@ -20,9 +20,12 @@ export class ViewportControls {
   private _axisButtons = new Map<AxisView, HTMLButtonElement>()
   private _activeAxis: AxisView | null = null
   private _indicatorSvg: SVGSVGElement | null = null
+  // One-shot RAF: only scheduled when _indicatorDirty is set
   private _rafId: number | null = null
-  // Only redraw the SVG indicator when the view matrix has changed
   private _indicatorDirty = true
+  // Stored for cleanup in dispose()
+  private _viewMatrixObserver: Observer<Camera> | null = null
+  private _unsubscribeMode: (() => void) | null = null
 
   constructor(
     container: HTMLElement,
@@ -33,7 +36,8 @@ export class ViewportControls {
     this._camera = camera
     this._getMeshes = getMeshes
     this._render()
-    this._startIndicatorLoop()
+    // Draw the initial indicator
+    this._scheduleIndicator()
   }
 
   // ── private helpers ────────────────────────────────────────────────────────
@@ -105,14 +109,17 @@ export class ViewportControls {
 
     this._container.appendChild(overlay)
 
-    // Mark indicator dirty whenever the camera moves so we only redraw on demand
-    this._camera.camera.onViewMatrixChangedObservable.add(() => {
+    // Schedule a one-shot redraw when the camera moves (dirty-flag pattern)
+    this._viewMatrixObserver = this._camera.camera.onViewMatrixChangedObservable.add(() => {
       this._indicatorDirty = true
+      this._scheduleIndicator()
     })
 
-    // React to external mode changes (e.g. programmatic)
-    this._camera.onModeChange(() => {
+    // React to external projection-mode changes (e.g. programmatic)
+    this._unsubscribeMode = this._camera.onModeChange(() => {
       this._syncProjLabel()
+      this._indicatorDirty = true
+      this._scheduleIndicator()
     })
   }
 
@@ -131,15 +138,19 @@ export class ViewportControls {
 
   // ── SVG axis indicator ──────────────────────────────────────────────────
 
-  private _startIndicatorLoop(): void {
-    const tick = () => {
+  /**
+   * Schedule a single RAF to redraw the indicator. Does nothing if one is
+   * already pending, keeping CPU usage at one draw per changed frame.
+   */
+  private _scheduleIndicator(): void {
+    if (this._rafId !== null) return
+    this._rafId = requestAnimationFrame(() => {
+      this._rafId = null
       if (this._indicatorDirty) {
         this._indicatorDirty = false
         this._drawIndicator()
       }
-      this._rafId = requestAnimationFrame(tick)
-    }
-    this._rafId = requestAnimationFrame(tick)
+    })
   }
 
   private _drawIndicator(): void {
@@ -237,9 +248,19 @@ export class ViewportControls {
   }
 
   dispose(): void {
+    // Cancel any pending RAF
     if (this._rafId !== null) {
       cancelAnimationFrame(this._rafId)
       this._rafId = null
+    }
+    // Unregister camera observers to prevent retention after disposal
+    if (this._viewMatrixObserver !== null) {
+      this._camera.camera.onViewMatrixChangedObservable.remove(this._viewMatrixObserver)
+      this._viewMatrixObserver = null
+    }
+    if (this._unsubscribeMode !== null) {
+      this._unsubscribeMode()
+      this._unsubscribeMode = null
     }
     if (this._overlay && this._container.contains(this._overlay)) {
       this._container.removeChild(this._overlay)
@@ -247,3 +268,4 @@ export class ViewportControls {
     this._overlay = null
   }
 }
+
