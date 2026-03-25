@@ -203,10 +203,82 @@ body {
   flex-shrink: 0;
 }
 
+/* Viewport Controls Overlay */
 .canvas-container {
   flex: 1;
   position: relative;
   overflow: hidden;
+}
+
+.viewport-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  z-index: 10;
+  /* Transparent to pointer events so dragging the canvas still works in the
+     gaps between buttons; only the interactive children re-enable events. */
+  pointer-events: none;
+  user-select: none;
+}
+
+.vp-btn {
+  background: rgba(13, 27, 46, 0.88);
+  border: 1px solid #1a2a4a;
+  border-radius: 4px;
+  color: #90caf9;
+  padding: 4px 8px;
+  font-size: 0.76em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.vp-btn:hover {
+  background: rgba(26, 42, 58, 0.95);
+  border-color: #2a4a6a;
+  color: #b0d4f4;
+}
+
+.vp-btn.active {
+  background: rgba(15, 42, 80, 0.95);
+  border-color: #4fc3f7;
+  color: #4fc3f7;
+}
+
+.vp-proj-btn {
+  min-width: 56px;
+}
+
+.vp-axis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+}
+
+.vp-axis-btn {
+  padding: 3px 4px;
+  min-width: 26px;
+}
+
+.vp-fit-btn {
+  width: 100%;
+}
+
+.vp-axis-indicator {
+  margin-top: 2px;
+  line-height: 0;
+  align-self: center;
+}
+
+.vp-axis-indicator svg {
+  display: block;
 }
 
 #renderCanvas {
