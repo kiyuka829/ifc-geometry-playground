@@ -136,7 +136,10 @@ export class ViewportCamera {
     const diag = Math.sqrt(
       (maxX - minX) ** 2 + (maxY - minY) ** 2 + (maxZ - minZ) ** 2,
     );
-    const newRadius = Math.max(diag * 0.75, 3);
+    const sphereRadius = Math.max(diag * 0.5, 0.1);
+    const minFov = this._getMinFovRadians();
+    const baseRadius = sphereRadius / Math.sin(minFov / 2);
+    const newRadius = Math.max(baseRadius * 1.15, 3);
     const lo = this.camera.lowerRadiusLimit ?? 2;
     const hi = this.camera.upperRadiusLimit ?? 50;
 
@@ -208,6 +211,20 @@ export class ViewportCamera {
 
     const aspect = w / h;
     return 2 * Math.atan(Math.tan(fov / 2) / aspect);
+  }
+
+  private _getMinFovRadians(): number {
+    const verticalFov = this._getVerticalFovRadians();
+    const engine = this._scene.getEngine();
+    const w = engine.getRenderWidth();
+    const h = engine.getRenderHeight();
+    if (w <= 0 || h <= 0) {
+      return verticalFov;
+    }
+
+    const aspect = w / h;
+    const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
+    return Math.min(verticalFov, horizontalFov);
   }
 
   private _notifyMode(): void {
