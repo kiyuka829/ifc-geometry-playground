@@ -2,8 +2,8 @@
 """Generate IFC schema JSON and TypeScript type definitions from IfcOpenShell.
 
 Extracts attribute metadata for IfcExtrudedAreaSolid and all supported
-parameterized profile types (IfcParameterizedProfileDef subtypes, excluding
-IfcTrapeziumProfileDef), plus the supporting geometry entities.
+subclasses of IfcParameterizedProfileDef (excluding explicitly unsupported
+entities such as IfcTrapeziumProfileDef), plus the supporting geometry entities.
 
 Outputs:
   src/ifc/generated/schema.json  — raw IFC4 attribute schema (PascalCase)
@@ -39,27 +39,13 @@ GEOMETRY_ENTITIES = [
     "IfcAxis2Placement3D",
 ]
 
-# Parameterized profile types to support (IfcTrapeziumProfileDef excluded).
-PROFILE_ENTITIES = [
-    "IfcRectangleProfileDef",
-    "IfcRoundedRectangleProfileDef",
-    "IfcRectangleHollowProfileDef",
-    "IfcCircleProfileDef",
-    "IfcEllipseProfileDef",
-    "IfcIShapeProfileDef",
-    "IfcAsymmetricIShapeProfileDef",
-    "IfcCShapeProfileDef",
-    "IfcLShapeProfileDef",
-    "IfcTShapeProfileDef",
-    "IfcUShapeProfileDef",
-    "IfcZShapeProfileDef",
-]
+# Parameterized profile entities that exist in IFC4 but are not yet implemented
+# in the playground runtime, so they remain excluded from generated TS unions.
+UNSUPPORTED_PROFILE_ENTITIES = frozenset({"IfcTrapeziumProfileDef"})
 
 SOLID_ENTITIES = [
     "IfcExtrudedAreaSolid",
 ]
-
-ALL_TARGET_ENTITIES = GEOMETRY_ENTITIES + PROFILE_ENTITIES + SOLID_ENTITIES
 
 # IFC attribute names that carry no geometric meaning and are omitted from
 # the generated TypeScript (e.g. human-readable labels).
@@ -159,15 +145,35 @@ def get_entity_info(schema, name: str) -> dict:
     }
 
 
+def get_supported_profile_entities(schema) -> list[str]:
+    """Return supported IfcParameterizedProfileDef subclasses in schema order."""
+    root = schema.declaration_by_name("IfcParameterizedProfileDef")
+    entities: list[str] = []
+
+    def visit(decl) -> None:
+        name = decl.name()
+        if name in UNSUPPORTED_PROFILE_ENTITIES:
+            return
+        entities.append(name)
+        for child in decl.subtypes():
+            visit(child)
+
+    for child in root.subtypes():
+        visit(child)
+
+    return entities
+
+
 # ---------------------------------------------------------------------------
 # JSON schema generation
 # ---------------------------------------------------------------------------
 
 
-def generate_schema_json(schema) -> dict:
+def generate_schema_json(schema, profile_entities: list[str]) -> dict:
     """Build the full schema dict for all target entities."""
+    all_target_entities = GEOMETRY_ENTITIES + profile_entities + SOLID_ENTITIES
     entities: dict[str, dict] = {}
-    for name in ALL_TARGET_ENTITIES:
+    for name in all_target_entities:
         try:
             entities[name] = get_entity_info(schema, name)
         except Exception as exc:  # noqa: BLE001
@@ -237,7 +243,7 @@ def generate_ts_interface(entity_info: dict) -> str:
     return "\n".join(lines)
 
 
-def generate_ts_file(schema) -> str:
+def generate_ts_file(schema, profile_entities: list[str]) -> str:
     """Generate the full TypeScript source file content."""
     blocks: list[str] = []
 
@@ -262,7 +268,7 @@ def generate_ts_file(schema) -> str:
 
     # --- Profile entities -----------------------------------------------
     blocks.append("// ── Parameterized profile definitions ────────────────────────────")
-    for name in PROFILE_ENTITIES:
+    for name in profile_entities:
         entity_info = get_entity_info(schema, name)
 
         # Build the interface manually so we can substitute the shared
@@ -293,7 +299,7 @@ def generate_ts_file(schema) -> str:
 
     # --- IfcParameterizedProfileDef union --------------------------------
     union_lines = ["export type IfcParameterizedProfileDef ="]
-    for i, name in enumerate(PROFILE_ENTITIES):
+    for i, name in enumerate(profile_entities):
         sep = "  | " if i > 0 else "    "
         union_lines.append(f"{sep}{name}")
     union_lines[-1] += ";"
@@ -342,16 +348,17 @@ def main() -> None:
 
     print(f"Loading {SCHEMA_NAME} schema …")
     schema = ifcopenshell.schema_by_name(SCHEMA_NAME)
+    profile_entities = get_supported_profile_entities(schema)
 
     # -- JSON output -------------------------------------------------------
     json_path = OUTPUT_DIR / "schema.json"
-    schema_data = generate_schema_json(schema)
+    schema_data = generate_schema_json(schema, profile_entities)
     json_path.write_text(json.dumps(schema_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Wrote {json_path.relative_to(REPO_ROOT)}")
 
     # -- TypeScript output -------------------------------------------------
     ts_path = OUTPUT_DIR / "schema.ts"
-    ts_content = generate_ts_file(schema)
+    ts_content = generate_ts_file(schema, profile_entities)
     ts_path.write_text(ts_content, encoding="utf-8")
     print(f"Wrote {ts_path.relative_to(REPO_ROOT)}")
 

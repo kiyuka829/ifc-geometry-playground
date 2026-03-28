@@ -33,62 +33,6 @@ export interface IfcAxis2Placement3D {
 
 // ── Parameterized profile definitions ────────────────────────────
 
-export interface IfcRectangleProfileDef {
-  type: 'IfcRectangleProfileDef';
-  profileType: IfcProfileTypeEnum;
-  position?: IfcAxis2Placement2D;
-  xDim: number;
-  yDim: number;
-}
-
-export interface IfcRoundedRectangleProfileDef {
-  type: 'IfcRoundedRectangleProfileDef';
-  profileType: IfcProfileTypeEnum;
-  position?: IfcAxis2Placement2D;
-  xDim: number;
-  yDim: number;
-  roundingRadius: number;
-}
-
-export interface IfcRectangleHollowProfileDef {
-  type: 'IfcRectangleHollowProfileDef';
-  profileType: IfcProfileTypeEnum;
-  position?: IfcAxis2Placement2D;
-  xDim: number;
-  yDim: number;
-  wallThickness: number;
-  innerFilletRadius?: number;
-  outerFilletRadius?: number;
-}
-
-export interface IfcCircleProfileDef {
-  type: 'IfcCircleProfileDef';
-  profileType: IfcProfileTypeEnum;
-  position?: IfcAxis2Placement2D;
-  radius: number;
-}
-
-export interface IfcEllipseProfileDef {
-  type: 'IfcEllipseProfileDef';
-  profileType: IfcProfileTypeEnum;
-  position?: IfcAxis2Placement2D;
-  semiAxis1: number;
-  semiAxis2: number;
-}
-
-export interface IfcIShapeProfileDef {
-  type: 'IfcIShapeProfileDef';
-  profileType: IfcProfileTypeEnum;
-  position?: IfcAxis2Placement2D;
-  overallWidth: number;
-  overallDepth: number;
-  webThickness: number;
-  flangeThickness: number;
-  filletRadius?: number;
-  flangeEdgeRadius?: number;
-  flangeSlope?: number;
-}
-
 export interface IfcAsymmetricIShapeProfileDef {
   type: 'IfcAsymmetricIShapeProfileDef';
   profileType: IfcProfileTypeEnum;
@@ -118,6 +62,42 @@ export interface IfcCShapeProfileDef {
   internalFilletRadius?: number;
 }
 
+export interface IfcCircleProfileDef {
+  type: 'IfcCircleProfileDef';
+  profileType: IfcProfileTypeEnum;
+  position?: IfcAxis2Placement2D;
+  radius: number;
+}
+
+export interface IfcCircleHollowProfileDef {
+  type: 'IfcCircleHollowProfileDef';
+  profileType: IfcProfileTypeEnum;
+  position?: IfcAxis2Placement2D;
+  radius: number;
+  wallThickness: number;
+}
+
+export interface IfcEllipseProfileDef {
+  type: 'IfcEllipseProfileDef';
+  profileType: IfcProfileTypeEnum;
+  position?: IfcAxis2Placement2D;
+  semiAxis1: number;
+  semiAxis2: number;
+}
+
+export interface IfcIShapeProfileDef {
+  type: 'IfcIShapeProfileDef';
+  profileType: IfcProfileTypeEnum;
+  position?: IfcAxis2Placement2D;
+  overallWidth: number;
+  overallDepth: number;
+  webThickness: number;
+  flangeThickness: number;
+  filletRadius?: number;
+  flangeEdgeRadius?: number;
+  flangeSlope?: number;
+}
+
 export interface IfcLShapeProfileDef {
   type: 'IfcLShapeProfileDef';
   profileType: IfcProfileTypeEnum;
@@ -128,6 +108,34 @@ export interface IfcLShapeProfileDef {
   filletRadius?: number;
   edgeRadius?: number;
   legSlope?: number;
+}
+
+export interface IfcRectangleProfileDef {
+  type: 'IfcRectangleProfileDef';
+  profileType: IfcProfileTypeEnum;
+  position?: IfcAxis2Placement2D;
+  xDim: number;
+  yDim: number;
+}
+
+export interface IfcRectangleHollowProfileDef {
+  type: 'IfcRectangleHollowProfileDef';
+  profileType: IfcProfileTypeEnum;
+  position?: IfcAxis2Placement2D;
+  xDim: number;
+  yDim: number;
+  wallThickness: number;
+  innerFilletRadius?: number;
+  outerFilletRadius?: number;
+}
+
+export interface IfcRoundedRectangleProfileDef {
+  type: 'IfcRoundedRectangleProfileDef';
+  profileType: IfcProfileTypeEnum;
+  position?: IfcAxis2Placement2D;
+  xDim: number;
+  yDim: number;
+  roundingRadius: number;
 }
 
 export interface IfcTShapeProfileDef {
@@ -171,15 +179,16 @@ export interface IfcZShapeProfileDef {
 }
 
 export type IfcParameterizedProfileDef =
-    IfcRectangleProfileDef
-  | IfcRoundedRectangleProfileDef
-  | IfcRectangleHollowProfileDef
+    IfcAsymmetricIShapeProfileDef
+  | IfcCShapeProfileDef
   | IfcCircleProfileDef
+  | IfcCircleHollowProfileDef
   | IfcEllipseProfileDef
   | IfcIShapeProfileDef
-  | IfcAsymmetricIShapeProfileDef
-  | IfcCShapeProfileDef
   | IfcLShapeProfileDef
+  | IfcRectangleProfileDef
+  | IfcRectangleHollowProfileDef
+  | IfcRoundedRectangleProfileDef
   | IfcTShapeProfileDef
   | IfcUShapeProfileDef
   | IfcZShapeProfileDef;
