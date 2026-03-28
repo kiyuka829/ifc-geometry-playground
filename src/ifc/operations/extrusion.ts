@@ -277,7 +277,7 @@ export function buildExtrusionMeshFromNormalized(
 }
 
 /** Build an extrusion mesh from the generated IFC schema via the normalization layer. */
-export function buildExtrusionMeshFromGenerated(
+export function buildExtrusionMesh(
   scene: Scene,
   solid: IfcGeneratedExtrudedAreaSolid,
   material: StandardMaterial,

@@ -2,7 +2,7 @@ import { Color3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
 import { CSG } from "@babylonjs/core/Meshes/csg.js";
 import type { IfcExtrudedAreaSolid } from "../generated/schema.ts";
-import { buildExtrusionMeshFromGenerated } from "./extrusion.ts";
+import { buildExtrusionMesh } from "./extrusion.ts";
 import {
   createSolidMaterial,
   createGhostMaterial,
@@ -22,7 +22,7 @@ function buildOperandMesh(
 ): Mesh {
   if (operand.type === "IfcExtrudedAreaSolid") {
     const mat = createSolidMaterial(scene, new Color3(0.3, 0.5, 0.7));
-    return buildExtrusionMeshFromGenerated(scene, operand, mat, name);
+    return buildExtrusionMesh(scene, operand, mat, name);
   } else {
     return buildBooleanMesh(scene, operand, name);
   }

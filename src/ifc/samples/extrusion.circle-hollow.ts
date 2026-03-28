@@ -2,7 +2,7 @@ import { Vector3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
 import type { SampleDef, ParamValues, IfcProfileDef } from "../../types.ts";
 import { getNumber } from "../../types.ts";
-import { buildExtrusionMeshFromGenerated } from "../operations/extrusion.ts";
+import { buildExtrusionMesh } from "../operations/extrusion.ts";
 import { createExtrusionMaterial } from "../../engine/materials.ts";
 import {
   buildProfileOverlay,
@@ -104,7 +104,7 @@ export const extrusionCircleHollowSample: SampleDef = {
       );
       if (arrow) meshes.push(arrow);
       meshes.push(
-        buildExtrusionMeshFromGenerated(
+        buildExtrusionMesh(
           scene,
           generatedSolid,
           createExtrusionMaterial(scene),
