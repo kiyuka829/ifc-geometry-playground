@@ -65,6 +65,62 @@ export interface NormalizedExtrusion {
   depth: number;
 }
 
+// ── Vector helpers ────────────────────────────────────────────────────────
+
+function dot3(a: NormalizedVec3, b: NormalizedVec3): number {
+  return a.x * b.x + a.y * b.y + a.z * b.z
+}
+
+function cross3(a: NormalizedVec3, b: NormalizedVec3): NormalizedVec3 {
+  return {
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x,
+  }
+}
+
+function sub3(a: NormalizedVec3, b: NormalizedVec3): NormalizedVec3 {
+  return {
+    x: a.x - b.x,
+    y: a.y - b.y,
+    z: a.z - b.z,
+  }
+}
+
+function scale3(v: NormalizedVec3, scalar: number): NormalizedVec3 {
+  return {
+    x: v.x * scalar,
+    y: v.y * scalar,
+    z: v.z * scalar,
+  }
+}
+
+function magnitude3(v: NormalizedVec3): number {
+  return Math.hypot(v.x, v.y, v.z)
+}
+
+function normalizeVec3(v: NormalizedVec3, fallback: NormalizedVec3): NormalizedVec3 {
+  const len = magnitude3(v)
+  if (len < 1e-9) return fallback
+  return {
+    x: v.x / len,
+    y: v.y / len,
+    z: v.z / len,
+  }
+}
+
+function orthogonalizeXAxis(zAxis: NormalizedVec3, candidate: NormalizedVec3): NormalizedVec3 {
+  const projected = sub3(candidate, scale3(zAxis, dot3(candidate, zAxis)))
+  if (magnitude3(projected) >= 1e-9) {
+    return normalizeVec3(projected, { x: 1, y: 0, z: 0 })
+  }
+
+  const fallbackSeed = Math.abs(zAxis.x) < 0.9
+    ? { x: 1, y: 0, z: 0 }
+    : { x: 0, y: 1, z: 0 }
+  return normalizeVec3(cross3(fallbackSeed, zAxis), { x: 1, y: 0, z: 0 })
+}
+
 // ── Point converters ──────────────────────────────────────────────────────
 
 /** Extract a 2D point from an IfcCartesianPoint (uses coordinates[0..1]). */
@@ -94,15 +150,16 @@ export function normalizeDirection2(dir: IfcDirection): NormalizedVec2 {
   return { x: x / len, y: y / len }
 }
 
-/** Normalize an IfcDirection to a unit 3D vector (uses directionRatios[0..2]).
- *  Defaults produce (0, 0, 1) — a Z-up unit vector — which matches the IFC
- *  default extrusion direction and the default axis of IfcAxis2Placement3D. */
-export function normalizeDirection3(dir: IfcDirection): NormalizedVec3 {
-  const x = dir.directionRatios[0] ?? 0
-  const y = dir.directionRatios[1] ?? 0
-  const z = dir.directionRatios[2] ?? 1
-  const len = Math.hypot(x, y, z) || 1
-  return { x: x / len, y: y / len, z: z / len }
+/** Normalize an IfcDirection to a unit 3D vector (uses directionRatios[0..2]). */
+export function normalizeDirection3(
+  dir: IfcDirection,
+  fallback: NormalizedVec3 = { x: 0, y: 0, z: 1 },
+): NormalizedVec3 {
+  return normalizeVec3({
+    x: dir.directionRatios[0] ?? 0,
+    y: dir.directionRatios[1] ?? 0,
+    z: dir.directionRatios[2] ?? 0,
+  }, fallback)
 }
 
 // ── Placement converters ──────────────────────────────────────────────────
@@ -117,10 +174,17 @@ export function normalizePlacement2D(p: IfcAxis2Placement2D): NormalizedPlacemen
 
 /** Convert an IfcAxis2Placement3D to a NormalizedPlacement3D. */
 export function normalizePlacement3D(p: IfcAxis2Placement3D): NormalizedPlacement3D {
+  const zAxis = p.axis
+    ? normalizeDirection3(p.axis, { x: 0, y: 0, z: 1 })
+    : { x: 0, y: 0, z: 1 }
+  const refDirection = p.refDirection
+    ? normalizeDirection3(p.refDirection, { x: 1, y: 0, z: 0 })
+    : { x: 1, y: 0, z: 0 }
+
   return {
     origin: normalizePoint3(p.location),
-    zAxis: p.axis ? normalizeDirection3(p.axis) : { x: 0, y: 0, z: 1 },
-    xAxis: p.refDirection ? normalizeDirection3(p.refDirection) : { x: 1, y: 0, z: 0 },
+    zAxis,
+    xAxis: orthogonalizeXAxis(zAxis, refDirection),
   }
 }
 
