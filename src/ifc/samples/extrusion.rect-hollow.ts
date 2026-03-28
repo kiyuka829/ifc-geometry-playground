@@ -18,8 +18,8 @@ export const extrusionRectHollowSample: SampleDef = {
   id: 'extrusion-rect-hollow',
   title: 'Rectangular Hollow Section (IfcRectangleHollowProfileDef)',
   description:
-    'A square hollow section (SHS/RHS) extruded into a steel tube. ' +
-    'Adjust the outer dimensions and wall thickness in the profile editor.',
+    'A rectangular hollow cross-section defined by outer dimensions and uniform wall thickness (IfcRectangleHollowProfileDef). ' +
+    'Adjust the dimensions in the profile editor.',
   parameters: [
     { key: 'depth', label: 'Extrusion Depth', type: 'number', min: 0.5, max: 20, step: 0.1, defaultValue: 6 },
   ],
@@ -33,10 +33,9 @@ export const extrusionRectHollowSample: SampleDef = {
     },
     {
       id: 'solid',
-      label: 'Step 2: Extruded Tube',
+      label: 'Step 2: Extruded Solid',
       description:
-        'The hollow section is extruded along the Z-axis to produce a hollow rectangular tube. ' +
-        'Typical use: square hollow section (SHS) or rectangular hollow section (RHS) steel columns and beams.',
+        'The rectangular hollow cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).',
     },
   ],
   profileEditorConfig: {

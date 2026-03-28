@@ -39,8 +39,7 @@ export const extrusionVoidSample: SampleDef = {
       id: 'solid',
       label: 'Step 3: Extruded Slab with Opening',
       description:
-        'The profile with its void is extruded into a 3D slab with a rectangular penetration. ' +
-        'Typical use: concrete slabs with service openings or stair voids.',
+        'The profile with its void is extruded into a 3D solid with a rectangular opening (IfcExtrudedAreaSolid).',
     },
   ],
   buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number): Mesh[] => {

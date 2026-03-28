@@ -18,8 +18,8 @@ export const extrusionLShapeSample: SampleDef = {
   id: 'extrusion-l-shape',
   title: 'L-Shape / Angle Profile (IfcLShapeProfileDef)',
   description:
-    'An L-shaped angle section (also known as an angle iron or equal-leg angle). ' +
-    'Adjust the leg depths and thickness in the profile editor.',
+    'An L-shaped cross-section defined by vertical leg depth, horizontal leg width, and uniform thickness (IfcLShapeProfileDef). ' +
+    'Adjust the dimensions in the profile editor.',
   parameters: [
     { key: 'depth', label: 'Extrusion Depth', type: 'number', min: 0.5, max: 20, step: 0.1, defaultValue: 6 },
   ],
@@ -28,16 +28,15 @@ export const extrusionLShapeSample: SampleDef = {
       id: 'profile',
       label: 'Step 1: L-Shape Cross-Section',
       description:
-        'IfcLShapeProfileDef defines an L-shaped angle profile with a vertical leg (depth), ' +
+        'IfcLShapeProfileDef defines an L-shaped cross-section with a vertical leg (depth), ' +
         'a horizontal leg (width), and a uniform thickness. ' +
         'The bounding box centre is used as the local origin.',
     },
     {
       id: 'solid',
-      label: 'Step 2: Extruded Angle',
+      label: 'Step 2: Extruded Solid',
       description:
-        'The L-section is extruded along the Z-axis. ' +
-        'Angle sections are widely used as bracing, cleats, and connection elements in structural steel.',
+        'The L-shaped cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).',
     },
   ],
   profileEditorConfig: {
