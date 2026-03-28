@@ -2,9 +2,31 @@ import { Color3, Vector3 } from '@babylonjs/core'
 import type { Scene, Mesh } from '@babylonjs/core'
 import type { SampleDef, ParamValues } from '../../types.ts'
 import { getNumber } from '../../types.ts'
-import { buildExtrusionMesh, buildProfileOutline } from '../operations/extrusion.ts'
+import { buildExtrusionMeshFromGenerated, buildProfileOutline } from '../operations/extrusion.ts'
 import { createExtrusionMaterial } from '../../engine/materials.ts'
 import { createArrow, createAxisGizmo } from '../../engine/gizmos.ts'
+import type { IfcExtrudedAreaSolid } from '../generated/schema.ts'
+
+function createGeneratedExtrusionSolid(params: ParamValues): IfcExtrudedAreaSolid {
+  return {
+    type: 'IfcExtrudedAreaSolid',
+    sweptArea: {
+      type: 'IfcRectangleProfileDef',
+      profileType: 'AREA',
+      xDim: getNumber(params, 'width'),
+      yDim: getNumber(params, 'height'),
+    },
+    position: {
+      type: 'IfcAxis2Placement3D',
+      location: { type: 'IfcCartesianPoint', coordinates: [0, 0, 0] },
+    },
+    extrudedDirection: {
+      type: 'IfcDirection',
+      directionRatios: [getNumber(params, 'dirX'), getNumber(params, 'dirY'), getNumber(params, 'dirZ')],
+    },
+    depth: getNumber(params, 'depth'),
+  }
+}
 
 export const extrusionBasicSample: SampleDef = {
   id: 'extrusion-basic',
@@ -25,6 +47,7 @@ export const extrusionBasicSample: SampleDef = {
   ],
   buildGeometry: (scene: Scene, params: ParamValues, stepIndex: number): Mesh[] => {
     const meshes: Mesh[] = []
+    const generatedSolid = createGeneratedExtrusionSolid(params)
 
     const solid = {
       type: 'IfcExtrudedAreaSolid' as const,
@@ -57,28 +80,11 @@ export const extrusionBasicSample: SampleDef = {
 
     if (stepIndex >= 2) {
       const mat = createExtrusionMaterial(scene)
-      const mesh = buildExtrusionMesh(scene, solid, mat, 'extrusion_solid')
+      const mesh = buildExtrusionMeshFromGenerated(scene, generatedSolid, mat, 'extrusion_solid')
       meshes.push(mesh)
     }
 
     return meshes
   },
-  getIFCRepresentation: (params: ParamValues) => ({
-    type: 'IfcExtrudedAreaSolid',
-    sweptArea: {
-      type: 'IfcRectangleProfileDef',
-      profileType: 'AREA',
-      xDim: getNumber(params, 'width'),
-      yDim: getNumber(params, 'height'),
-    },
-    position: {
-      type: 'IfcAxis2Placement3D',
-      location: { type: 'IfcCartesianPoint', coordinates: [0, 0, 0] },
-    },
-    extrudedDirection: {
-      type: 'IfcDirection',
-      directionRatios: [getNumber(params, 'dirX'), getNumber(params, 'dirY'), getNumber(params, 'dirZ')],
-    },
-    depth: getNumber(params, 'depth'),
-  }),
+  getIFCRepresentation: (params: ParamValues) => createGeneratedExtrusionSolid(params),
 }
