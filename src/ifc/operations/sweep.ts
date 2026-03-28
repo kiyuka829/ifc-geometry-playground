@@ -1,6 +1,6 @@
 import { MeshBuilder, Vector3, Color3, Mesh } from '@babylonjs/core'
 import type { Scene, StandardMaterial } from '@babylonjs/core'
-import type { IfcSweptDiskSolid, Vec3 } from '../schema.ts'
+import type { IfcSweptDiskSolid, Vec3 } from '../../types.ts'
 
 const TUBE_TESSELLATION = 16
 const INNER_RADIUS_EPS = 0.001

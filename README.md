@@ -108,7 +108,10 @@ src/
     materials.ts  Material definitions
     gizmos.ts     Direction vector and axis gizmos
   ifc/
-    schema.ts     IFC type definitions (for learning)
+    schema.ts     Backward-compatibility re-export layer (do not import directly)
+    normalize.ts  Normalization layer: generated types → renderer-friendly model
+    generated/
+      schema.ts   IFC-compliant type definitions (auto-generated, do not edit)
     operations/   IFC shape operation implementations
       extrusion.ts
       boolean.ts
@@ -127,7 +130,7 @@ src/
   app/
     routes.ts           Hash routing definitions
     App.ts              Application controller
-  types.ts              Shared type definitions
+  types.ts              Shared type definitions (UI-domain types, re-exports from generated)
 ```
 
 ## Development

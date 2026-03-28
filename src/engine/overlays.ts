@@ -1,6 +1,6 @@
 import { Color3, Vector3 } from '@babylonjs/core'
 import type { Scene, Mesh } from '@babylonjs/core'
-import type { IfcProfileDef } from '../ifc/schema.ts'
+import type { IfcProfileDef } from '../types.ts'
 import { buildProfileOutlines } from '../ifc/operations/extrusion.ts'
 import { createAxisGizmo, createArrow } from './gizmos.ts'
 

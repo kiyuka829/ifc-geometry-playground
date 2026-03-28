@@ -1,8 +1,9 @@
 import { Vector3, Matrix, Quaternion } from '@babylonjs/core'
 import type { Mesh } from '@babylonjs/core'
-import type { IfcAxis2Placement3D } from '../schema.ts'
+import type { IfcAxis2Placement3D } from '../../types.ts'
 
-export function applyPlacement(mesh: Mesh, placement: IfcAxis2Placement3D): void {
+export function applyPlacement(mesh: Mesh, placement?: IfcAxis2Placement3D): void {
+  if (!placement) return
   const loc = placement.location
   mesh.position = new Vector3(loc.x, loc.y, loc.z)
 
