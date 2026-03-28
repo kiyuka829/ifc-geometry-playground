@@ -1,4 +1,4 @@
-import { MeshBuilder, Vector3, Color3 } from '@babylonjs/core'
+import { MeshBuilder, Matrix, Quaternion, Vector3, Color3 } from '@babylonjs/core'
 import type { Scene, StandardMaterial, Mesh, LinesMesh } from '@babylonjs/core'
 import earcut from 'earcut'
 import type {
@@ -9,6 +9,7 @@ import type {
   Vec2,
 } from '../schema.ts'
 import { applyPlacement } from './placement.ts'
+import type { NormalizedExtrusion } from '../normalize.ts'
 
 const CIRCLE_SEGMENTS = 48
 
@@ -204,4 +205,50 @@ export function buildProfileOutline(
   name: string,
 ): LinesMesh {
   return buildProfileOutlines(scene, profile, name)[0]
+}
+
+// ── Normalized-model builder ───────────────────────────────────────────────
+
+/**
+ * Build an extrusion mesh from a NormalizedExtrusion produced by the
+ * normalization layer (src/ifc/normalize.ts).
+ *
+ * Unlike buildExtrusionMesh this function accepts the renderer-friendly
+ * normalized model directly and is the canonical downstream consumer of
+ * the normalization layer.
+ */
+export function buildExtrusionMeshFromNormalized(
+  scene: Scene,
+  norm: NormalizedExtrusion,
+  material: StandardMaterial,
+  name: string,
+): Mesh {
+  const { profile, placement, depth } = norm
+
+  const shape = profile.outerLoop.map(p => new Vector3(p.x, 0, p.y))
+  const holes = profile.innerLoops.length > 0
+    ? profile.innerLoops.map(inner => inner.map(p => new Vector3(p.x, 0, p.y)))
+    : undefined
+
+  const mesh = MeshBuilder.ExtrudePolygon(name, { shape, depth, holes }, scene, earcut)
+
+  // Apply 3D placement
+  const { origin, zAxis, xAxis } = placement
+  mesh.position = new Vector3(origin.x, origin.y, origin.z)
+
+  const bZAxis = new Vector3(zAxis.x, zAxis.y, zAxis.z)
+  const bXAxis = new Vector3(xAxis.x, xAxis.y, xAxis.z)
+  // Y = Cross(Z, X) per IFC right-hand rule
+  const bYAxis = Vector3.Cross(bZAxis, bXAxis).normalize()
+
+  const rotMatrix = Matrix.FromValues(
+    bXAxis.x, bYAxis.x, bZAxis.x, 0,
+    bXAxis.y, bYAxis.y, bZAxis.y, 0,
+    bXAxis.z, bYAxis.z, bZAxis.z, 0,
+    0, 0, 0, 1,
+  )
+  mesh.rotationQuaternion = Quaternion.FromRotationMatrix(rotMatrix)
+
+  mesh.material = material
+  return mesh
 }

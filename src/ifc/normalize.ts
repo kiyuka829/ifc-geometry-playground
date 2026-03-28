@@ -1,0 +1,289 @@
+/**
+ * Normalization layer: converts generated IFC schema entities into an
+ * internal rendering-oriented geometry model that geometry builders consume.
+ *
+ * Flow:  generated/schema.ts  →  normalize.ts (this file)  →  mesh builders
+ */
+
+import type {
+  IfcCartesianPoint,
+  IfcDirection,
+  IfcAxis2Placement2D,
+  IfcAxis2Placement3D,
+  IfcAreaParameterizedProfileDef,
+  IfcExtrudedAreaSolid,
+} from './generated/schema.ts'
+
+// ── Internal geometry model ───────────────────────────────────────────────
+
+/** A 2D point in profile-local space. */
+export interface NormalizedVec2 { x: number; y: number }
+
+/** A 3D point in world space. */
+export interface NormalizedVec3 { x: number; y: number; z: number }
+
+/**
+ * A normalized 2D placement with a local origin and a unit X-axis direction.
+ * The Y axis is implicitly 90° counter-clockwise from the X axis.
+ */
+export interface NormalizedPlacement2D {
+  origin: NormalizedVec2;
+  /** Unit vector along the local X axis. Defaults to (1, 0). */
+  xAxis: NormalizedVec2;
+}
+
+/**
+ * A normalized 3D placement with a local origin, Z axis (normal/extrusion
+ * axis), and X axis (reference direction).
+ * The Y axis is implicitly Cross(zAxis, xAxis) per the IFC right-hand rule.
+ */
+export interface NormalizedPlacement3D {
+  origin: NormalizedVec3;
+  /** Unit vector along the local Z axis. Defaults to (0, 0, 1). */
+  zAxis: NormalizedVec3;
+  /** Unit vector along the local X axis. Defaults to (1, 0, 0). */
+  xAxis: NormalizedVec3;
+}
+
+/** A profile normalized into closed planar loops ready for triangulation. */
+export interface NormalizedProfile {
+  /** Outer boundary polygon (counter-clockwise winding). */
+  outerLoop: NormalizedVec2[];
+  /** Inner boundary polygons / holes (clockwise winding). */
+  innerLoops: NormalizedVec2[][];
+}
+
+/** A renderer-friendly extrusion specification. */
+export interface NormalizedExtrusion {
+  /** Normalized cross-section profile. */
+  profile: NormalizedProfile;
+  /** 3D placement of the solid's local coordinate system. */
+  placement: NormalizedPlacement3D;
+  /** Unit vector of the extrusion direction in placement-local space. */
+  extrusionDirection: NormalizedVec3;
+  /** Length of the extrusion. */
+  depth: number;
+}
+
+// ── Point converters ──────────────────────────────────────────────────────
+
+/** Extract a 2D point from an IfcCartesianPoint (uses coordinates[0..1]). */
+export function normalizePoint2(pt: IfcCartesianPoint): NormalizedVec2 {
+  return {
+    x: pt.coordinates[0] ?? 0,
+    y: pt.coordinates[1] ?? 0,
+  }
+}
+
+/** Extract a 3D point from an IfcCartesianPoint (uses coordinates[0..2]). */
+export function normalizePoint3(pt: IfcCartesianPoint): NormalizedVec3 {
+  return {
+    x: pt.coordinates[0] ?? 0,
+    y: pt.coordinates[1] ?? 0,
+    z: pt.coordinates[2] ?? 0,
+  }
+}
+
+// ── Direction converters ──────────────────────────────────────────────────
+
+/** Normalize an IfcDirection to a unit 2D vector (uses directionRatios[0..1]). */
+export function normalizeDirection2(dir: IfcDirection): NormalizedVec2 {
+  const x = dir.directionRatios[0] ?? 1
+  const y = dir.directionRatios[1] ?? 0
+  const len = Math.hypot(x, y) || 1
+  return { x: x / len, y: y / len }
+}
+
+/** Normalize an IfcDirection to a unit 3D vector (uses directionRatios[0..2]).
+ *  Defaults produce (0, 0, 1) — a Z-up unit vector — which matches the IFC
+ *  default extrusion direction and the default axis of IfcAxis2Placement3D. */
+export function normalizeDirection3(dir: IfcDirection): NormalizedVec3 {
+  const x = dir.directionRatios[0] ?? 0
+  const y = dir.directionRatios[1] ?? 0
+  const z = dir.directionRatios[2] ?? 1
+  const len = Math.hypot(x, y, z) || 1
+  return { x: x / len, y: y / len, z: z / len }
+}
+
+// ── Placement converters ──────────────────────────────────────────────────
+
+/** Convert an IfcAxis2Placement2D to a NormalizedPlacement2D. */
+export function normalizePlacement2D(p: IfcAxis2Placement2D): NormalizedPlacement2D {
+  return {
+    origin: normalizePoint2(p.location),
+    xAxis: p.refDirection ? normalizeDirection2(p.refDirection) : { x: 1, y: 0 },
+  }
+}
+
+/** Convert an IfcAxis2Placement3D to a NormalizedPlacement3D. */
+export function normalizePlacement3D(p: IfcAxis2Placement3D): NormalizedPlacement3D {
+  return {
+    origin: normalizePoint3(p.location),
+    zAxis: p.axis ? normalizeDirection3(p.axis) : { x: 0, y: 0, z: 1 },
+    xAxis: p.refDirection ? normalizeDirection3(p.refDirection) : { x: 1, y: 0, z: 0 },
+  }
+}
+
+/** Return the identity 3D placement (origin at zero, Z up, X right). */
+export function defaultPlacement3D(): NormalizedPlacement3D {
+  return {
+    origin: { x: 0, y: 0, z: 0 },
+    zAxis: { x: 0, y: 0, z: 1 },
+    xAxis: { x: 1, y: 0, z: 0 },
+  }
+}
+
+// ── Profile polygon helpers ───────────────────────────────────────────────
+
+const CIRCLE_SEGMENTS = 48
+
+function circleLoop(radius: number, segments = CIRCLE_SEGMENTS): NormalizedVec2[] {
+  const pts: NormalizedVec2[] = []
+  for (let i = 0; i < segments; i++) {
+    const angle = (i / segments) * Math.PI * 2
+    pts.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius })
+  }
+  return pts
+}
+
+/**
+ * Apply a 2D placement transform to a list of profile-space points.
+ * The Y axis is the 90° CCW rotation of the X axis.
+ */
+function applyPlacement2DToLoop(
+  pts: NormalizedVec2[],
+  p: NormalizedPlacement2D,
+): NormalizedVec2[] {
+  const { origin, xAxis } = p
+  const yAxis: NormalizedVec2 = { x: -xAxis.y, y: xAxis.x }
+  return pts.map(pt => ({
+    x: origin.x + pt.x * xAxis.x + pt.y * yAxis.x,
+    y: origin.y + pt.x * xAxis.y + pt.y * yAxis.y,
+  }))
+}
+
+// ── Profile normalization ─────────────────────────────────────────────────
+
+/**
+ * Normalize a generated-schema area profile into outer/inner planar loops.
+ * The optional 2D placement on the profile is applied to all loop vertices.
+ *
+ * Supported types: Rectangle, Circle, RectangleHollow, CircleHollow,
+ * IShape (symmetric), LShape.
+ * Other parameterized types throw an Error.
+ */
+export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): NormalizedProfile {
+  const placement: NormalizedPlacement2D = profile.position
+    ? normalizePlacement2D(profile.position)
+    : { origin: { x: 0, y: 0 }, xAxis: { x: 1, y: 0 } }
+
+  let outerLoop: NormalizedVec2[]
+  let innerLoops: NormalizedVec2[][] = []
+
+  switch (profile.type) {
+    case 'IfcRectangleProfileDef': {
+      const hw = profile.xDim / 2
+      const hd = profile.yDim / 2
+      outerLoop = [
+        { x: -hw, y: -hd }, { x: hw, y: -hd },
+        { x:  hw, y:  hd }, { x: -hw, y:  hd },
+      ]
+      break
+    }
+
+    case 'IfcCircleProfileDef':
+      outerLoop = circleLoop(profile.radius)
+      break
+
+    case 'IfcRectangleHollowProfileDef': {
+      const hw = profile.xDim / 2
+      const hd = profile.yDim / 2
+      outerLoop = [
+        { x: -hw, y: -hd }, { x: hw, y: -hd },
+        { x:  hw, y:  hd }, { x: -hw, y:  hd },
+      ]
+      const ihw = hw - profile.wallThickness
+      const ihd = hd - profile.wallThickness
+      innerLoops = [[
+        { x: -ihw, y: -ihd }, { x: -ihw, y:  ihd },
+        { x:  ihw, y:  ihd }, { x:  ihw, y: -ihd },
+      ]]
+      break
+    }
+
+    case 'IfcCircleHollowProfileDef': {
+      outerLoop = circleLoop(profile.radius)
+      innerLoops = [circleLoop(profile.radius - profile.wallThickness).reverse()]
+      break
+    }
+
+    case 'IfcIShapeProfileDef': {
+      const hw  = profile.overallWidth / 2
+      const hd  = profile.overallDepth / 2
+      const htw = profile.webThickness / 2
+      const tf  = profile.flangeThickness
+      outerLoop = [
+        { x: -hw,  y: -hd        },
+        { x:  hw,  y: -hd        },
+        { x:  hw,  y: -hd + tf   },
+        { x:  htw, y: -hd + tf   },
+        { x:  htw, y:  hd - tf   },
+        { x:  hw,  y:  hd - tf   },
+        { x:  hw,  y:  hd        },
+        { x: -hw,  y:  hd        },
+        { x: -hw,  y:  hd - tf   },
+        { x: -htw, y:  hd - tf   },
+        { x: -htw, y: -hd + tf   },
+        { x: -hw,  y: -hd + tf   },
+      ]
+      break
+    }
+
+    case 'IfcLShapeProfileDef': {
+      // Per IFC spec, width is optional; when omitted the L-shape is symmetric
+      // (both legs share the same dimension as depth).
+      const w  = profile.width ?? profile.depth
+      const cx = w / 2
+      const cy = profile.depth / 2
+      const t  = profile.thickness
+      outerLoop = [
+        { x: 0 - cx,    y: 0 - cy              },
+        { x: w - cx,    y: 0 - cy              },
+        { x: w - cx,    y: t - cy              },
+        { x: t - cx,    y: t - cy              },
+        { x: t - cx,    y: profile.depth - cy  },
+        { x: 0 - cx,    y: profile.depth - cy  },
+      ]
+      break
+    }
+
+    default: {
+      const unsupported = profile as { type: string }
+      throw new Error(
+        `Profile type '${unsupported.type}' is not yet supported by the normalization layer`,
+      )
+    }
+  }
+
+  return {
+    outerLoop: applyPlacement2DToLoop(outerLoop, placement),
+    innerLoops: innerLoops.map(loop => applyPlacement2DToLoop(loop, placement)),
+  }
+}
+
+// ── Extrusion normalization ───────────────────────────────────────────────
+
+/**
+ * Convert a generated-schema IfcExtrudedAreaSolid to a NormalizedExtrusion
+ * ready for consumption by a mesh builder.
+ */
+export function normalizeExtrudedAreaSolid(solid: IfcExtrudedAreaSolid): NormalizedExtrusion {
+  return {
+    profile: normalizeProfileDef(solid.sweptArea),
+    placement: solid.position
+      ? normalizePlacement3D(solid.position)
+      : defaultPlacement3D(),
+    extrusionDirection: normalizeDirection3(solid.extrudedDirection),
+    depth: solid.depth,
+  }
+}
