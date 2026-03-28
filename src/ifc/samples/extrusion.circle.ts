@@ -2,9 +2,10 @@ import { Vector3 } from '@babylonjs/core'
 import type { Scene, Mesh } from '@babylonjs/core'
 import type { SampleDef, ParamValues, IfcProfileDef } from '../../types.ts'
 import { getNumber } from '../../types.ts'
-import { buildExtrusionMesh, buildProfileOutlines } from '../operations/extrusion.ts'
+import { buildExtrusionMeshFromGenerated, buildProfileOutlines } from '../operations/extrusion.ts'
 import { createExtrusionMaterial } from '../../engine/materials.ts'
 import { createAxisGizmo } from '../../engine/gizmos.ts'
+import type { IfcExtrudedAreaSolid } from '../generated/schema.ts'
 
 const DEFAULT_PROFILE: IfcProfileDef = {
   type: 'IfcCircleProfileDef',
@@ -45,12 +46,16 @@ export const extrusionCircleSample: SampleDef = {
     const meshes: Mesh[] = []
     const depth = getNumber(params, 'depth')
     const activeProfile: IfcProfileDef = profile ?? DEFAULT_PROFILE
+    const radius = activeProfile.type === 'IfcCircleProfileDef' ? activeProfile.radius : 2
 
-    const solid = {
-      type: 'IfcExtrudedAreaSolid' as const,
-      sweptArea: activeProfile,
-      position: { location: { x: 0, y: 0, z: 0 } },
-      extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
+    const generatedSolid: IfcExtrudedAreaSolid = {
+      type: 'IfcExtrudedAreaSolid',
+      sweptArea: { type: 'IfcCircleProfileDef', profileType: 'AREA', radius },
+      position: {
+        type: 'IfcAxis2Placement3D',
+        location: { type: 'IfcCartesianPoint', coordinates: [0, 0, 0] },
+      },
+      extrudedDirection: { type: 'IfcDirection', directionRatios: [0, 1, 0] },
       depth,
     }
 
@@ -61,7 +66,7 @@ export const extrusionCircleSample: SampleDef = {
     }
 
     if (stepIndex >= 1) {
-      meshes.push(buildExtrusionMesh(scene, solid, createExtrusionMaterial(scene), 'extrusion_solid'))
+      meshes.push(buildExtrusionMeshFromGenerated(scene, generatedSolid, createExtrusionMaterial(scene), 'extrusion_solid'))
     }
 
     return meshes

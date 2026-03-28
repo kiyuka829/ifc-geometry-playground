@@ -116,47 +116,13 @@ export function buildExtrusionMesh(
   name: string,
 ): Mesh {
   const profile = solid.sweptArea
-  const dir = new Vector3(
-    solid.extrudedDirection.directionRatios.x,
-    solid.extrudedDirection.directionRatios.y,
-    solid.extrudedDirection.directionRatios.z,
-  ).normalize()
-  const loc = solid.position.location
-  let mesh: Mesh
-
-  if (profile.type === 'IfcRectangleProfileDef') {
-    mesh = MeshBuilder.CreateBox(name, {
-      width: profile.xDim,
-      height: solid.depth,
-      depth: profile.yDim,
-    }, scene)
-    mesh.position = new Vector3(
-      loc.x + dir.x * solid.depth / 2,
-      loc.y + dir.y * solid.depth / 2,
-      loc.z + dir.z * solid.depth / 2,
-    )
-  } else if (profile.type === 'IfcCircleProfileDef') {
-    mesh = MeshBuilder.CreateCylinder(name, {
-      diameter: profile.radius * 2,
-      height: solid.depth,
-      tessellation: CIRCLE_SEGMENTS,
-    }, scene)
-    mesh.position = new Vector3(
-      loc.x + dir.x * solid.depth / 2,
-      loc.y + dir.y * solid.depth / 2,
-      loc.z + dir.z * solid.depth / 2,
-    )
-  } else {
-    // All polygon-based profiles (hollow, I/L-shape, arbitrary)
-    const shape = profileOuterVec2(profile).map(p => new Vector3(p.x, 0, p.y))
-    const innerCurves = profileInnerVec2s(profile)
-    const holes = innerCurves.length > 0
-      ? innerCurves.map(inner => inner.map(p => new Vector3(p.x, 0, p.y)))
-      : undefined
-    mesh = MeshBuilder.ExtrudePolygon(name, { shape, depth: solid.depth, holes }, scene, earcut)
-    applyPlacement(mesh, solid.position)
-  }
-
+  const shape = profileOuterVec2(profile).map(p => new Vector3(p.x, 0, p.y))
+  const innerCurves = profileInnerVec2s(profile)
+  const holes = innerCurves.length > 0
+    ? innerCurves.map(inner => inner.map(p => new Vector3(p.x, 0, p.y)))
+    : undefined
+  const mesh = MeshBuilder.ExtrudePolygon(name, { shape, depth: solid.depth, holes }, scene, earcut)
+  applyPlacement(mesh, solid.position)
   mesh.material = material
   return mesh
 }
@@ -224,7 +190,7 @@ export function buildExtrusionMeshFromNormalized(
   material: StandardMaterial,
   name: string,
 ): Mesh {
-  const { profile, placement, depth } = norm
+  const { profile, placement, extrusionDirection, depth } = norm
 
   const shape = profile.outerLoop.map(p => new Vector3(p.x, 0, p.y))
   const holes = profile.innerLoops.length > 0
@@ -233,19 +199,40 @@ export function buildExtrusionMeshFromNormalized(
 
   const mesh = MeshBuilder.ExtrudePolygon(name, { shape, depth, holes }, scene, earcut)
 
-  // Apply 3D placement
+  // Apply 3D placement and extrusion direction
   const { origin, zAxis, xAxis } = placement
   mesh.position = new Vector3(origin.x, origin.y, origin.z)
 
-  const bZAxis = new Vector3(zAxis.x, zAxis.y, zAxis.z)
   const bXAxis = new Vector3(xAxis.x, xAxis.y, xAxis.z)
-  // Y = Cross(Z, X) per IFC right-hand rule
+  const bZAxis = new Vector3(zAxis.x, zAxis.y, zAxis.z)
+  // Placement Y = Cross(Z, X) per IFC right-hand rule
   const bYAxis = Vector3.Cross(bZAxis, bXAxis).normalize()
 
+  // Convert extrusionDirection from placement-local space to world space.
+  // extrusionDirection is expressed in the placement's local coordinate system
+  // where local (1,0,0) = bXAxis, (0,1,0) = bYAxis, (0,0,1) = bZAxis.
+  const bE = new Vector3(
+    extrusionDirection.x * bXAxis.x + extrusionDirection.y * bYAxis.x + extrusionDirection.z * bZAxis.x,
+    extrusionDirection.x * bXAxis.y + extrusionDirection.y * bYAxis.y + extrusionDirection.z * bZAxis.y,
+    extrusionDirection.x * bXAxis.z + extrusionDirection.y * bYAxis.z + extrusionDirection.z * bZAxis.z,
+  ).normalize()
+
+  // Build a rotation matrix that maps BJS local axes to world axes such that:
+  //   BJS local X → col0: profile X direction (bXAxis orthogonalised against E)
+  //   BJS local Y → col1: negative world extrusion direction (-E), so BJS -Y → E
+  //   BJS local Z → col2: profile Y direction (right-hand rule from col0 × col1)
+  //
+  // This ensures ExtrudePolygon (which extrudes in -Y in BJS local space) produces
+  // a solid whose extrusion axis aligns with the IFC extrudedDirection in world space.
+  const dot = Vector3.Dot(bXAxis, bE)
+  const col0 = bXAxis.subtract(bE.scale(dot)).normalize()
+  const col1 = bE.negate()
+  const col2 = Vector3.Cross(col0, col1).normalize()
+
   const rotMatrix = Matrix.FromValues(
-    bXAxis.x, bYAxis.x, bZAxis.x, 0,
-    bXAxis.y, bYAxis.y, bZAxis.y, 0,
-    bXAxis.z, bYAxis.z, bZAxis.z, 0,
+    col0.x, col1.x, col2.x, 0,
+    col0.y, col1.y, col2.y, 0,
+    col0.z, col1.z, col2.z, 0,
     0, 0, 0, 1,
   )
   mesh.rotationQuaternion = Quaternion.FromRotationMatrix(rotMatrix)
