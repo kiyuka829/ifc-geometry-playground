@@ -2,12 +2,13 @@ import { Vector3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
 import type { SampleDef, ParamValues, IfcProfileDef } from "../../types.ts";
 import { getNumber } from "../../types.ts";
-import { buildExtrusionMesh } from "../operations/extrusion.ts";
+import { buildExtrusionMeshFromGenerated } from "../operations/extrusion.ts";
 import { createExtrusionMaterial } from "../../engine/materials.ts";
 import {
   buildProfileOverlay,
   buildExtrusionDirectionOverlay,
 } from "../../engine/overlays.ts";
+import type { IfcExtrudedAreaSolid } from "../generated/schema.ts";
 
 const DEFAULT_PROFILE: IfcProfileDef = {
   type: "IfcRectangleHollowProfileDef",
@@ -62,12 +63,36 @@ export const extrusionRectHollowSample: SampleDef = {
     const meshes: Mesh[] = [];
     const depth = getNumber(params, "depth");
     const activeProfile: IfcProfileDef = profile ?? DEFAULT_PROFILE;
+    const xDim =
+      activeProfile.type === "IfcRectangleHollowProfileDef"
+        ? activeProfile.xDim
+        : DEFAULT_PROFILE.xDim;
+    const yDim =
+      activeProfile.type === "IfcRectangleHollowProfileDef"
+        ? activeProfile.yDim
+        : DEFAULT_PROFILE.yDim;
+    const wallThickness =
+      activeProfile.type === "IfcRectangleHollowProfileDef"
+        ? activeProfile.wallThickness
+        : DEFAULT_PROFILE.wallThickness;
 
-    const solid = {
-      type: "IfcExtrudedAreaSolid" as const,
-      sweptArea: activeProfile,
-      position: { location: { x: 0, y: 0, z: 0 } },
-      extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
+    const generatedSolid: IfcExtrudedAreaSolid = {
+      type: "IfcExtrudedAreaSolid",
+      sweptArea: {
+        type: "IfcRectangleHollowProfileDef",
+        profileType: "AREA",
+        xDim,
+        yDim,
+        wallThickness,
+      },
+      position: {
+        type: "IfcAxis2Placement3D",
+        location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
+      },
+      extrudedDirection: {
+        type: "IfcDirection",
+        directionRatios: [0, 1, 0],
+      },
       depth,
     };
 
@@ -88,9 +113,9 @@ export const extrusionRectHollowSample: SampleDef = {
       );
       if (arrow) meshes.push(arrow);
       meshes.push(
-        buildExtrusionMesh(
+        buildExtrusionMeshFromGenerated(
           scene,
-          solid,
+          generatedSolid,
           createExtrusionMaterial(scene),
           "extrusion_solid",
         ),
