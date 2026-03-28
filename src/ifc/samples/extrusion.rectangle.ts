@@ -24,7 +24,7 @@ export const extrusionRectangleSample: SampleDef = {
   title: "Rectangle Profile (IfcRectangleProfileDef)",
   description:
     "A basic rectangle profile extruded along the Y-axis to create a 3D solid. " +
-    "Edit width and height in the profile editor.",
+    "Edit xDim and yDim in the profile editor.",
   parameters: [
     {
       key: "depth",
@@ -77,7 +77,9 @@ export const extrusionRectangleSample: SampleDef = {
     };
 
     if (stepIndex >= 0) {
-      meshes.push(...buildProfileOverlay(scene, activeProfile, "rectangle_outline"));
+      meshes.push(
+        ...buildProfileOverlay(scene, activeProfile, "rectangle_outline"),
+      );
     }
 
     if (stepIndex >= 1) {
