@@ -15,16 +15,12 @@ export type {
   Vec2,
   Vec3,
   IfcProfileType,
-  IfcDirection,
-  IfcAxis2Placement3D,
   IfcArbitraryClosedProfileDef,
   IfcArbitraryProfileDefWithVoids,
   IfcProfileDef,
-  IfcExtrudedAreaSolid,
-  IfcBooleanResult,
   IfcPolyline,
   IfcSweptDiskSolid,
-} from '../types.ts'
+} from "../types.ts";
 
 export type {
   IfcRectangleProfileDef,
@@ -33,4 +29,4 @@ export type {
   IfcCircleHollowProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
-} from './generated/schema.ts'
+} from "./generated/schema.ts";

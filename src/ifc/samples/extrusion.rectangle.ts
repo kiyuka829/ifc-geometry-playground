@@ -8,6 +8,7 @@ import {
   buildProfileOverlay,
   buildExtrusionDirectionOverlay,
 } from "../../engine/overlays.ts";
+import type { IfcExtrudedAreaSolid } from "../generated/schema.ts";
 
 const DEFAULT_X_DIM = 4;
 const DEFAULT_Y_DIM = 3;
@@ -65,13 +66,30 @@ export const extrusionRectangleSample: SampleDef = {
     const meshes: Mesh[] = [];
     const depth = getNumber(params, "depth");
     const activeProfile: IfcProfileDef = profile ?? DEFAULT_PROFILE;
+    const xDim =
+      activeProfile.type === "IfcRectangleProfileDef"
+        ? activeProfile.xDim
+        : DEFAULT_X_DIM;
+    const yDim =
+      activeProfile.type === "IfcRectangleProfileDef"
+        ? activeProfile.yDim
+        : DEFAULT_Y_DIM;
 
-    const solid = {
-      type: "IfcExtrudedAreaSolid" as const,
-      sweptArea: activeProfile,
-      position: { location: { x: 0, y: 0, z: 0 } },
+    const generatedSolid: IfcExtrudedAreaSolid = {
+      type: "IfcExtrudedAreaSolid",
+      sweptArea: {
+        type: "IfcRectangleProfileDef",
+        profileType: "AREA",
+        xDim,
+        yDim,
+      },
+      position: {
+        type: "IfcAxis2Placement3D",
+        location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
+      },
       extrudedDirection: {
-        directionRatios: { x: 0, y: 1, z: 0 },
+        type: "IfcDirection",
+        directionRatios: [0, 1, 0],
       },
       depth,
     };
@@ -95,7 +113,7 @@ export const extrusionRectangleSample: SampleDef = {
       meshes.push(
         buildExtrusionMesh(
           scene,
-          solid,
+          generatedSolid,
           createExtrusionMaterial(scene),
           "extrusion_solid",
         ),

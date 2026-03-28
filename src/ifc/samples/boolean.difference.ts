@@ -1,7 +1,10 @@
 import type { Scene, Mesh } from "@babylonjs/core";
 import type { SampleDef, ParamValues } from "../../types.ts";
 import { getNumber, getSelect } from "../../types.ts";
-import { buildBooleanVisualization } from "../operations/boolean.ts";
+import {
+  buildBooleanVisualization,
+  type IfcBooleanResultNode,
+} from "../operations/boolean.ts";
 
 const BOOLEAN_OPERATORS = ["DIFFERENCE", "UNION", "INTERSECTION"] as const;
 type BooleanOperator = (typeof BOOLEAN_OPERATORS)[number];
@@ -118,33 +121,40 @@ export const booleanDifferenceSample: SampleDef = {
       BOOLEAN_OPERATORS,
       "DIFFERENCE",
     );
-    const booleanResult = {
-      type: "IfcBooleanResult" as const,
+    const booleanResult: IfcBooleanResultNode = {
+      type: "IfcBooleanResult",
       operator,
       firstOperand: {
-        type: "IfcExtrudedAreaSolid" as const,
+        type: "IfcExtrudedAreaSolid",
         sweptArea: {
-          type: "IfcRectangleProfileDef" as const,
-          profileType: "AREA" as const,
+          type: "IfcRectangleProfileDef",
+          profileType: "AREA",
           xDim: getNumber(params, "mainWidth"),
           yDim: getNumber(params, "mainHeight"),
         },
-        position: { location: { x: 0, y: 0, z: 0 } },
-        extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
+        position: {
+          type: "IfcAxis2Placement3D",
+          location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
+        },
+        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
         depth: getNumber(params, "mainDepth"),
       },
       secondOperand: {
-        type: "IfcExtrudedAreaSolid" as const,
+        type: "IfcExtrudedAreaSolid",
         sweptArea: {
-          type: "IfcRectangleProfileDef" as const,
-          profileType: "AREA" as const,
+          type: "IfcRectangleProfileDef",
+          profileType: "AREA",
           xDim: getNumber(params, "cutterWidth"),
           yDim: getNumber(params, "cutterHeight"),
         },
         position: {
-          location: { x: getNumber(params, "cutterOffsetX"), y: 0, z: 0 },
+          type: "IfcAxis2Placement3D",
+          location: {
+            type: "IfcCartesianPoint",
+            coordinates: [getNumber(params, "cutterOffsetX"), 0, 0],
+          },
         },
-        extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
+        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
         depth: getNumber(params, "cutterDepth"),
       },
     };
