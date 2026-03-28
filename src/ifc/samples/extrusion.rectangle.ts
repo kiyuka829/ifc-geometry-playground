@@ -9,20 +9,22 @@ import {
   buildExtrusionDirectionOverlay,
 } from "../../engine/overlays.ts";
 
+const DEFAULT_X_DIM = 4;
+const DEFAULT_Y_DIM = 3;
+
 const DEFAULT_PROFILE: IfcProfileDef = {
-  type: "IfcRectangleHollowProfileDef",
+  type: "IfcRectangleProfileDef",
   profileType: "AREA",
-  xDim: 4,
-  yDim: 3,
-  wallThickness: 0.3,
+  xDim: DEFAULT_X_DIM,
+  yDim: DEFAULT_Y_DIM,
 };
 
-export const extrusionRectHollowSample: SampleDef = {
-  id: "extrusion-rect-hollow",
-  title: "Rectangular Hollow Section (IfcRectangleHollowProfileDef)",
+export const extrusionRectangleSample: SampleDef = {
+  id: "extrusion-rectangle",
+  title: "Rectangle Profile (IfcRectangleProfileDef)",
   description:
-    "A rectangular hollow cross-section defined by xDim, yDim, and uniform wall thickness (IfcRectangleHollowProfileDef). " +
-    "Adjust xDim, yDim, and wall thickness in the profile editor.",
+    "A basic rectangle profile extruded along the Y-axis to create a 3D solid. " +
+    "Edit xDim and yDim in the profile editor.",
   parameters: [
     {
       key: "depth",
@@ -31,26 +33,27 @@ export const extrusionRectHollowSample: SampleDef = {
       min: 0.5,
       max: 20,
       step: 0.1,
-      defaultValue: 6,
+      defaultValue: 5,
     },
   ],
   steps: [
     {
       id: "profile",
-      label: "Step 1: Hollow Section Profile",
+      label: "Step 1: Rectangle Profile",
       description:
-        "IfcRectangleHollowProfileDef defines a rectangular outer boundary with a concentric rectangular void. " +
-        "The wall thickness is uniform on all four sides.",
+        "IfcRectangleProfileDef defines a rectangular cross-section by xDim and yDim. " +
+        "Edit dimensions in the profile editor above.",
     },
     {
       id: "solid",
       label: "Step 2: Extruded Solid",
       description:
-        "The rectangular hollow cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).",
+        "The rectangle is extruded along the Y-axis by the given depth to produce a rectangular prism. " +
+        "This is equivalent to IfcExtrudedAreaSolid applied to an IfcRectangleProfileDef.",
     },
   ],
   profileEditorConfig: {
-    allowedTypes: ["rect-hollow"],
+    allowedTypes: ["rectangle"],
     defaultProfile: DEFAULT_PROFILE,
   },
   buildGeometry: (
@@ -67,13 +70,15 @@ export const extrusionRectHollowSample: SampleDef = {
       type: "IfcExtrudedAreaSolid" as const,
       sweptArea: activeProfile,
       position: { location: { x: 0, y: 0, z: 0 } },
-      extrudedDirection: { directionRatios: { x: 0, y: 1, z: 0 } },
+      extrudedDirection: {
+        directionRatios: { x: 0, y: 1, z: 0 },
+      },
       depth,
     };
 
     if (stepIndex >= 0) {
       meshes.push(
-        ...buildProfileOverlay(scene, activeProfile, "rect_hollow_outline"),
+        ...buildProfileOverlay(scene, activeProfile, "rectangle_outline"),
       );
     }
 
@@ -102,17 +107,19 @@ export const extrusionRectHollowSample: SampleDef = {
   getIFCRepresentation: (params: ParamValues) => ({
     type: "IfcExtrudedAreaSolid",
     sweptArea: {
-      type: "IfcRectangleHollowProfileDef",
+      type: "IfcRectangleProfileDef",
       profileType: "AREA",
       xDim: "(see profile editor)",
       yDim: "(see profile editor)",
-      wallThickness: "(see profile editor)",
     },
     position: {
       type: "IfcAxis2Placement3D",
       location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
     },
-    extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
+    extrudedDirection: {
+      type: "IfcDirection",
+      directionRatios: [0, 1, 0],
+    },
     depth: getNumber(params, "depth"),
   }),
 };

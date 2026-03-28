@@ -19,8 +19,8 @@ export const extrusionIShapeSample: SampleDef = {
   id: 'extrusion-i-shape',
   title: 'I-Shape / H-Beam Profile (IfcIShapeProfileDef)',
   description:
-    'The most common structural steel section: an I-beam or H-column. ' +
-    'Adjust the flange width, overall depth, web thickness, and flange thickness in the profile editor.',
+    'An I-shaped (or H-shaped) cross-section defined by overall width, overall depth, web thickness, and flange thickness (IfcIShapeProfileDef). ' +
+    'Adjust the dimensions in the profile editor.',
   parameters: [
     { key: 'depth', label: 'Extrusion Depth', type: 'number', min: 0.5, max: 20, step: 0.1, defaultValue: 6 },
   ],
@@ -29,15 +29,14 @@ export const extrusionIShapeSample: SampleDef = {
       id: 'profile',
       label: 'Step 1: I-Shape Cross-Section',
       description:
-        'IfcIShapeProfileDef defines an I-beam (H-column) by overall width, overall depth, ' +
+        'IfcIShapeProfileDef defines an I-shaped (or H-shaped) cross-section by overall width, overall depth, ' +
         'web thickness, and flange thickness. The section is symmetric about both axes.',
     },
     {
       id: 'solid',
-      label: 'Step 2: Extruded Beam',
+      label: 'Step 2: Extruded Solid',
       description:
-        'The I-section is extruded along the Z-axis to produce a structural beam or column. ' +
-        'This is the most widely used profile in structural steel construction.',
+        'The I-shaped cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).',
     },
   ],
   profileEditorConfig: {

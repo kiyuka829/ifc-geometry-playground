@@ -17,8 +17,8 @@ export const extrusionCircleHollowSample: SampleDef = {
   id: 'extrusion-circle-hollow',
   title: 'Circular Hollow Section (IfcCircleHollowProfileDef)',
   description:
-    'A circular hollow section (CHS) extruded into a steel pipe. ' +
-    'Adjust the outer radius and wall thickness in the profile editor.',
+    'A circular hollow cross-section defined by outer radius and wall thickness (IfcCircleHollowProfileDef). ' +
+    'Adjust the dimensions in the profile editor.',
   parameters: [
     { key: 'depth', label: 'Extrusion Depth', type: 'number', min: 0.5, max: 20, step: 0.1, defaultValue: 6 },
   ],
@@ -32,10 +32,9 @@ export const extrusionCircleHollowSample: SampleDef = {
     },
     {
       id: 'solid',
-      label: 'Step 2: Extruded Pipe',
+      label: 'Step 2: Extruded Solid',
       description:
-        'The hollow circle is extruded along the Z-axis to produce a pipe (circular hollow section, CHS). ' +
-        'Typical use: steel columns, handrails, structural tubes.',
+        'The circular hollow cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).',
     },
   ],
   profileEditorConfig: {

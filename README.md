@@ -40,7 +40,7 @@ src/
       boolean.ts
       placement.ts
     samples/      Example definitions (parameters, generation pipeline, descriptions)
-      extrusion.basic.ts
+      extrusion.rectangle.ts
       boolean.difference.ts
   ui/
     ParameterPanel.ts   Slider, numeric input, and dropdown UI
