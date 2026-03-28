@@ -1,5 +1,5 @@
 import type { Mesh } from '@babylonjs/core'
-import type { SampleDef, ParamValues, IfcProfileDef, Vec3, SweepViewState } from '../types.ts'
+import type { SampleDef, ParamValues, IfcProfileDef, IfcAxis2Placement3D, Vec3, SweepViewState } from '../types.ts'
 import { SceneManager } from '../engine/scene.ts'
 import { ViewportCamera } from '../engine/viewport-camera.ts'
 import { ViewportControls } from '../ui/ViewportControls.ts'
@@ -7,6 +7,7 @@ import { ParameterPanel } from '../ui/ParameterPanel.ts'
 import { Stepper } from '../ui/Stepper.ts'
 import { ProfileEditor } from '../ui/ProfileEditor.ts'
 import { PathEditor } from '../ui/PathEditor.ts'
+import { PlacementEditor } from '../ui/PlacementEditor.ts'
 import { SweepViewToggles } from '../ui/SweepViewToggles.ts'
 
 export class ExamplePage {
@@ -20,6 +21,7 @@ export class ExamplePage {
   private currentStep = 0
   private currentProfile: IfcProfileDef | undefined = undefined
   private currentPath: Vec3[] | undefined = undefined
+  private currentPlacement: IfcAxis2Placement3D | undefined = undefined
   private currentSweepView: SweepViewState | undefined = undefined
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -43,6 +45,11 @@ export class ExamplePage {
       ? JSON.parse(JSON.stringify(sample.pathEditorConfig.defaultPath)) as Vec3[]
       : undefined
 
+    // Seed placement from config default (if any)
+    this.currentPlacement = sample.placementEditorConfig
+      ? JSON.parse(JSON.stringify(sample.placementEditorConfig.defaultPlacement)) as IfcAxis2Placement3D
+      : undefined
+
     // Seed sweep view state from config defaults (if any)
     this.currentSweepView = sample.sweepViewConfig
       ? {
@@ -54,6 +61,7 @@ export class ExamplePage {
 
     const hasProfileEditor  = Boolean(sample.profileEditorConfig)
     const hasPathEditor     = Boolean(sample.pathEditorConfig)
+    const hasPlacementEditor = Boolean(sample.placementEditorConfig)
     const hasSweepToggles   = Boolean(sample.sweepViewConfig)
 
     this.appContainer.innerHTML = `
@@ -77,12 +85,18 @@ export class ExamplePage {
               </div>
               <div id="path-editor-panel"></div>
             ` : ''}
+            ${hasPlacementEditor ? `
+              <div class="params-title${(hasProfileEditor || hasPathEditor) ? ' left-panel-section-mt' : ''}">
+                ${sample.placementEditorConfig!.label ?? 'Placement'}
+              </div>
+              <div id="placement-editor-panel"></div>
+            ` : ''}
             ${hasSweepToggles ? `
               <div class="params-title left-panel-section-mt">View</div>
               <div id="sweep-view-toggles"></div>
             ` : ''}
             ${sample.parameters.length > 0 ? `
-              <div class="params-title${(hasProfileEditor || hasPathEditor || hasSweepToggles) ? ' left-panel-section-mt' : ''}">Parameters</div>
+              <div class="params-title${(hasProfileEditor || hasPathEditor || hasPlacementEditor || hasSweepToggles) ? ' left-panel-section-mt' : ''}">Parameters</div>
               <div id="param-panel"></div>
             ` : ''}
             <div class="params-title left-panel-steps-title">Steps</div>
@@ -123,6 +137,16 @@ export class ExamplePage {
       const pathEditor = new PathEditor(pathEditorContainer, sample.pathEditorConfig)
       pathEditor.onChange(path => {
         this.currentPath = path
+        this._scheduleRebuild(sample.debounceMs ?? 0)
+      })
+    }
+
+    // Placement editor (optional)
+    const placementEditorContainer = document.getElementById('placement-editor-panel')
+    if (placementEditorContainer && sample.placementEditorConfig) {
+      const placementEditor = new PlacementEditor(placementEditorContainer, sample.placementEditorConfig)
+      placementEditor.onChange(placement => {
+        this.currentPlacement = placement
         this._scheduleRebuild(sample.debounceMs ?? 0)
       })
     }
@@ -187,6 +211,7 @@ export class ExamplePage {
       this.currentStep,
       this.currentProfile,
       this.currentPath,
+      this.currentPlacement,
       this.currentSweepView,
     )
   }

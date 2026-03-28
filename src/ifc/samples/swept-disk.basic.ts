@@ -1,5 +1,5 @@
 import type { Scene, Mesh } from '@babylonjs/core'
-import type { SampleDef, ParamValues, Vec3, SweepViewState, IfcProfileDef } from '../../types.ts'
+import type { SampleDef, ParamValues, Vec3, SweepViewState, IfcProfileDef, IfcAxis2Placement3D } from '../../types.ts'
 import { getNumber } from '../../types.ts'
 import { createSolidMaterial } from '../../engine/materials.ts'
 import { Color3 } from '@babylonjs/core'
@@ -80,6 +80,7 @@ export const sweptDiskBasicSample: SampleDef = {
     stepIndex: number,
     _profile?: IfcProfileDef,
     path?: Vec3[],
+    _placement?: IfcAxis2Placement3D,
     sweepView?: SweepViewState,
   ): Mesh[] => {
     const meshes: Mesh[] = []

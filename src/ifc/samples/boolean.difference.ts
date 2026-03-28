@@ -1,5 +1,5 @@
 import type { Scene, Mesh } from "@babylonjs/core";
-import type { SampleDef, ParamValues } from "../../types.ts";
+import type { SampleDef, ParamValues, IfcProfileDef, Vec3, IfcAxis2Placement3D, SweepViewState } from "../../types.ts";
 import { getNumber, getSelect } from "../../types.ts";
 import {
   buildBooleanVisualization,
@@ -114,6 +114,10 @@ export const booleanDifferenceSample: SampleDef = {
     scene: Scene,
     params: ParamValues,
     stepIndex: number,
+    _profile?: IfcProfileDef,
+    _path?: Vec3[],
+    _placement?: IfcAxis2Placement3D,
+    _sweepView?: SweepViewState,
   ): Mesh[] => {
     const operator = getSelect(
       params,

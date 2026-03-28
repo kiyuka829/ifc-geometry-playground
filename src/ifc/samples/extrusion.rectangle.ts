@@ -1,6 +1,6 @@
 import { Vector3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
-import type { SampleDef, ParamValues, IfcProfileDef } from "../../types.ts";
+import type { SampleDef, ParamValues, IfcProfileDef, Vec3, IfcAxis2Placement3D, SweepViewState } from "../../types.ts";
 import { getNumber } from "../../types.ts";
 import { buildExtrusionMesh } from "../operations/extrusion.ts";
 import { createExtrusionMaterial } from "../../engine/materials.ts";
@@ -62,6 +62,9 @@ export const extrusionRectangleSample: SampleDef = {
     params: ParamValues,
     stepIndex: number,
     profile?: IfcProfileDef,
+    _path?: Vec3[],
+    _placement?: IfcAxis2Placement3D,
+    _sweepView?: SweepViewState,
   ): Mesh[] => {
     const meshes: Mesh[] = [];
     const depth = getNumber(params, "depth");
