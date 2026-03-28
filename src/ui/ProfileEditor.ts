@@ -10,7 +10,6 @@ import type {
   Vec2,
 } from '../ifc/schema.ts'
 import type { ProfileEditorConfig, ProfileType } from '../types.ts'
-import { profileOuterVec2, profileInnerVec2s } from '../ifc/operations/extrusion.ts'
 
 const DEFAULT_ARBITRARY_CURVE: Vec2[] = [
   { x: 0, y: 0 },
@@ -111,120 +110,6 @@ export class ProfileEditor {
     }
     this._render()
     this._notify()
-  }
-
-  // ── SVG preview ─────────────────────────────────────────────────────────
-
-  private _buildSVG(): string {
-    const p = this.currentProfile
-    const PAD = 0.5
-
-    if (p.type === 'IfcRectangleProfileDef') {
-      const hw = p.xDim / 2, hh = p.yDim / 2
-      const vb = `${-hw - PAD} ${-hh - PAD} ${p.xDim + 2 * PAD} ${p.yDim + 2 * PAD}`
-      return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">
-        ${this._svgAxes(hw + PAD, hh + PAD)}
-        <rect x="${-hw}" y="${-hh}" width="${p.xDim}" height="${p.yDim}"
-              fill="rgba(255,128,26,0.18)" stroke="#ff801a" stroke-width="0.08"/>
-      </svg>`
-    }
-
-    if (p.type === 'IfcCircleProfileDef') {
-      const r = p.radius
-      const dim = 2 * (r + PAD)
-      const vb = `${-r - PAD} ${-r - PAD} ${dim} ${dim}`
-      return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">
-        ${this._svgAxes(r + PAD, r + PAD)}
-        <circle cx="0" cy="0" r="${r}"
-                fill="rgba(255,128,26,0.18)" stroke="#ff801a" stroke-width="0.08"/>
-      </svg>`
-    }
-
-    if (p.type === 'IfcRectangleHollowProfileDef') {
-      const hw = p.xDim / 2, hh = p.yDim / 2
-      const ihw = hw - p.wallThickness, ihh = hh - p.wallThickness
-      const vb = `${-hw - PAD} ${-hh - PAD} ${p.xDim + 2 * PAD} ${p.yDim + 2 * PAD}`
-      const sw = Math.max(p.xDim, p.yDim) * 0.015
-      return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">
-        ${this._svgAxes(hw + PAD, hh + PAD)}
-        <rect x="${-hw}" y="${-hh}" width="${p.xDim}" height="${p.yDim}"
-              fill="rgba(255,128,26,0.18)" stroke="#ff801a" stroke-width="${sw}"/>
-        <rect x="${-ihw}" y="${-ihh}" width="${ihw * 2}" height="${ihh * 2}"
-              fill="#1a1a2e" stroke="#ff801a" stroke-width="${sw}" stroke-dasharray="${sw * 2} ${sw}"/>
-      </svg>`
-    }
-
-    if (p.type === 'IfcCircleHollowProfileDef') {
-      const r = p.radius, ir = r - p.wallThickness
-      const dim = 2 * (r + PAD)
-      const vb = `${-r - PAD} ${-r - PAD} ${dim} ${dim}`
-      const sw = r * 0.03
-      return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">
-        ${this._svgAxes(r + PAD, r + PAD)}
-        <circle cx="0" cy="0" r="${r}"
-                fill="rgba(255,128,26,0.18)" stroke="#ff801a" stroke-width="${sw}"/>
-        <circle cx="0" cy="0" r="${ir}"
-                fill="#1a1a2e" stroke="#ff801a" stroke-width="${sw}" stroke-dasharray="${sw * 2} ${sw}"/>
-      </svg>`
-    }
-
-    // Polygon-based profiles (I-shape, L-shape, arbitrary)
-    const outer = profileOuterVec2(p)
-    const inners = profileInnerVec2s(p)
-
-    if (outer.length < 2) {
-      return `<svg viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg">
-        <text x="0" y="0" fill="#6a8aaa" font-size="1" text-anchor="middle">Add points</text>
-      </svg>`
-    }
-
-    const xs = outer.map(q => q.x), ys = outer.map(q => q.y)
-    const minX = Math.min(...xs), maxX = Math.max(...xs)
-    const minY = Math.min(...ys), maxY = Math.max(...ys)
-    const w = maxX - minX || 1, h = maxY - minY || 1
-    const vb = `${minX - PAD} ${minY - PAD} ${w + 2 * PAD} ${h + 2 * PAD}`
-    const sw = Math.max(w, h) * 0.015
-
-    const outerPts = outer.map(q => `${q.x},${q.y}`).join(' ')
-    let innerPaths = ''
-    for (const inner of inners) {
-      const pts = inner.map(q => `${q.x},${q.y}`).join(' ')
-      innerPaths += `<polygon points="${pts}" fill="#1a1a2e" stroke="#ff801a"
-        stroke-width="${sw}" stroke-dasharray="${sw * 2} ${sw}"/>`
-    }
-
-    // Vertex dots for arbitrary profiles
-    let dots = ''
-    if (p.type === 'IfcArbitraryClosedProfileDef' || p.type === 'IfcArbitraryProfileDefWithVoids') {
-      const dr = Math.max(w, h) * 0.025
-      dots = outer.map((q, i) =>
-        `<circle cx="${q.x}" cy="${q.y}" r="${dr}" fill="#4fc3f7">
-          <title>P${i} (${q.x.toFixed(2)}, ${q.y.toFixed(2)})</title>
-        </circle>`
-      ).join('')
-    }
-
-    const axisHalfW = Math.max(Math.abs(minX), Math.abs(maxX)) + PAD
-    const axisHalfH = Math.max(Math.abs(minY), Math.abs(maxY)) + PAD
-
-    return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">
-      ${this._svgAxes(axisHalfW, axisHalfH)}
-      <polygon points="${outerPts}"
-               fill="rgba(255,128,26,0.18)" stroke="#ff801a" stroke-width="${sw}"/>
-      ${innerPaths}
-      ${dots}
-    </svg>`
-  }
-
-  /** Light axis lines centred at origin, sized to fit the profile bounds. */
-  private _svgAxes(halfW: number, halfH: number): string {
-    const sw = Math.max(halfW, halfH) * 0.02
-    return `
-      <line x1="${-halfW}" y1="0" x2="${halfW}" y2="0"
-            stroke="#2a4a6a" stroke-width="${sw}"/>
-      <line x1="0" y1="${-halfH}" x2="0" y2="${halfH}"
-            stroke="#2a4a6a" stroke-width="${sw}"/>
-    `
   }
 
   // ── Parameter controls HTML ─────────────────────────────────────────────
@@ -358,11 +243,6 @@ export class ProfileEditor {
 
   // ── Render ───────────────────────────────────────────────────────────────
 
-  private _refreshPreview(): void {
-    const svg = this.container.querySelector<HTMLElement>('.profile-preview')
-    if (svg) svg.innerHTML = this._buildSVG()
-  }
-
   private _render(): void {
     const activeType = this._activeType()
 
@@ -375,9 +255,6 @@ export class ProfileEditor {
               ${this._typeLabel(t)}
             </button>
           `).join('')}
-        </div>
-        <div class="profile-preview">
-          ${this._buildSVG()}
         </div>
         <div class="profile-params">
           ${this._buildParamsHTML()}
@@ -480,7 +357,6 @@ export class ProfileEditor {
         } else {
           profile.outerCurve[idx] = { ...profile.outerCurve[idx], y: newVal }
         }
-        this._refreshPreview()
         this._notify()
       })
     }
@@ -518,7 +394,6 @@ export class ProfileEditor {
       const v = Number(input.value)
       updater(v)
       if (valEl) valEl.textContent = v.toFixed(2)
-      this._refreshPreview()
       this._notify()
     })
   }
