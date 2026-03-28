@@ -9,7 +9,8 @@ import type {
   Vec2,
 } from '../schema.ts'
 import { applyPlacement } from './placement.ts'
-import type { NormalizedExtrusion } from '../normalize.ts'
+import { normalizeExtrudedAreaSolid, type NormalizedExtrusion } from '../normalize.ts'
+import type { IfcExtrudedAreaSolid as IfcGeneratedExtrudedAreaSolid } from '../generated/schema.ts'
 
 const CIRCLE_SEGMENTS = 48
 
@@ -251,4 +252,19 @@ export function buildExtrusionMeshFromNormalized(
 
   mesh.material = material
   return mesh
+}
+
+/** Build an extrusion mesh from the generated IFC schema via the normalization layer. */
+export function buildExtrusionMeshFromGenerated(
+  scene: Scene,
+  solid: IfcGeneratedExtrudedAreaSolid,
+  material: StandardMaterial,
+  name: string,
+): Mesh {
+  return buildExtrusionMeshFromNormalized(
+    scene,
+    normalizeExtrudedAreaSolid(solid),
+    material,
+    name,
+  )
 }
