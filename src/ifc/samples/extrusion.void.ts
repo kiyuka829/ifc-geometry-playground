@@ -3,9 +3,9 @@ import type { Scene, Mesh } from '@babylonjs/core'
 import type { SampleDef, ParamValues } from '../../types.ts'
 import { getNumber } from '../../types.ts'
 import type { IfcArbitraryProfileDefWithVoids } from '../schema.ts'
-import { buildExtrusionMesh, buildProfileOutlines } from '../operations/extrusion.ts'
+import { buildExtrusionMesh } from '../operations/extrusion.ts'
 import { createExtrusionMaterial } from '../../engine/materials.ts'
-import { createAxisGizmo } from '../../engine/gizmos.ts'
+import { buildProfileOverlay, buildExtrusionDirectionOverlay } from '../../engine/overlays.ts'
 
 export const extrusionVoidSample: SampleDef = {
   id: 'extrusion-void',
@@ -81,12 +81,13 @@ export const extrusionVoidSample: SampleDef = {
     }
 
     if (stepIndex >= 0) {
-      const outlines = buildProfileOutlines(scene, profile, 'void_outline')
-      for (const l of outlines) meshes.push(l as unknown as Mesh)
-      meshes.push(createAxisGizmo(scene, Vector3.Zero(), 2))
+      meshes.push(...buildProfileOverlay(scene, profile, 'void_outline'))
     }
 
     if (stepIndex >= 2) {
+      const dir = new Vector3(0, 1, 0)
+      const arrow = buildExtrusionDirectionOverlay(scene, Vector3.Zero(), dir, depth, 'dir_arrow')
+      if (arrow) meshes.push(arrow)
       meshes.push(buildExtrusionMesh(scene, solid, createExtrusionMaterial(scene), 'extrusion_solid'))
     }
 

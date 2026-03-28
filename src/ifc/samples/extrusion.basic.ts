@@ -1,10 +1,10 @@
-import { Color3, Vector3 } from '@babylonjs/core'
+import { Vector3 } from '@babylonjs/core'
 import type { Scene, Mesh } from '@babylonjs/core'
 import type { SampleDef, ParamValues } from '../../types.ts'
 import { getNumber } from '../../types.ts'
-import { buildExtrusionMeshFromGenerated, buildProfileOutline } from '../operations/extrusion.ts'
+import { buildExtrusionMeshFromGenerated } from '../operations/extrusion.ts'
 import { createExtrusionMaterial } from '../../engine/materials.ts'
-import { createArrow, createAxisGizmo } from '../../engine/gizmos.ts'
+import { buildProfileOverlay, buildExtrusionDirectionOverlay } from '../../engine/overlays.ts'
 import type { IfcExtrudedAreaSolid } from '../generated/schema.ts'
 
 function createGeneratedExtrusionSolid(params: ParamValues): IfcExtrudedAreaSolid {
@@ -63,19 +63,13 @@ export const extrusionBasicSample: SampleDef = {
     }
 
     if (stepIndex >= 0) {
-      const outline = buildProfileOutline(scene, solid.sweptArea, 'profile_outline')
-      meshes.push(outline as unknown as Mesh)
-
-      const axis = createAxisGizmo(scene, Vector3.Zero(), 2)
-      meshes.push(axis)
+      meshes.push(...buildProfileOverlay(scene, solid.sweptArea, 'profile_outline'))
     }
 
     if (stepIndex >= 1) {
       const dir = new Vector3(getNumber(params, 'dirX'), getNumber(params, 'dirY'), getNumber(params, 'dirZ'))
-      if (dir.length() > 0.01) {
-        const arrow = createArrow(scene, Vector3.Zero(), dir, getNumber(params, 'depth'), new Color3(0.2, 0.9, 0.2), 'dir_arrow')
-        meshes.push(arrow)
-      }
+      const arrow = buildExtrusionDirectionOverlay(scene, Vector3.Zero(), dir, getNumber(params, 'depth'), 'dir_arrow')
+      if (arrow) meshes.push(arrow)
     }
 
     if (stepIndex >= 2) {

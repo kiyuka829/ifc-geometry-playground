@@ -428,21 +428,6 @@ body {
   color: #4fc3f7;
 }
 
-.profile-preview {
-  background: #0d1b2e;
-  border: 1px solid #1a2a4a;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  overflow: hidden;
-  line-height: 0;
-}
-
-.profile-preview svg {
-  width: 100%;
-  height: 160px;
-  display: block;
-}
-
 /* Arbitrary profile point list */
 .profile-points-list {
   display: flex;
