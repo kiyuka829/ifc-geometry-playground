@@ -193,11 +193,18 @@ export type IfcParameterizedProfileDef =
   | IfcUShapeProfileDef
   | IfcZShapeProfileDef;
 
+export type IfcAreaParameterizedProfileDef =
+    IfcParameterizedProfileDef extends infer T
+      ? T extends { profileType: IfcProfileTypeEnum }
+        ? Omit<T, 'profileType'> & { profileType: 'AREA' }
+        : never
+      : never;
+
 // ── Solid entities ────────────────────────────────────────────────
 
 export interface IfcExtrudedAreaSolid {
   type: 'IfcExtrudedAreaSolid';
-  sweptArea: IfcParameterizedProfileDef;
+  sweptArea: IfcAreaParameterizedProfileDef;
   position?: IfcAxis2Placement3D;
   extrudedDirection: IfcDirection;
   depth: number;

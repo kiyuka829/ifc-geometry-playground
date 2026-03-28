@@ -312,6 +312,15 @@ def generate_ts_file(schema, profile_entities: list[str]) -> str:
     union_lines[-1] += ";"
     blocks.append("\n".join(union_lines))
 
+    blocks.append(
+        "export type IfcAreaParameterizedProfileDef =\n"
+        "    IfcParameterizedProfileDef extends infer T\n"
+        "      ? T extends { profileType: IfcProfileTypeEnum }\n"
+        "        ? Omit<T, 'profileType'> & { profileType: 'AREA' }\n"
+        "        : never\n"
+        "      : never;"
+    )
+
     # --- Solid entities -------------------------------------------------
     blocks.append("// ── Solid entities ────────────────────────────────────────────────")
     for name in SOLID_ENTITIES:
@@ -331,9 +340,11 @@ def generate_ts_file(schema, profile_entities: list[str]) -> str:
 
             type_info = attr["type"]
             # SweptArea is IfcProfileDef (a broad select type); restrict to
-            # the parameterized profiles we actually support.
+            # supported parameterized AREA profiles; swept-area solids require
+            # SweptArea.ProfileType = AREA by formal proposition.
+            # Ref: https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcSweptAreaSolid.htm#:~:text=SweptAreaType,IfcProfileTypeEnum.Area
             if ifc_name == "IfcExtrudedAreaSolid" and attr_name == "SweptArea":
-                ts_type = "IfcParameterizedProfileDef"
+                ts_type = "IfcAreaParameterizedProfileDef"
             else:
                 ts_type = type_info_to_ts(type_info)
 
