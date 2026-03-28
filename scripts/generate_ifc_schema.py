@@ -15,7 +15,6 @@ Usage:
 
 import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import ifcopenshell
@@ -175,20 +174,25 @@ def get_supported_profile_entities(schema) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def generate_schema_json(schema, profile_entities: list[str]) -> dict:
-    """Build the full schema dict for all target entities."""
+def generate_schema_json(schema, profile_entities: list[str], errors: list[str]) -> dict:
+    """Build the full schema dict for all target entities.
+
+    Any per-entity errors are appended to *errors* so the caller can decide
+    whether to exit with a non-zero status.
+    """
     all_target_entities = GEOMETRY_ENTITIES + profile_entities + SOLID_ENTITIES
     entities: dict[str, dict] = {}
     for name in all_target_entities:
         try:
             entities[name] = get_entity_info(schema, name)
         except Exception as exc:  # noqa: BLE001
-            print(f"Warning: could not process {name}: {exc}", file=sys.stderr)
+            msg = f"could not process {name}: {exc}"
+            print(f"Error: {msg}", file=sys.stderr)
+            errors.append(msg)
             entities[name] = {"name": name, "error": str(exc)}
 
     return {
         "schemaVersion": SCHEMA_NAME,
-        "generatedAt": datetime.now(timezone.utc).isoformat(),
         "entities": entities,
     }
 
@@ -368,9 +372,11 @@ def main() -> None:
     schema = ifcopenshell.schema_by_name(SCHEMA_NAME)
     profile_entities = get_supported_profile_entities(schema)
 
+    errors: list[str] = []
+
     # -- JSON output -------------------------------------------------------
     json_path = OUTPUT_DIR / "schema.json"
-    schema_data = generate_schema_json(schema, profile_entities)
+    schema_data = generate_schema_json(schema, profile_entities, errors)
     json_path.write_text(json.dumps(schema_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Wrote {json_path.relative_to(REPO_ROOT)}")
 
@@ -379,6 +385,12 @@ def main() -> None:
     ts_content = generate_ts_file(schema, profile_entities)
     ts_path.write_text(ts_content, encoding="utf-8")
     print(f"Wrote {ts_path.relative_to(REPO_ROOT)}")
+
+    if errors:
+        print(f"\n{len(errors)} error(s) occurred during generation:", file=sys.stderr)
+        for err in errors:
+            print(f"  - {err}", file=sys.stderr)
+        sys.exit(1)
 
     print("Done.")
 
