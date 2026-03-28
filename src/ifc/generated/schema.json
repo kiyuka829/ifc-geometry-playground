@@ -1,0 +1,1109 @@
+{
+  "schemaVersion": "IFC4X3_ADD2",
+  "entities": {
+    "IfcCartesianPoint": {
+      "name": "IfcCartesianPoint",
+      "supertype": "IfcPoint",
+      "attributes": [
+        {
+          "name": "Coordinates",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcLengthMeasure"
+            }
+          }
+        }
+      ]
+    },
+    "IfcDirection": {
+      "name": "IfcDirection",
+      "supertype": "IfcGeometricRepresentationItem",
+      "attributes": [
+        {
+          "name": "DirectionRatios",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcReal"
+            }
+          }
+        }
+      ]
+    },
+    "IfcAxis2Placement2D": {
+      "name": "IfcAxis2Placement2D",
+      "supertype": "IfcPlacement",
+      "attributes": [
+        {
+          "name": "Location",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPoint"
+          }
+        },
+        {
+          "name": "RefDirection",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        }
+      ]
+    },
+    "IfcAxis2Placement3D": {
+      "name": "IfcAxis2Placement3D",
+      "supertype": "IfcPlacement",
+      "attributes": [
+        {
+          "name": "Location",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPoint"
+          }
+        },
+        {
+          "name": "Axis",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        },
+        {
+          "name": "RefDirection",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        }
+      ]
+    },
+    "IfcAsymmetricIShapeProfileDef": {
+      "name": "IfcAsymmetricIShapeProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "BottomFlangeWidth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "OverallDepth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WebThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "BottomFlangeThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "BottomFlangeFilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "TopFlangeWidth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "TopFlangeThickness",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "TopFlangeFilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "BottomFlangeEdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "BottomFlangeSlope",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
+          }
+        },
+        {
+          "name": "TopFlangeEdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "TopFlangeSlope",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
+          }
+        }
+      ]
+    },
+    "IfcCShapeProfileDef": {
+      "name": "IfcCShapeProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "Depth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "Width",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WallThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "Girth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "InternalFilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcCircleProfileDef": {
+      "name": "IfcCircleProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "Radius",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcCircleHollowProfileDef": {
+      "name": "IfcCircleHollowProfileDef",
+      "supertype": "IfcCircleProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "Radius",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WallThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcEllipseProfileDef": {
+      "name": "IfcEllipseProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "SemiAxis1",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "SemiAxis2",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcIShapeProfileDef": {
+      "name": "IfcIShapeProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "OverallWidth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "OverallDepth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WebThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeEdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeSlope",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
+          }
+        }
+      ]
+    },
+    "IfcLShapeProfileDef": {
+      "name": "IfcLShapeProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "Depth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "Width",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "Thickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "EdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "LegSlope",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
+          }
+        }
+      ]
+    },
+    "IfcRectangleProfileDef": {
+      "name": "IfcRectangleProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "XDim",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "YDim",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcRectangleHollowProfileDef": {
+      "name": "IfcRectangleHollowProfileDef",
+      "supertype": "IfcRectangleProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "XDim",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "YDim",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WallThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "InnerFilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "OuterFilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcRoundedRectangleProfileDef": {
+      "name": "IfcRoundedRectangleProfileDef",
+      "supertype": "IfcRectangleProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "XDim",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "YDim",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "RoundingRadius",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcTShapeProfileDef": {
+      "name": "IfcTShapeProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "Depth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeWidth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WebThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeEdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "WebEdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "WebSlope",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
+          }
+        },
+        {
+          "name": "FlangeSlope",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
+          }
+        }
+      ]
+    },
+    "IfcUShapeProfileDef": {
+      "name": "IfcUShapeProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "Depth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeWidth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WebThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "EdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeSlope",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
+          }
+        }
+      ]
+    },
+    "IfcZShapeProfileDef": {
+      "name": "IfcZShapeProfileDef",
+      "supertype": "IfcParameterizedProfileDef",
+      "attributes": [
+        {
+          "name": "ProfileType",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcProfileTypeEnum",
+            "values": [
+              "AREA",
+              "CURVE"
+            ]
+          }
+        },
+        {
+          "name": "ProfileName",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement2D"
+          }
+        },
+        {
+          "name": "Depth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeWidth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "WebThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FlangeThickness",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "FilletRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        },
+        {
+          "name": "EdgeRadius",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcNonNegativeLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcExtrudedAreaSolid": {
+      "name": "IfcExtrudedAreaSolid",
+      "supertype": "IfcSweptAreaSolid",
+      "attributes": [
+        {
+          "name": "SweptArea",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcProfileDef"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement3D"
+          }
+        },
+        {
+          "name": "ExtrudedDirection",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        },
+        {
+          "name": "Depth",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    }
+  }
+}
