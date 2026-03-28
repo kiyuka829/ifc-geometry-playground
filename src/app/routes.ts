@@ -147,16 +147,6 @@ export const routes: Route[] = [
     status: "available",
   },
   {
-    hash: "#/examples/extrusion-void",
-    title: "Profile with Void (IfcArbitraryProfileDefWithVoids)",
-    description:
-      "Extrudes a profile with an opening (IfcExtrudedAreaSolid + IfcArbitraryProfileDefWithVoids).",
-    sampleId: "extrusion-void",
-    category: "Swept Solid",
-    difficulty: "intermediate",
-    status: "available",
-  },
-  {
     hash: "#/examples/tessellation",
     title: "Triangulated Face Set",
     description:

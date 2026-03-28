@@ -8,7 +8,6 @@ import { extrusionRectHollowSample } from "../ifc/samples/extrusion.rect-hollow.
 import { extrusionCircleHollowSample } from "../ifc/samples/extrusion.circle-hollow.ts";
 import { extrusionIShapeSample } from "../ifc/samples/extrusion.i-shape.ts";
 import { extrusionLShapeSample } from "../ifc/samples/extrusion.l-shape.ts";
-import { extrusionVoidSample } from "../ifc/samples/extrusion.void.ts";
 import { sweptDiskBasicSample } from "../ifc/samples/swept-disk.basic.ts";
 import type { SampleDef } from "../types.ts";
 
@@ -20,7 +19,6 @@ const samples: Record<string, SampleDef> = {
   "extrusion-circle-hollow": extrusionCircleHollowSample,
   "extrusion-i-shape": extrusionIShapeSample,
   "extrusion-l-shape": extrusionLShapeSample,
-  "extrusion-void": extrusionVoidSample,
   "swept-disk-basic": sweptDiskBasicSample,
 };
 
