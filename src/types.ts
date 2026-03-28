@@ -26,23 +26,6 @@ export interface Vec3 { x: number; y: number; z: number }
 /** Backward-compatible alias for IfcProfileTypeEnum. */
 export type IfcProfileType = IfcProfileTypeEnum
 
-// ── Simplified IFC geometry types (UI-domain, Vec3-based) ─────────────────
-// These use plain Vec3 coordinates for ease of use in the playground.
-// For IFC-compliant output (IfcCartesianPoint / number[] direction ratios),
-// use the types from src/ifc/generated/schema.ts.
-
-/** Simplified extrusion direction using Vec3 (playground UI representation). */
-export interface IfcDirection {
-  directionRatios: Vec3
-}
-
-/** Simplified 3D placement using Vec3 (playground UI representation). */
-export interface IfcAxis2Placement3D {
-  location: Vec3
-  axis?: Vec3
-  refDirection?: Vec3
-}
-
 // ── Arbitrary profile types (UI-friendly, Vec2-based) ─────────────────────
 /** Arbitrary closed profile with outer curve as Vec2 list. */
 export interface IfcArbitraryClosedProfileDef {
@@ -69,28 +52,6 @@ export type IfcProfileDef =
   | IfcAreaParameterizedProfileDef
   | IfcArbitraryClosedProfileDef
   | IfcArbitraryProfileDefWithVoids
-
-// ── UI-domain solid and operation types ───────────────────────────────────
-/**
- * Extruded area solid for the playground's old rendering path.
- * Uses simplified Vec3-based placements and accepts any IfcProfileDef.
- * For the IFC-compliant version, use src/ifc/generated/schema.ts.
- */
-export interface IfcExtrudedAreaSolid {
-  type: 'IfcExtrudedAreaSolid'
-  sweptArea: IfcProfileDef
-  position?: IfcAxis2Placement3D
-  extrudedDirection: IfcDirection
-  depth: number
-}
-
-/** Boolean set operation on two solids. */
-export interface IfcBooleanResult {
-  type: 'IfcBooleanResult'
-  operator: 'DIFFERENCE' | 'UNION' | 'INTERSECTION'
-  firstOperand: IfcExtrudedAreaSolid | IfcBooleanResult
-  secondOperand: IfcExtrudedAreaSolid | IfcBooleanResult
-}
 
 /** A polyline directrix used as the sweep path for swept-solid types. */
 export interface IfcPolyline {

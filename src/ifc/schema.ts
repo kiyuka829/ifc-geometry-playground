@@ -15,13 +15,9 @@ export type {
   Vec2,
   Vec3,
   IfcProfileType,
-  IfcDirection,
-  IfcAxis2Placement3D,
   IfcArbitraryClosedProfileDef,
   IfcArbitraryProfileDefWithVoids,
   IfcProfileDef,
-  IfcExtrudedAreaSolid,
-  IfcBooleanResult,
   IfcPolyline,
   IfcSweptDiskSolid,
 } from '../types.ts'
