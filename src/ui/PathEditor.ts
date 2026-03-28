@@ -1,4 +1,4 @@
-import type { Vec3 } from '../ifc/schema.ts'
+import type { Vec3 } from '../types.ts'
 import type { PathEditorConfig } from '../types.ts'
 
 const DEFAULT_COORD_STEP = 0.5

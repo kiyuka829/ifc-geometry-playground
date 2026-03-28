@@ -8,7 +8,7 @@ import type {
   IfcLShapeProfileDef,
   IfcArbitraryClosedProfileDef,
   Vec2,
-} from '../ifc/schema.ts'
+} from '../types.ts'
 import type { ProfileEditorConfig, ProfileType } from '../types.ts'
 
 const DEFAULT_ARBITRARY_CURVE: Vec2[] = [
@@ -62,6 +62,9 @@ export class ProfileEditor {
       case 'IfcLShapeProfileDef':         return 'l-shape'
       case 'IfcArbitraryClosedProfileDef':
       case 'IfcArbitraryProfileDefWithVoids': return 'arbitrary'
+      default:
+        // Unsupported generated profile type — fall back to rectangle tab
+        return this.config.allowedTypes[0] ?? 'rectangle'
     }
   }
 
@@ -176,13 +179,13 @@ export class ProfileEditor {
 
     if (p.type === 'IfcLShapeProfileDef') {
       const lsThkMin = 0.05
-      const lsThkRawMax = Math.min(p.depth, p.width) / 2
+      const lsThkRawMax = Math.min(p.depth, p.width ?? p.depth) / 2
       const lsThkMax = Math.max(lsThkMin, lsThkRawMax)
       const lsThk = Math.min(Math.max(p.thickness, lsThkMin), lsThkMax)
       p.thickness = lsThk
       return `
         ${this._sliderHTML('ls-d', 'Depth', p.depth, 0.5, 10, 0.1)}
-        ${this._sliderHTML('ls-w', 'Width', p.width, 0.5, 10, 0.1)}
+        ${this._sliderHTML('ls-w', 'Width', p.width ?? p.depth, 0.5, 10, 0.1)}
         ${this._sliderHTML('ls-t', 'Thickness', lsThk, lsThkMin, lsThkMax, 0.05)}
       `
     }
@@ -332,13 +335,13 @@ export class ProfileEditor {
     this._bindSlider('ls-d', v => {
       const prof = this.currentProfile as IfcLShapeProfileDef
       prof.depth = v
-      const max = Math.max(0.05, Math.min(prof.depth, prof.width) / 2)
+      const max = Math.max(0.05, Math.min(prof.depth, prof.width ?? prof.depth) / 2)
       prof.thickness = this._clampDependentSlider('ls-t', max)
     })
     this._bindSlider('ls-w', v => {
       const prof = this.currentProfile as IfcLShapeProfileDef
       prof.width = v
-      const max = Math.max(0.05, Math.min(prof.depth, prof.width) / 2)
+      const max = Math.max(0.05, Math.min(prof.depth, prof.width ?? prof.depth) / 2)
       prof.thickness = this._clampDependentSlider('ls-t', max)
     })
     this._bindSlider('ls-t', v => {

@@ -7,7 +7,7 @@ import type {
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
   Vec2,
-} from '../schema.ts'
+} from '../../types.ts'
 import { applyPlacement } from './placement.ts'
 import { normalizeExtrudedAreaSolid, type NormalizedExtrusion } from '../normalize.ts'
 import type { IfcExtrudedAreaSolid as IfcGeneratedExtrudedAreaSolid } from '../generated/schema.ts'
@@ -47,16 +47,17 @@ function iShapeVec2(p: IfcIShapeProfileDef): Vec2[] {
 }
 
 function lShapeVec2(p: IfcLShapeProfileDef): Vec2[] {
-  const cx = p.width / 2
+  const w = p.width ?? p.depth
+  const cx = w / 2
   const cy = p.depth / 2
   const t = p.thickness
   return [
-    { x: 0 - cx,       y: 0 - cy },
-    { x: p.width - cx, y: 0 - cy },
-    { x: p.width - cx, y: t - cy },
-    { x: t - cx,       y: t - cy },
-    { x: t - cx,       y: p.depth - cy },
-    { x: 0 - cx,       y: p.depth - cy },
+    { x: 0 - cx,   y: 0 - cy },
+    { x: w - cx,   y: 0 - cy },
+    { x: w - cx,   y: t - cy },
+    { x: t - cx,   y: t - cy },
+    { x: t - cx,   y: p.depth - cy },
+    { x: 0 - cx,   y: p.depth - cy },
   ]
 }
 
@@ -84,6 +85,10 @@ export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
     case 'IfcArbitraryClosedProfileDef':
     case 'IfcArbitraryProfileDefWithVoids':
       return profile.outerCurve
+    default: {
+      const unsupported = profile as { type: string }
+      throw new Error(`profileOuterVec2: unsupported profile type '${unsupported.type}'`)
+    }
   }
 }
 

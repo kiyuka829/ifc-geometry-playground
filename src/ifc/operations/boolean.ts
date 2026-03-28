@@ -1,7 +1,7 @@
 import { Color3 } from '@babylonjs/core'
 import type { Scene, Mesh } from '@babylonjs/core'
 import { CSG } from '@babylonjs/core/Meshes/csg.js'
-import type { IfcBooleanResult, IfcExtrudedAreaSolid } from '../schema.ts'
+import type { IfcBooleanResult, IfcExtrudedAreaSolid } from '../../types.ts'
 import { buildExtrusionMesh } from './extrusion.ts'
 import { createSolidMaterial, createGhostMaterial } from '../../engine/materials.ts'
 
