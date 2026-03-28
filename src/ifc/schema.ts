@@ -20,7 +20,7 @@ export type {
   IfcProfileDef,
   IfcPolyline,
   IfcSweptDiskSolid,
-} from '../types.ts'
+} from "../types.ts";
 
 export type {
   IfcRectangleProfileDef,
@@ -29,4 +29,4 @@ export type {
   IfcCircleHollowProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
-} from './generated/schema.ts'
+} from "./generated/schema.ts";

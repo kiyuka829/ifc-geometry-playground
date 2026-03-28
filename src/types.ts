@@ -1,6 +1,9 @@
-import type { Scene } from '@babylonjs/core'
-import type { Mesh } from '@babylonjs/core'
-import type { IfcAreaParameterizedProfileDef, IfcProfileTypeEnum } from './ifc/generated/schema.ts'
+import type { Scene } from "@babylonjs/core";
+import type { Mesh } from "@babylonjs/core";
+import type {
+  IfcAreaParameterizedProfileDef,
+  IfcProfileTypeEnum,
+} from "./ifc/generated/schema.ts";
 
 // ── Re-export generated parameterized profile types ───────────────────────
 // These are the canonical IFC-spec types. Import from here rather than from
@@ -15,31 +18,38 @@ export type {
   IfcCircleHollowProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
-} from './ifc/generated/schema.ts'
+} from "./ifc/generated/schema.ts";
 
 // ── UI model coordinate types ──────────────────────────────────────────────
 /** 2D coordinate used in profile editing (outerCurve / innerCurves). */
-export interface Vec2 { x: number; y: number }
+export interface Vec2 {
+  x: number;
+  y: number;
+}
 /** 3D coordinate used in path editing and simplified IFC placements. */
-export interface Vec3 { x: number; y: number; z: number }
+export interface Vec3 {
+  x: number;
+  y: number;
+  z: number;
+}
 
 /** Backward-compatible alias for IfcProfileTypeEnum. */
-export type IfcProfileType = IfcProfileTypeEnum
+export type IfcProfileType = IfcProfileTypeEnum;
 
 // ── Arbitrary profile types (UI-friendly, Vec2-based) ─────────────────────
 /** Arbitrary closed profile with outer curve as Vec2 list. */
 export interface IfcArbitraryClosedProfileDef {
-  type: 'IfcArbitraryClosedProfileDef'
-  profileType: IfcProfileTypeEnum
-  outerCurve: Vec2[]
+  type: "IfcArbitraryClosedProfileDef";
+  profileType: IfcProfileTypeEnum;
+  outerCurve: Vec2[];
 }
 
 /** Closed profile with one or more inner voids (holes). */
 export interface IfcArbitraryProfileDefWithVoids {
-  type: 'IfcArbitraryProfileDefWithVoids'
-  profileType: IfcProfileTypeEnum
-  outerCurve: Vec2[]
-  innerCurves: Vec2[][]
+  type: "IfcArbitraryProfileDefWithVoids";
+  profileType: IfcProfileTypeEnum;
+  outerCurve: Vec2[];
+  innerCurves: Vec2[][];
 }
 
 // ── Unified profile union type ─────────────────────────────────────────────
@@ -51,12 +61,12 @@ export interface IfcArbitraryProfileDefWithVoids {
 export type IfcProfileDef =
   | IfcAreaParameterizedProfileDef
   | IfcArbitraryClosedProfileDef
-  | IfcArbitraryProfileDefWithVoids
+  | IfcArbitraryProfileDefWithVoids;
 
 /** A polyline directrix used as the sweep path for swept-solid types. */
 export interface IfcPolyline {
-  type: 'IfcPolyline'
-  points: Vec3[]
+  type: "IfcPolyline";
+  points: Vec3[];
 }
 
 /**
@@ -64,18 +74,18 @@ export interface IfcPolyline {
  * directrix to produce a solid.
  */
 export interface IfcSweptDiskSolid {
-  type: 'IfcSweptDiskSolid'
-  directrix: IfcPolyline
+  type: "IfcSweptDiskSolid";
+  directrix: IfcPolyline;
   /** Outer radius of the disk. */
-  radius: number
+  radius: number;
   /** Inner radius for a hollow pipe; omit for a solid rod. */
-  innerRadius?: number
+  innerRadius?: number;
 }
 
 export interface NumberParameterDef {
   key: string;
   label: string;
-  type: 'number';
+  type: "number";
   min: number;
   max: number;
   step: number;
@@ -90,7 +100,7 @@ export interface SelectOption {
 export interface SelectParameterDef {
   key: string;
   label: string;
-  type: 'select';
+  type: "select";
   options: SelectOption[];
   defaultValue: string;
 }
@@ -101,7 +111,7 @@ export type ParamValues = Record<string, number | string>;
 
 export function getNumber(params: ParamValues, key: string): number {
   const value = params[key];
-  if (typeof value !== 'number') {
+  if (typeof value !== "number") {
     throw new Error(`Expected numeric param "${key}", got ${typeof value}`);
   }
   return value;
@@ -114,7 +124,10 @@ export function getSelect<T extends string>(
   defaultValue: T,
 ): T {
   const value = params[key];
-  if (typeof value === 'string' && (validValues as readonly string[]).includes(value)) {
+  if (
+    typeof value === "string" &&
+    (validValues as readonly string[]).includes(value)
+  ) {
     return value as T;
   }
   return defaultValue;
@@ -128,13 +141,13 @@ export interface StepDef {
 
 /** Which profile types the ProfileEditor should expose for a given sample. */
 export type ProfileType =
-  | 'rectangle'
-  | 'circle'
-  | 'rect-hollow'
-  | 'circle-hollow'
-  | 'i-shape'
-  | 'l-shape'
-  | 'arbitrary';
+  | "rectangle"
+  | "circle"
+  | "rect-hollow"
+  | "circle-hollow"
+  | "i-shape"
+  | "l-shape"
+  | "arbitrary";
 
 export interface ProfileEditorConfig {
   /** Profile types shown as selectable tabs in the editor. */
