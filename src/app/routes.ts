@@ -1,12 +1,16 @@
 export type GeometryCategory =
-  | "Swept Solid"
+  | "ExtrudedAreaSolid"
+  | "Swept Disk Solid"
+  | "Revolved Area Solid"
   | "Boolean"
   | "Tessellation"
   | "BRep"
   | "Alignment";
 
 export const GEOMETRY_CATEGORIES: GeometryCategory[] = [
-  "Swept Solid",
+  "ExtrudedAreaSolid",
+  "Swept Disk Solid",
+  "Revolved Area Solid",
   "Boolean",
   "Tessellation",
   "BRep",
@@ -54,7 +58,7 @@ export const routes: Route[] = [
     description:
       "Extrudes a rectangular cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcRectangleProfileDef).",
     sampleId: "extrusion-rectangle",
-    category: "Swept Solid",
+    category: "ExtrudedAreaSolid",
     difficulty: "beginner",
     status: "available",
   },
@@ -64,7 +68,7 @@ export const routes: Route[] = [
     description:
       "Sweeps a circular disk along a 3-D polyline path to create a rod or hollow pipe (IfcSweptDiskSolid).",
     sampleId: "swept-disk-basic",
-    category: "Swept Solid",
+    category: "Swept Disk Solid",
     difficulty: "intermediate",
     status: "available",
   },
@@ -73,7 +77,7 @@ export const routes: Route[] = [
     title: "Revolved Area Solid",
     description:
       "Revolves a 2D profile around an axis to create a 3D solid (IfcRevolvedAreaSolid).",
-    category: "Swept Solid",
+    category: "Revolved Area Solid",
     difficulty: "intermediate",
     status: "planned",
   },
@@ -102,7 +106,7 @@ export const routes: Route[] = [
     description:
       "Extrudes a circular cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcCircleProfileDef).",
     sampleId: "extrusion-circle",
-    category: "Swept Solid",
+    category: "ExtrudedAreaSolid",
     difficulty: "beginner",
     status: "available",
   },
@@ -112,7 +116,7 @@ export const routes: Route[] = [
     description:
       "Extrudes a rectangular hollow cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcRectangleHollowProfileDef).",
     sampleId: "extrusion-rect-hollow",
-    category: "Swept Solid",
+    category: "ExtrudedAreaSolid",
     difficulty: "beginner",
     status: "available",
   },
@@ -122,7 +126,7 @@ export const routes: Route[] = [
     description:
       "Extrudes a circular hollow cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcCircleHollowProfileDef).",
     sampleId: "extrusion-circle-hollow",
-    category: "Swept Solid",
+    category: "ExtrudedAreaSolid",
     difficulty: "beginner",
     status: "available",
   },
@@ -132,7 +136,7 @@ export const routes: Route[] = [
     description:
       "Extrudes an I-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcIShapeProfileDef).",
     sampleId: "extrusion-i-shape",
-    category: "Swept Solid",
+    category: "ExtrudedAreaSolid",
     difficulty: "beginner",
     status: "available",
   },
@@ -142,7 +146,7 @@ export const routes: Route[] = [
     description:
       "Extrudes an L-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcLShapeProfileDef).",
     sampleId: "extrusion-l-shape",
-    category: "Swept Solid",
+    category: "ExtrudedAreaSolid",
     difficulty: "beginner",
     status: "available",
   },
