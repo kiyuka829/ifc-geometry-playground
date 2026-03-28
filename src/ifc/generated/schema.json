@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "IFC4",
-  "generatedAt": "2026-03-28T16:36:40.536762+00:00",
+  "schemaVersion": "IFC4X3_ADD2",
+  "generatedAt": "2026-03-28T16:42:23.388060+00:00",
   "entities": {
     "IfcCartesianPoint": {
       "name": "IfcCartesianPoint",
@@ -47,7 +47,7 @@
           "optional": false,
           "type": {
             "kind": "entity",
-            "name": "IfcCartesianPoint"
+            "name": "IfcPoint"
           }
         },
         {
@@ -69,7 +69,7 @@
           "optional": false,
           "type": {
             "kind": "entity",
-            "name": "IfcCartesianPoint"
+            "name": "IfcPoint"
           }
         },
         {
@@ -101,8 +101,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -231,8 +231,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -305,8 +305,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -347,8 +347,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -397,8 +397,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -447,8 +447,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -537,8 +537,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -619,8 +619,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -669,8 +669,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -743,8 +743,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -801,8 +801,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -907,8 +907,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
@@ -997,8 +997,8 @@
             "kind": "enumeration",
             "ifcType": "IfcProfileTypeEnum",
             "values": [
-              "CURVE",
-              "AREA"
+              "AREA",
+              "CURVE"
             ]
           }
         },
