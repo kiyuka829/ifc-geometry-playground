@@ -4,6 +4,7 @@ import type {
   ParamValues,
   IfcProfileDef,
   IfcAxis2Placement3D,
+  ExtrusionParams,
   Vec3,
   SweepViewState,
 } from "../types.ts";
@@ -14,6 +15,7 @@ import { ParameterPanel } from "../ui/ParameterPanel.ts";
 import { Stepper } from "../ui/Stepper.ts";
 import { ProfileEditor } from "../ui/ProfileEditor.ts";
 import { PathEditor } from "../ui/PathEditor.ts";
+import { ExtrusionEditor } from "../ui/ExtrusionEditor.ts";
 import { PlacementEditor } from "../ui/PlacementEditor.ts";
 import { SweepViewToggles } from "../ui/SweepViewToggles.ts";
 
@@ -28,6 +30,7 @@ export class ExamplePage {
   private currentStep = 0;
   private currentProfile: IfcProfileDef | undefined = undefined;
   private currentPath: Vec3[] | undefined = undefined;
+  private currentExtrusion: ExtrusionParams | undefined = undefined;
   private currentPlacement: IfcAxis2Placement3D | undefined = undefined;
   private currentSweepView: SweepViewState | undefined = undefined;
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -54,6 +57,13 @@ export class ExamplePage {
         ) as Vec3[])
       : undefined;
 
+    // Seed extrusion from config default (if any)
+    this.currentExtrusion = sample.extrusionEditorConfig
+      ? (JSON.parse(
+          JSON.stringify(sample.extrusionEditorConfig.defaultExtrusion),
+        ) as ExtrusionParams)
+      : undefined;
+
     // Seed placement from config default (if any)
     this.currentPlacement = sample.placementEditorConfig
       ? (JSON.parse(
@@ -72,6 +82,7 @@ export class ExamplePage {
 
     const hasProfileEditor = Boolean(sample.profileEditorConfig);
     const hasPathEditor = Boolean(sample.pathEditorConfig);
+    const hasExtrusionEditor = Boolean(sample.extrusionEditorConfig);
     const hasPlacementEditor = Boolean(sample.placementEditorConfig);
     const hasSweepToggles = Boolean(sample.sweepViewConfig);
 
@@ -105,9 +116,19 @@ export class ExamplePage {
                 : ""
             }
             ${
-              hasPlacementEditor
+              hasExtrusionEditor
                 ? `
               <div class="params-title${hasProfileEditor || hasPathEditor ? " left-panel-section-mt" : ""}">
+                ${sample.extrusionEditorConfig!.label ?? "Extrusion"}
+              </div>
+              <div id="extrusion-editor-panel"></div>
+            `
+                : ""
+            }
+            ${
+              hasPlacementEditor
+                ? `
+              <div class="params-title${hasProfileEditor || hasPathEditor || hasExtrusionEditor ? " left-panel-section-mt" : ""}">
                 ${sample.placementEditorConfig!.label ?? "Placement"}
               </div>
               <div id="placement-editor-panel"></div>
@@ -125,7 +146,7 @@ export class ExamplePage {
             ${
               sample.parameters.length > 0
                 ? `
-              <div class="params-title${hasProfileEditor || hasPathEditor || hasPlacementEditor || hasSweepToggles ? " left-panel-section-mt" : ""}">Parameters</div>
+              <div class="params-title${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasPlacementEditor || hasSweepToggles ? " left-panel-section-mt" : ""}">Parameters</div>
               <div id="param-panel"></div>
             `
                 : ""
@@ -178,6 +199,21 @@ export class ExamplePage {
       );
       pathEditor.onChange((path) => {
         this.currentPath = path;
+        this._scheduleRebuild(sample.debounceMs ?? 0);
+      });
+    }
+
+    // Extrusion editor (optional)
+    const extrusionEditorContainer = document.getElementById(
+      "extrusion-editor-panel",
+    );
+    if (extrusionEditorContainer && sample.extrusionEditorConfig) {
+      const extrusionEditor = new ExtrusionEditor(
+        extrusionEditorContainer,
+        sample.extrusionEditorConfig,
+      );
+      extrusionEditor.onChange((extrusion) => {
+        this.currentExtrusion = extrusion;
         this._scheduleRebuild(sample.debounceMs ?? 0);
       });
     }
@@ -260,6 +296,7 @@ export class ExamplePage {
       this.currentStep,
       this.currentProfile,
       this.currentPath,
+      this.currentExtrusion,
       this.currentPlacement,
       this.currentSweepView,
     );

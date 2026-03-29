@@ -2,6 +2,7 @@ import type { Scene, Mesh } from "@babylonjs/core";
 import type {
   SampleDef,
   ParamValues,
+  ExtrusionParams,
   IfcProfileDef,
   Vec3,
   IfcAxis2Placement3D,
@@ -123,6 +124,7 @@ export const booleanDifferenceSample: SampleDef = {
     stepIndex: number,
     _profile?: IfcProfileDef,
     _path?: Vec3[],
+    _extrusion?: ExtrusionParams,
     _placement?: IfcAxis2Placement3D,
     _sweepView?: SweepViewState,
   ): Mesh[] => {

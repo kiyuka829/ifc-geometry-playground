@@ -4,6 +4,7 @@ import type {
   ParamValues,
   Vec3,
   SweepViewState,
+  ExtrusionParams,
   IfcProfileDef,
   IfcAxis2Placement3D,
 } from "../../types.ts";
@@ -87,6 +88,7 @@ export const sweptDiskBasicSample: SampleDef = {
     stepIndex: number,
     _profile?: IfcProfileDef,
     path?: Vec3[],
+    _extrusion?: ExtrusionParams,
     _placement?: IfcAxis2Placement3D,
     sweepView?: SweepViewState,
   ): Mesh[] => {
