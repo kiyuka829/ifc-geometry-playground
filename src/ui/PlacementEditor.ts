@@ -50,14 +50,24 @@ export class PlacementEditor {
     const wrapper = document.createElement("div");
     wrapper.className = "placement-editor";
 
-    const sectionTitle = (text: string): HTMLDivElement => {
-      const title = document.createElement("div");
-      title.className = "param-label";
-      title.textContent = text;
-      return title;
+    /** Create a collapsible sub-section and return its content container. */
+    const makeSection = (title: string, open = true): HTMLElement => {
+      const details = document.createElement("details");
+      details.className = "inner-collapsible";
+      if (open) details.open = true;
+      const summary = document.createElement("summary");
+      summary.className = "inner-collapsible-title";
+      summary.textContent = title;
+      details.appendChild(summary);
+      const content = document.createElement("div");
+      content.className = "inner-collapsible-content";
+      details.appendChild(content);
+      wrapper.appendChild(details);
+      return content;
     };
 
     const addSlider = (
+      target: HTMLElement,
       labelText: string,
       value: number,
       min: number,
@@ -95,11 +105,12 @@ export class PlacementEditor {
 
       group.appendChild(label);
       group.appendChild(slider);
-      wrapper.appendChild(group);
+      target.appendChild(group);
     };
 
-    wrapper.appendChild(sectionTitle("Location"));
+    const locationSection = makeSection("Location");
     addSlider(
+      locationSection,
       "X",
       this.placement.location.x,
       LOCATION_MIN,
@@ -110,6 +121,7 @@ export class PlacementEditor {
       },
     );
     addSlider(
+      locationSection,
       "Y",
       this.placement.location.y,
       LOCATION_MIN,
@@ -120,6 +132,7 @@ export class PlacementEditor {
       },
     );
     addSlider(
+      locationSection,
       "Z",
       this.placement.location.z,
       LOCATION_MIN,
@@ -131,8 +144,9 @@ export class PlacementEditor {
     );
 
     const axis = this.placement.axis ?? { x: 0, y: 0, z: 1 };
-    wrapper.appendChild(sectionTitle("Axis (Z direction)"));
+    const axisSection = makeSection("Axis (Z direction)");
     addSlider(
+      axisSection,
       "X",
       axis.x,
       DIRECTION_MIN,
@@ -147,6 +161,7 @@ export class PlacementEditor {
       },
     );
     addSlider(
+      axisSection,
       "Y",
       axis.y,
       DIRECTION_MIN,
@@ -161,6 +176,7 @@ export class PlacementEditor {
       },
     );
     addSlider(
+      axisSection,
       "Z",
       axis.z,
       DIRECTION_MIN,
@@ -176,8 +192,9 @@ export class PlacementEditor {
     );
 
     const refDirection = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
-    wrapper.appendChild(sectionTitle("RefDirection (X direction)"));
+    const refDirSection = makeSection("RefDirection (X direction)");
     addSlider(
+      refDirSection,
       "X",
       refDirection.x,
       DIRECTION_MIN,
@@ -192,6 +209,7 @@ export class PlacementEditor {
       },
     );
     addSlider(
+      refDirSection,
       "Y",
       refDirection.y,
       DIRECTION_MIN,
@@ -206,6 +224,7 @@ export class PlacementEditor {
       },
     );
     addSlider(
+      refDirSection,
       "Z",
       refDirection.z,
       DIRECTION_MIN,

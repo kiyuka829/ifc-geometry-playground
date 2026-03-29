@@ -75,10 +75,17 @@ export class ExtrusionEditor {
     depthGroup.appendChild(depthInput);
     wrapper.appendChild(depthGroup);
 
-    const dirTitle = document.createElement("div");
-    dirTitle.className = "param-label";
-    dirTitle.textContent = "Extruded Direction";
-    wrapper.appendChild(dirTitle);
+    const dirDetails = document.createElement("details");
+    dirDetails.className = "inner-collapsible";
+    dirDetails.open = true;
+    const dirSummary = document.createElement("summary");
+    dirSummary.className = "inner-collapsible-title";
+    dirSummary.textContent = "Extruded Direction";
+    dirDetails.appendChild(dirSummary);
+    const dirContent = document.createElement("div");
+    dirContent.className = "inner-collapsible-content";
+    dirDetails.appendChild(dirContent);
+    wrapper.appendChild(dirDetails);
 
     const dirInputs: Record<"x" | "y" | "z", HTMLInputElement> = {
       x: document.createElement("input"),
@@ -137,9 +144,9 @@ export class ExtrusionEditor {
       return group;
     };
 
-    wrapper.appendChild(bindDirectionSlider("x"));
-    wrapper.appendChild(bindDirectionSlider("y"));
-    wrapper.appendChild(bindDirectionSlider("z"));
+    dirContent.appendChild(bindDirectionSlider("x"));
+    dirContent.appendChild(bindDirectionSlider("y"));
+    dirContent.appendChild(bindDirectionSlider("z"));
 
     syncDirectionUI(this._sanitizeDirection(this.extrusion.extrudedDirection));
 
