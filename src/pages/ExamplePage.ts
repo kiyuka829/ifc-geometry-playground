@@ -100,59 +100,67 @@ export class ExamplePage {
             ${
               hasProfileEditor
                 ? `
-              <div class="params-title">Profile</div>
-              <div id="profile-editor-panel"></div>
+              <details class="left-collapsible" open>
+                <summary class="params-title">Profile</summary>
+                <div class="left-collapsible-content" id="profile-editor-panel"></div>
+              </details>
             `
                 : ""
             }
             ${
               hasPathEditor
                 ? `
-              <div class="params-title${hasProfileEditor ? " left-panel-section-mt" : ""}">
-                ${sample.pathEditorConfig!.label ?? "Path"}
-              </div>
-              <div id="path-editor-panel"></div>
+              <details class="left-collapsible${hasProfileEditor ? " left-panel-section-mt" : ""}" open>
+                <summary class="params-title">${sample.pathEditorConfig!.label ?? "Path"}</summary>
+                <div class="left-collapsible-content" id="path-editor-panel"></div>
+              </details>
             `
                 : ""
             }
             ${
               hasExtrusionEditor
                 ? `
-              <div class="params-title${hasProfileEditor || hasPathEditor ? " left-panel-section-mt" : ""}">
-                ${sample.extrusionEditorConfig!.label ?? "Extrusion"}
-              </div>
-              <div id="extrusion-editor-panel"></div>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor ? " left-panel-section-mt" : ""}" open>
+                <summary class="params-title">${sample.extrusionEditorConfig!.label ?? "Extrusion"}</summary>
+                <div class="left-collapsible-content" id="extrusion-editor-panel"></div>
+              </details>
             `
                 : ""
             }
             ${
               hasPlacementEditor
                 ? `
-              <div class="params-title${hasProfileEditor || hasPathEditor || hasExtrusionEditor ? " left-panel-section-mt" : ""}">
-                ${sample.placementEditorConfig!.label ?? "Placement"}
-              </div>
-              <div id="placement-editor-panel"></div>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor ? " left-panel-section-mt" : ""}" open>
+                <summary class="params-title">${sample.placementEditorConfig!.label ?? "Placement"}</summary>
+                <div class="left-collapsible-content" id="placement-editor-panel"></div>
+              </details>
             `
                 : ""
             }
             ${
               hasSweepToggles
                 ? `
-              <div class="params-title left-panel-section-mt">View</div>
-              <div id="sweep-view-toggles"></div>
+              <details class="left-collapsible left-panel-section-mt" open>
+                <summary class="params-title">View</summary>
+                <div class="left-collapsible-content" id="sweep-view-toggles"></div>
+              </details>
             `
                 : ""
             }
             ${
               sample.parameters.length > 0
                 ? `
-              <div class="params-title${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasPlacementEditor || hasSweepToggles ? " left-panel-section-mt" : ""}">Parameters</div>
-              <div id="param-panel"></div>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasPlacementEditor || hasSweepToggles ? " left-panel-section-mt" : ""}" open>
+                <summary class="params-title">Parameters</summary>
+                <div class="left-collapsible-content" id="param-panel"></div>
+              </details>
             `
                 : ""
             }
-            <div class="params-title left-panel-steps-title">Steps</div>
-            <div id="stepper"></div>
+            <details class="left-collapsible left-panel-steps-title" open>
+              <summary class="params-title">Steps</summary>
+              <div class="left-collapsible-content" id="stepper"></div>
+            </details>
           </div>
           <div class="canvas-container" id="canvas-container">
             <canvas id="renderCanvas"></canvas>
