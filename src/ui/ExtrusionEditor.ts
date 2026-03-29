@@ -77,7 +77,6 @@ export class ExtrusionEditor {
 
     const dirDetails = document.createElement("details");
     dirDetails.className = "inner-collapsible";
-    dirDetails.open = true;
     const dirSummary = document.createElement("summary");
     dirSummary.className = "inner-collapsible-title";
     dirSummary.textContent = "Extruded Direction";

@@ -130,7 +130,7 @@ export class ExamplePage {
             ${
               hasPlacementEditor
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor ? " left-panel-section-mt" : ""}" open>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor ? " left-panel-section-mt" : ""}">
                 <summary class="params-title">${sample.placementEditorConfig!.label ?? "Placement"}</summary>
                 <div class="left-collapsible-content" id="placement-editor-panel"></div>
               </details>

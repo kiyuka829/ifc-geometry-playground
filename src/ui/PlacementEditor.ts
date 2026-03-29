@@ -144,7 +144,7 @@ export class PlacementEditor {
     );
 
     const axis = this.placement.axis ?? { x: 0, y: 0, z: 1 };
-    const axisSection = makeSection("Axis (Z direction)");
+    const axisSection = makeSection("Axis (Z direction)", false);
     addSlider(
       axisSection,
       "X",
@@ -192,7 +192,7 @@ export class PlacementEditor {
     );
 
     const refDirection = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
-    const refDirSection = makeSection("RefDirection (X direction)");
+    const refDirSection = makeSection("RefDirection (X direction)", false);
     addSlider(
       refDirSection,
       "X",
