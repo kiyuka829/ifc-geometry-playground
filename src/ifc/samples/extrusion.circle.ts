@@ -28,6 +28,13 @@ const DEFAULT_EXTRUSION: ExtrusionParams = {
   extrudedDirection: { x: 0, y: 1, z: 0 },
 };
 
+const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
+  type: "IfcAxis2Placement3D",
+  location: { x: 0, y: 0, z: 0 },
+  axis: { x: 0, y: 0, z: 1 },
+  refDirection: { x: 1, y: 0, z: 0 },
+};
+
 export const extrusionCircleSample: SampleDef = {
   id: "extrusion-circle",
   title: "Circle Profile (IfcCircleProfileDef)",
@@ -58,6 +65,9 @@ export const extrusionCircleSample: SampleDef = {
   extrusionEditorConfig: {
     defaultExtrusion: DEFAULT_EXTRUSION,
   },
+  placementEditorConfig: {
+    defaultPlacement: DEFAULT_PLACEMENT,
+  },
   buildGeometry: (
     scene: Scene,
     _params: ParamValues,
@@ -65,13 +75,14 @@ export const extrusionCircleSample: SampleDef = {
     profile?: IfcProfileDef,
     _path?: Vec3[],
     extrusion?: ExtrusionParams,
-    _placement?: IfcAxis2Placement3D,
+    placement?: IfcAxis2Placement3D,
     _sweepView?: SweepViewState,
   ): Mesh[] => {
     const meshes: Mesh[] = [];
     const depth = extrusion?.depth ?? DEFAULT_EXTRUSION.depth;
     const extrusionDirection =
       extrusion?.extrudedDirection ?? DEFAULT_EXTRUSION.extrudedDirection;
+    const activePlacement = placement ?? DEFAULT_PLACEMENT;
     const activeProfile: IfcProfileDef = profile ?? DEFAULT_PROFILE;
     const radius =
       activeProfile.type === "IfcCircleProfileDef" ? activeProfile.radius : 2;
@@ -81,7 +92,38 @@ export const extrusionCircleSample: SampleDef = {
       sweptArea: { type: "IfcCircleProfileDef", profileType: "AREA", radius },
       position: {
         type: "IfcAxis2Placement3D",
-        location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
+        location: {
+          type: "IfcCartesianPoint",
+          coordinates: [
+            activePlacement.location.x,
+            activePlacement.location.y,
+            activePlacement.location.z,
+          ],
+        },
+        ...(activePlacement.axis
+          ? {
+              axis: {
+                type: "IfcDirection",
+                directionRatios: [
+                  activePlacement.axis.x,
+                  activePlacement.axis.y,
+                  activePlacement.axis.z,
+                ],
+              },
+            }
+          : {}),
+        ...(activePlacement.refDirection
+          ? {
+              refDirection: {
+                type: "IfcDirection",
+                directionRatios: [
+                  activePlacement.refDirection.x,
+                  activePlacement.refDirection.y,
+                  activePlacement.refDirection.z,
+                ],
+              },
+            }
+          : {}),
       },
       extrudedDirection: {
         type: "IfcDirection",
@@ -135,7 +177,9 @@ export const extrusionCircleSample: SampleDef = {
     },
     position: {
       type: "IfcAxis2Placement3D",
-      location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
+      location: "(see placement editor)",
+      axis: "(see placement editor)",
+      refDirection: "(see placement editor)",
     },
     extrudedDirection: {
       type: "IfcDirection",

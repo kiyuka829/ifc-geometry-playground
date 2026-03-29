@@ -35,7 +35,7 @@ export interface Vec3 {
 
 /**
  * Simplified 3D placement (similar to IFC's IfcAxis2Placement3D).
- * Includes location and optional local Z-axis direction.
+ * Includes location and optional local Z-axis / X-axis directions.
  */
 export interface IfcAxis2Placement3D {
   type: "IfcAxis2Placement3D";
@@ -43,6 +43,8 @@ export interface IfcAxis2Placement3D {
   location: Vec3;
   /** Local Z-axis direction (normalized). Defaults to [0, 0, 1] if not provided. */
   axis?: Vec3;
+  /** Local X-axis direction. Orthogonalization is handled downstream. */
+  refDirection?: Vec3;
 }
 
 /** Backward-compatible alias for IfcProfileTypeEnum. */
@@ -196,7 +198,7 @@ export interface ExtrusionEditorConfig {
 
 /** Configuration for the placement editor widget. */
 export interface PlacementEditorConfig {
-  /** Initial placement (location and optional axis direction). */
+  /** Initial placement (location and optional axis / refDirection). */
   defaultPlacement: IfcAxis2Placement3D;
   /** Optional label shown above the editor. */
   label?: string;

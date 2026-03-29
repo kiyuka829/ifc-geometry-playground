@@ -1,7 +1,12 @@
 import type { Vec3, IfcAxis2Placement3D } from "../types.ts";
 import type { PlacementEditorConfig } from "../types.ts";
 
-const DEFAULT_INCREMENT = 0.1;
+const LOCATION_MIN = -20;
+const LOCATION_MAX = 20;
+const LOCATION_STEP = 0.1;
+const DIRECTION_MIN = -1;
+const DIRECTION_MAX = 1;
+const DIRECTION_STEP = 0.01;
 
 export class PlacementEditor {
   private container: HTMLElement;
@@ -27,6 +32,7 @@ export class PlacementEditor {
       type: "IfcAxis2Placement3D",
       location: { ...p.location },
       axis: p.axis ? { ...p.axis } : undefined,
+      refDirection: p.refDirection ? { ...p.refDirection } : undefined,
     };
   }
 
@@ -44,125 +50,184 @@ export class PlacementEditor {
     const wrapper = document.createElement("div");
     wrapper.className = "placement-editor";
 
-    // Location section
-    const locSection = document.createElement("div");
-    locSection.className = "placement-section";
-    locSection.innerHTML = '<div class="placement-label">Location</div>';
-    const locFields = document.createElement("div");
-    locFields.className = "placement-fields";
-
-    const locInputs: Record<"x" | "y" | "z", HTMLInputElement> = {
-      x: document.createElement("input"),
-      y: document.createElement("input"),
-      z: document.createElement("input"),
+    const sectionTitle = (text: string): HTMLDivElement => {
+      const title = document.createElement("div");
+      title.className = "param-label";
+      title.textContent = text;
+      return title;
     };
 
-    for (const axis of ["x", "y", "z"] as const) {
-      const fieldDiv = document.createElement("div");
-      fieldDiv.className = "placement-field";
+    const addSlider = (
+      labelText: string,
+      value: number,
+      min: number,
+      max: number,
+      step: number,
+      onChange: (next: number) => void,
+    ) => {
+      const group = document.createElement("div");
+      group.className = "param-group";
 
-      const label = document.createElement("label");
-      label.textContent = axis.toUpperCase();
-      label.className = "placement-field-label";
+      const label = document.createElement("div");
+      label.className = "param-label";
+      const valueSpan = document.createElement("span");
+      valueSpan.textContent = value.toFixed(2);
+      label.append(labelText, valueSpan);
 
-      const input = locInputs[axis];
-      input.type = "number";
-      input.step = String(DEFAULT_INCREMENT);
-      input.value = String(this.placement.location[axis]);
-      input.className = "placement-input";
+      const slider = document.createElement("input");
+      slider.className = "param-slider";
+      slider.type = "range";
+      slider.min = String(min);
+      slider.max = String(max);
+      slider.step = String(step);
+      slider.value = String(value);
 
-      input.addEventListener("change", () => {
-        this.placement.location[axis] = parseFloat(input.value) || 0;
+      const handle = () => {
+        const parsed = Number.parseFloat(slider.value);
+        const next = Number.isFinite(parsed) ? parsed : value;
+        valueSpan.textContent = next.toFixed(2);
+        onChange(next);
         this._notify();
-      });
+      };
 
-      input.addEventListener("input", () => {
-        this.placement.location[axis] = parseFloat(input.value) || 0;
-        this._notify();
-      });
+      slider.addEventListener("input", handle);
+      slider.addEventListener("change", handle);
 
-      fieldDiv.appendChild(label);
-      fieldDiv.appendChild(input);
-      locFields.appendChild(fieldDiv);
-    }
-
-    locSection.appendChild(locFields);
-    wrapper.appendChild(locSection);
-
-    // Axis section
-    const axisSection = document.createElement("div");
-    axisSection.className = "placement-section";
-    axisSection.innerHTML =
-      '<div class="placement-label">Axis (Z direction)</div>';
-    const axisFields = document.createElement("div");
-    axisFields.className = "placement-fields";
-
-    const axisInputs: Record<"x" | "y" | "z", HTMLInputElement> = {
-      x: document.createElement("input"),
-      y: document.createElement("input"),
-      z: document.createElement("input"),
+      group.appendChild(label);
+      group.appendChild(slider);
+      wrapper.appendChild(group);
     };
 
-    const defaultAxis: Vec3 = this.placement.axis ?? { x: 0, y: 0, z: 1 };
+    wrapper.appendChild(sectionTitle("Location"));
+    addSlider(
+      "X",
+      this.placement.location.x,
+      LOCATION_MIN,
+      LOCATION_MAX,
+      LOCATION_STEP,
+      (next) => {
+        this.placement.location.x = next;
+      },
+    );
+    addSlider(
+      "Y",
+      this.placement.location.y,
+      LOCATION_MIN,
+      LOCATION_MAX,
+      LOCATION_STEP,
+      (next) => {
+        this.placement.location.y = next;
+      },
+    );
+    addSlider(
+      "Z",
+      this.placement.location.z,
+      LOCATION_MIN,
+      LOCATION_MAX,
+      LOCATION_STEP,
+      (next) => {
+        this.placement.location.z = next;
+      },
+    );
 
-    for (const component of ["x", "y", "z"] as const) {
-      const fieldDiv = document.createElement("div");
-      fieldDiv.className = "placement-field";
+    const axis = this.placement.axis ?? { x: 0, y: 0, z: 1 };
+    wrapper.appendChild(sectionTitle("Axis (Z direction)"));
+    addSlider(
+      "X",
+      axis.x,
+      DIRECTION_MIN,
+      DIRECTION_MAX,
+      DIRECTION_STEP,
+      (next) => {
+        const current = this.placement.axis ?? { x: 0, y: 0, z: 1 };
+        this.placement.axis = this._sanitizeDirection(
+          { ...current, x: next },
+          { x: 0, y: 0, z: 1 },
+        );
+      },
+    );
+    addSlider(
+      "Y",
+      axis.y,
+      DIRECTION_MIN,
+      DIRECTION_MAX,
+      DIRECTION_STEP,
+      (next) => {
+        const current = this.placement.axis ?? { x: 0, y: 0, z: 1 };
+        this.placement.axis = this._sanitizeDirection(
+          { ...current, y: next },
+          { x: 0, y: 0, z: 1 },
+        );
+      },
+    );
+    addSlider(
+      "Z",
+      axis.z,
+      DIRECTION_MIN,
+      DIRECTION_MAX,
+      DIRECTION_STEP,
+      (next) => {
+        const current = this.placement.axis ?? { x: 0, y: 0, z: 1 };
+        this.placement.axis = this._sanitizeDirection(
+          { ...current, z: next },
+          { x: 0, y: 0, z: 1 },
+        );
+      },
+    );
 
-      const label = document.createElement("label");
-      label.textContent = component.toUpperCase();
-      label.className = "placement-field-label";
-
-      const input = axisInputs[component];
-      input.type = "number";
-      input.step = String(DEFAULT_INCREMENT);
-      input.value = String(defaultAxis[component]);
-      input.className = "placement-input";
-
-      input.addEventListener("change", () => {
-        const raw: Vec3 = {
-          x: parseFloat(axisInputs.x.value) || 0,
-          y: parseFloat(axisInputs.y.value) || 0,
-          z: parseFloat(axisInputs.z.value) || 1,
-        };
-        this.placement.axis = this._normalizeAxis(raw);
-        this._notify();
-      });
-
-      input.addEventListener("input", () => {
-        const raw: Vec3 = {
-          x: parseFloat(axisInputs.x.value) || 0,
-          y: parseFloat(axisInputs.y.value) || 0,
-          z: parseFloat(axisInputs.z.value) || 1,
-        };
-        this.placement.axis = this._normalizeAxis(raw);
-        this._notify();
-      });
-
-      fieldDiv.appendChild(label);
-      fieldDiv.appendChild(input);
-      axisFields.appendChild(fieldDiv);
-    }
-
-    axisSection.appendChild(axisFields);
-    wrapper.appendChild(axisSection);
+    const refDirection = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
+    wrapper.appendChild(sectionTitle("RefDirection (X direction)"));
+    addSlider(
+      "X",
+      refDirection.x,
+      DIRECTION_MIN,
+      DIRECTION_MAX,
+      DIRECTION_STEP,
+      (next) => {
+        const current = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
+        this.placement.refDirection = this._sanitizeDirection(
+          { ...current, x: next },
+          { x: 1, y: 0, z: 0 },
+        );
+      },
+    );
+    addSlider(
+      "Y",
+      refDirection.y,
+      DIRECTION_MIN,
+      DIRECTION_MAX,
+      DIRECTION_STEP,
+      (next) => {
+        const current = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
+        this.placement.refDirection = this._sanitizeDirection(
+          { ...current, y: next },
+          { x: 1, y: 0, z: 0 },
+        );
+      },
+    );
+    addSlider(
+      "Z",
+      refDirection.z,
+      DIRECTION_MIN,
+      DIRECTION_MAX,
+      DIRECTION_STEP,
+      (next) => {
+        const current = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
+        this.placement.refDirection = this._sanitizeDirection(
+          { ...current, z: next },
+          { x: 1, y: 0, z: 0 },
+        );
+      },
+    );
 
     this.container.appendChild(wrapper);
   }
 
-  /**
-   * Normalize a 3D vector to unit length.
-   * If length is 0, defaults to [0, 0, 1].
-   */
-  private _normalizeAxis(v: Vec3): Vec3 {
+  private _sanitizeDirection(v: Vec3, fallback: Vec3): Vec3 {
     const len = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     if (len < 0.0001) {
-      return { x: 0, y: 0, z: 1 };
+      return fallback;
     }
-    return {
-      x: v.x / len,
-      y: v.y / len,
-      z: v.z / len,
-    };
+    return v;
   }
 }
