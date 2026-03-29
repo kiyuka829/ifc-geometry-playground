@@ -1,16 +1,11 @@
 import type { ExtrusionEditorConfig, ExtrusionParams, Vec3 } from "../types.ts";
 
-const DEFAULT_DEPTH_STEP = 0.1;
-const DEFAULT_VECTOR_STEP = 0.1;
-
-const AXIS_PRESETS: Array<{ label: string; direction: Vec3 }> = [
-  { label: "+X", direction: { x: 1, y: 0, z: 0 } },
-  { label: "-X", direction: { x: -1, y: 0, z: 0 } },
-  { label: "+Y", direction: { x: 0, y: 1, z: 0 } },
-  { label: "-Y", direction: { x: 0, y: -1, z: 0 } },
-  { label: "+Z", direction: { x: 0, y: 0, z: 1 } },
-  { label: "-Z", direction: { x: 0, y: 0, z: -1 } },
-];
+const DEPTH_MIN = 0.1;
+const DEPTH_MAX = 20;
+const DEPTH_STEP = 0.1;
+const DIRECTION_MIN = -1;
+const DIRECTION_MAX = 1;
+const DIRECTION_STEP = 0.01;
 
 export class ExtrusionEditor {
   private container: HTMLElement;
@@ -49,43 +44,40 @@ export class ExtrusionEditor {
     const wrapper = document.createElement("div");
     wrapper.className = "extrusion-editor";
 
-    const depthSection = document.createElement("div");
-    depthSection.className = "extrusion-section";
-
-    const depthLabel = document.createElement("label");
-    depthLabel.className = "extrusion-label";
-    depthLabel.textContent = "Depth";
+    const depthGroup = document.createElement("div");
+    depthGroup.className = "param-group";
+    const depthLabel = document.createElement("div");
+    depthLabel.className = "param-label";
+    const depthValue = document.createElement("span");
+    depthValue.textContent = this.extrusion.depth.toFixed(2);
+    depthLabel.append("Depth", depthValue);
 
     const depthInput = document.createElement("input");
-    depthInput.className = "extrusion-input";
-    depthInput.type = "number";
-    depthInput.min = "0.01";
-    depthInput.step = String(DEFAULT_DEPTH_STEP);
+    depthInput.className = "param-slider";
+    depthInput.type = "range";
+    depthInput.min = String(DEPTH_MIN);
+    depthInput.max = String(DEPTH_MAX);
+    depthInput.step = String(DEPTH_STEP);
     depthInput.value = String(this.extrusion.depth);
 
     const handleDepthInput = () => {
       const parsed = Number.parseFloat(depthInput.value);
-      this.extrusion.depth = Number.isFinite(parsed) && parsed > 0 ? parsed : 0.01;
+      this.extrusion.depth = Number.isFinite(parsed) && parsed > 0 ? parsed : DEPTH_MIN;
+      depthValue.textContent = this.extrusion.depth.toFixed(2);
       this._notify();
     };
 
     depthInput.addEventListener("input", handleDepthInput);
     depthInput.addEventListener("change", handleDepthInput);
 
-    depthSection.appendChild(depthLabel);
-    depthSection.appendChild(depthInput);
-    wrapper.appendChild(depthSection);
+    depthGroup.appendChild(depthLabel);
+    depthGroup.appendChild(depthInput);
+    wrapper.appendChild(depthGroup);
 
-    const dirSection = document.createElement("div");
-    dirSection.className = "extrusion-section";
-
-    const dirLabel = document.createElement("div");
-    dirLabel.className = "extrusion-label";
-    dirLabel.textContent = "Extruded Direction";
-    dirSection.appendChild(dirLabel);
-
-    const dirFields = document.createElement("div");
-    dirFields.className = "extrusion-vector-grid";
+    const dirTitle = document.createElement("div");
+    dirTitle.className = "param-label";
+    dirTitle.textContent = "Extruded Direction";
+    wrapper.appendChild(dirTitle);
 
     const dirInputs: Record<"x" | "y" | "z", HTMLInputElement> = {
       x: document.createElement("input"),
@@ -93,18 +85,35 @@ export class ExtrusionEditor {
       z: document.createElement("input"),
     };
 
-    const bindDirectionInput = (key: "x" | "y" | "z") => {
-      const row = document.createElement("div");
-      row.className = "extrusion-vector-row";
+    const dirValueSpans: Record<"x" | "y" | "z", HTMLSpanElement> = {
+      x: document.createElement("span"),
+      y: document.createElement("span"),
+      z: document.createElement("span"),
+    };
 
-      const label = document.createElement("label");
-      label.className = "extrusion-axis-label";
-      label.textContent = key.toUpperCase();
+    const syncDirectionUI = (dir: Vec3) => {
+      dirInputs.x.value = String(dir.x);
+      dirInputs.y.value = String(dir.y);
+      dirInputs.z.value = String(dir.z);
+      dirValueSpans.x.textContent = dir.x.toFixed(2);
+      dirValueSpans.y.textContent = dir.y.toFixed(2);
+      dirValueSpans.z.textContent = dir.z.toFixed(2);
+    };
+
+    const bindDirectionSlider = (key: "x" | "y" | "z") => {
+      const group = document.createElement("div");
+      group.className = "param-group";
+
+      const label = document.createElement("div");
+      label.className = "param-label";
+      label.append(key.toUpperCase(), dirValueSpans[key]);
 
       const input = dirInputs[key];
-      input.className = "extrusion-input";
-      input.type = "number";
-      input.step = String(DEFAULT_VECTOR_STEP);
+      input.className = "param-slider";
+      input.type = "range";
+      input.min = String(DIRECTION_MIN);
+      input.max = String(DIRECTION_MAX);
+      input.step = String(DIRECTION_STEP);
       input.value = String(this.extrusion.extrudedDirection[key]);
 
       const handleDirInput = () => {
@@ -113,52 +122,30 @@ export class ExtrusionEditor {
           y: Number.parseFloat(dirInputs.y.value) || 0,
           z: Number.parseFloat(dirInputs.z.value) || 0,
         };
-        const normalized = this._normalizeDirection(raw);
-        this.extrusion.extrudedDirection = normalized;
-        dirInputs.x.value = normalized.x.toFixed(4);
-        dirInputs.y.value = normalized.y.toFixed(4);
-        dirInputs.z.value = normalized.z.toFixed(4);
+        const sanitized = this._sanitizeDirection(raw);
+        this.extrusion.extrudedDirection = sanitized;
+        syncDirectionUI(sanitized);
         this._notify();
       };
 
       input.addEventListener("input", handleDirInput);
       input.addEventListener("change", handleDirInput);
 
-      row.appendChild(label);
-      row.appendChild(input);
-      return row;
+      group.appendChild(label);
+      group.appendChild(input);
+      return group;
     };
 
-    dirFields.appendChild(bindDirectionInput("x"));
-    dirFields.appendChild(bindDirectionInput("y"));
-    dirFields.appendChild(bindDirectionInput("z"));
-    dirSection.appendChild(dirFields);
+    wrapper.appendChild(bindDirectionSlider("x"));
+    wrapper.appendChild(bindDirectionSlider("y"));
+    wrapper.appendChild(bindDirectionSlider("z"));
 
-    const presets = document.createElement("div");
-    presets.className = "extrusion-presets";
-
-    for (const preset of AXIS_PRESETS) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "extrusion-preset-btn";
-      btn.textContent = preset.label;
-      btn.addEventListener("click", () => {
-        this.extrusion.extrudedDirection = { ...preset.direction };
-        dirInputs.x.value = String(preset.direction.x);
-        dirInputs.y.value = String(preset.direction.y);
-        dirInputs.z.value = String(preset.direction.z);
-        this._notify();
-      });
-      presets.appendChild(btn);
-    }
-
-    dirSection.appendChild(presets);
-    wrapper.appendChild(dirSection);
+    syncDirectionUI(this._sanitizeDirection(this.extrusion.extrudedDirection));
 
     this.container.appendChild(wrapper);
   }
 
-  private _normalizeDirection(direction: Vec3): Vec3 {
+  private _sanitizeDirection(direction: Vec3): Vec3 {
     const len = Math.sqrt(
       direction.x * direction.x +
         direction.y * direction.y +
@@ -167,10 +154,6 @@ export class ExtrusionEditor {
     if (len < 1e-6) {
       return { x: 0, y: 1, z: 0 };
     }
-    return {
-      x: direction.x / len,
-      y: direction.y / len,
-      z: direction.z / len,
-    };
+    return direction;
   }
 }
