@@ -62,7 +62,8 @@ export class ExtrusionEditor {
 
     const handleDepthInput = () => {
       const parsed = Number.parseFloat(depthInput.value);
-      this.extrusion.depth = Number.isFinite(parsed) && parsed > 0 ? parsed : DEPTH_MIN;
+      this.extrusion.depth =
+        Number.isFinite(parsed) && parsed > 0 ? parsed : DEPTH_MIN;
       depthValue.textContent = this.extrusion.depth.toFixed(2);
       this._notify();
     };

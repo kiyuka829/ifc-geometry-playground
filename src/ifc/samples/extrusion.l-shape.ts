@@ -157,7 +157,10 @@ export const extrusionLShapeSample: SampleDef = {
       type: "IfcAxis2Placement3D",
       location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
     },
-    extrudedDirection: { type: "IfcDirection", directionRatios: "(see extrusion editor)" },
+    extrudedDirection: {
+      type: "IfcDirection",
+      directionRatios: "(see extrusion editor)",
+    },
     depth: "(see extrusion editor)",
   }),
 };
