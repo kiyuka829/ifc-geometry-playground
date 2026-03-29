@@ -1,7 +1,14 @@
 import { Vector3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
-import type { SampleDef, ParamValues, IfcProfileDef } from "../../types.ts";
-import { getNumber } from "../../types.ts";
+import type {
+  SampleDef,
+  ParamValues,
+  IfcProfileDef,
+  ExtrusionParams,
+  Vec3,
+  IfcAxis2Placement3D,
+  SweepViewState,
+} from "../../types.ts";
 import { buildExtrusionMesh } from "../operations/extrusion.ts";
 import { createExtrusionMaterial } from "../../engine/materials.ts";
 import {
@@ -19,23 +26,25 @@ const DEFAULT_PROFILE: IfcProfileDef = {
   flangeThickness: 0.3,
 };
 
+const DEFAULT_EXTRUSION: ExtrusionParams = {
+  depth: 6,
+  extrudedDirection: { x: 0, y: 1, z: 0 },
+};
+
+const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
+  type: "IfcAxis2Placement3D",
+  location: { x: 0, y: 0, z: 0 },
+  axis: { x: 0, y: 0, z: 1 },
+  refDirection: { x: 1, y: 0, z: 0 },
+};
+
 export const extrusionIShapeSample: SampleDef = {
   id: "extrusion-i-shape",
   title: "I-Shape / H-Beam Profile (IfcIShapeProfileDef)",
   description:
     "An I-shaped (or H-shaped) cross-section defined by overall width, overall depth, web thickness, and flange thickness (IfcIShapeProfileDef). " +
     "Adjust the dimensions in the profile editor.",
-  parameters: [
-    {
-      key: "depth",
-      label: "Extrusion Depth",
-      type: "number",
-      min: 0.5,
-      max: 20,
-      step: 0.1,
-      defaultValue: 6,
-    },
-  ],
+  parameters: [],
   steps: [
     {
       id: "profile",
@@ -55,14 +64,27 @@ export const extrusionIShapeSample: SampleDef = {
     allowedTypes: ["i-shape"],
     defaultProfile: DEFAULT_PROFILE,
   },
+  extrusionEditorConfig: {
+    defaultExtrusion: DEFAULT_EXTRUSION,
+  },
+  placementEditorConfig: {
+    defaultPlacement: DEFAULT_PLACEMENT,
+  },
   buildGeometry: (
     scene: Scene,
-    params: ParamValues,
+    _params: ParamValues,
     stepIndex: number,
     profile?: IfcProfileDef,
+    _path?: Vec3[],
+    extrusion?: ExtrusionParams,
+    placement?: IfcAxis2Placement3D,
+    _sweepView?: SweepViewState,
   ): Mesh[] => {
     const meshes: Mesh[] = [];
-    const depth = getNumber(params, "depth");
+    const depth = extrusion?.depth ?? DEFAULT_EXTRUSION.depth;
+    const extrusionDirection =
+      extrusion?.extrudedDirection ?? DEFAULT_EXTRUSION.extrudedDirection;
+    const activePlacement = placement ?? DEFAULT_PLACEMENT;
     const activeProfile: IfcProfileDef = profile ?? DEFAULT_PROFILE;
     const overallWidth =
       activeProfile.type === "IfcIShapeProfileDef"
@@ -93,9 +115,47 @@ export const extrusionIShapeSample: SampleDef = {
       },
       position: {
         type: "IfcAxis2Placement3D",
-        location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
+        location: {
+          type: "IfcCartesianPoint",
+          coordinates: [
+            activePlacement.location.x,
+            activePlacement.location.y,
+            activePlacement.location.z,
+          ],
+        },
+        ...(activePlacement.axis
+          ? {
+              axis: {
+                type: "IfcDirection",
+                directionRatios: [
+                  activePlacement.axis.x,
+                  activePlacement.axis.y,
+                  activePlacement.axis.z,
+                ],
+              },
+            }
+          : {}),
+        ...(activePlacement.refDirection
+          ? {
+              refDirection: {
+                type: "IfcDirection",
+                directionRatios: [
+                  activePlacement.refDirection.x,
+                  activePlacement.refDirection.y,
+                  activePlacement.refDirection.z,
+                ],
+              },
+            }
+          : {}),
       },
-      extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
+      extrudedDirection: {
+        type: "IfcDirection",
+        directionRatios: [
+          extrusionDirection.x,
+          extrusionDirection.y,
+          extrusionDirection.z,
+        ],
+      },
       depth,
     };
 
@@ -106,7 +166,11 @@ export const extrusionIShapeSample: SampleDef = {
     }
 
     if (stepIndex >= 1) {
-      const dir = new Vector3(0, 1, 0);
+      const dir = new Vector3(
+        extrusionDirection.x,
+        extrusionDirection.y,
+        extrusionDirection.z,
+      );
       const arrow = buildExtrusionDirectionOverlay(
         scene,
         Vector3.Zero(),
@@ -127,7 +191,7 @@ export const extrusionIShapeSample: SampleDef = {
 
     return meshes;
   },
-  getIFCRepresentation: (params: ParamValues) => ({
+  getIFCRepresentation: (_params: ParamValues) => ({
     type: "IfcExtrudedAreaSolid",
     sweptArea: {
       type: "IfcIShapeProfileDef",
@@ -139,9 +203,14 @@ export const extrusionIShapeSample: SampleDef = {
     },
     position: {
       type: "IfcAxis2Placement3D",
-      location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
+      location: "(see placement editor)",
+      axis: "(see placement editor)",
+      refDirection: "(see placement editor)",
     },
-    extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
-    depth: getNumber(params, "depth"),
+    extrudedDirection: {
+      type: "IfcDirection",
+      directionRatios: "(see extrusion editor)",
+    },
+    depth: "(see extrusion editor)",
   }),
 };

@@ -317,6 +317,72 @@ body {
   letter-spacing: 0.05em;
 }
 
+.left-collapsible {
+  margin-bottom: 4px;
+}
+
+.left-collapsible > .params-title {
+  cursor: pointer;
+  list-style: none;
+  margin-bottom: 0;
+}
+
+.left-collapsible > .params-title::-webkit-details-marker {
+  display: none;
+}
+
+.left-collapsible > .params-title::after {
+  content: "▾";
+  float: right;
+  color: #6a8aaa;
+  font-size: 0.9em;
+}
+
+.left-collapsible:not([open]) > .params-title::after {
+  content: "▸";
+}
+
+.left-collapsible-content {
+  margin-top: 8px;
+}
+
+/* Inner collapsible sub-sections (inside editor panels) */
+.inner-collapsible {
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.inner-collapsible-title {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.78em;
+  color: #90caf9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #1a2a4a;
+  margin-bottom: 0;
+}
+
+.inner-collapsible-title::-webkit-details-marker {
+  display: none;
+}
+
+.inner-collapsible-title::after {
+  content: "▾";
+  color: #6a8aaa;
+  font-size: 0.9em;
+}
+
+.inner-collapsible:not([open]) > .inner-collapsible-title::after {
+  content: "▸";
+}
+
+.inner-collapsible-content {
+  margin-top: 8px;
+}
+
 .param-group {
   margin-bottom: 12px;
 }
@@ -567,6 +633,27 @@ body {
 .path-add-point-btn:hover {
   background: #0d2040;
   border-color: #4fc3f7;
+}
+
+/* Extrusion Editor */
+.extrusion-editor {
+  margin-bottom: 4px;
+}
+
+/* Placement Editor */
+.placement-editor {
+  margin-bottom: 4px;
+}
+
+.placement-section {
+  margin-bottom: 8px;
+}
+
+.placement-label {
+  color: #90caf9;
+  font-size: 0.82em;
+  font-weight: 500;
+  margin-bottom: 4px;
 }
 
 /* Sweep View Toggles */

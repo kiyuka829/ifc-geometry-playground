@@ -33,6 +33,20 @@ export interface Vec3 {
   z: number;
 }
 
+/**
+ * Simplified 3D placement (similar to IFC's IfcAxis2Placement3D).
+ * Includes location and optional local Z-axis / X-axis directions.
+ */
+export interface IfcAxis2Placement3D {
+  type: "IfcAxis2Placement3D";
+  /** Origin point of the placement. */
+  location: Vec3;
+  /** Local Z-axis direction (normalized). Defaults to [0, 0, 1] if not provided. */
+  axis?: Vec3;
+  /** Local X-axis direction. Orthogonalization is handled downstream. */
+  refDirection?: Vec3;
+}
+
 /** Backward-compatible alias for IfcProfileTypeEnum. */
 export type IfcProfileType = IfcProfileTypeEnum;
 
@@ -166,6 +180,30 @@ export interface PathEditorConfig {
   label?: string;
 }
 
+/** Extrusion parameters edited as a single reusable unit. */
+export interface ExtrusionParams {
+  /** Positive distance to extrude along extrudedDirection. */
+  depth: number;
+  /** Local extrusion axis direction (normalized). */
+  extrudedDirection: Vec3;
+}
+
+/** Configuration for the extrusion editor widget. */
+export interface ExtrusionEditorConfig {
+  /** Initial depth and extrusion direction. */
+  defaultExtrusion: ExtrusionParams;
+  /** Optional label shown above the editor. */
+  label?: string;
+}
+
+/** Configuration for the placement editor widget. */
+export interface PlacementEditorConfig {
+  /** Initial placement (location and optional axis / refDirection). */
+  defaultPlacement: IfcAxis2Placement3D;
+  /** Optional label shown above the editor. */
+  label?: string;
+}
+
 /** Visibility flags passed to buildGeometry for sweep-based samples. */
 export interface SweepViewState {
   showPath: boolean;
@@ -200,9 +238,21 @@ export interface SampleDef {
    */
   pathEditorConfig?: PathEditorConfig;
   /**
+   * When set, ExamplePage renders an ExtrusionEditor widget that lets the user
+   * edit depth and extrudedDirection. The current ExtrusionParams is forwarded
+   * to buildGeometry as the optional sixth argument.
+   */
+  extrusionEditorConfig?: ExtrusionEditorConfig;
+  /**
+   * When set, ExamplePage renders a PlacementEditor widget that lets the user
+   * edit the placement location and axis. The current IfcAxis2Placement3D is
+   * forwarded to buildGeometry as the optional seventh argument.
+   */
+  placementEditorConfig?: PlacementEditorConfig;
+  /**
    * When set, ExamplePage renders sweep-view toggle buttons (path / local
    * frames / result). The current SweepViewState is forwarded to buildGeometry
-   * as the optional sixth argument.
+   * as the optional eighth argument.
    */
   sweepViewConfig?: SweepViewConfig;
   buildGeometry: (
@@ -211,6 +261,8 @@ export interface SampleDef {
     stepIndex: number,
     profile?: IfcProfileDef,
     path?: Vec3[],
+    extrusion?: ExtrusionParams,
+    placement?: IfcAxis2Placement3D,
     sweepView?: SweepViewState,
   ) => Mesh[];
   getIFCRepresentation: (params: ParamValues) => object;
