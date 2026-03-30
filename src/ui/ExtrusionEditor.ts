@@ -102,9 +102,7 @@ export class ExtrusionEditor {
     wrapper.appendChild(dirDetails);
 
     let directionMode: DirectionMode = "angles";
-    const normalizedInitial = this._normalizeDirection(
-      this._sanitizeDirection(this.extrusion.extrudedDirection),
-    );
+    const normalizedInitial = this._normalizeDirection(this.extrusion.extrudedDirection);
     let lastAzimuthDeg = this._directionToAngles(normalizedInitial).azimuthDeg;
 
     const directionReadoutValue = document.createElement("div");
