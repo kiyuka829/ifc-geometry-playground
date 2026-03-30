@@ -334,9 +334,6 @@ export class ExtrusionEditor {
         sanitized.y * sanitized.y +
         sanitized.z * sanitized.z,
     );
-    if (len < ANGLE_EPSILON) {
-      return { x: 0, y: 1, z: 0 };
-    }
     return {
       x: sanitized.x / len,
       y: sanitized.y / len,
@@ -362,7 +359,7 @@ export class ExtrusionEditor {
         direction.y * direction.y +
         direction.z * direction.z,
     );
-    if (len < 1e-6) {
+    if (len < ANGLE_EPSILON) {
       return { x: 0, y: 1, z: 0 };
     }
     return direction;
