@@ -52,8 +52,15 @@ export const extrusionCircleHollowSample: SampleDef = {
         "The inner radius equals the outer radius minus the wall thickness.",
     },
     {
+      id: "direction",
+      label: "Step 2: Extruded Direction",
+      description:
+        "The extrusion direction vector specifies where the hollow circle profile is swept. " +
+        "Use this step to inspect direction and depth before generating the final solid.",
+    },
+    {
       id: "solid",
-      label: "Step 2: Extruded Solid",
+      label: "Step 3: Extruded Solid",
       description:
         "The circular hollow cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).",
     },
@@ -167,6 +174,9 @@ export const extrusionCircleHollowSample: SampleDef = {
         "dir_arrow",
       );
       if (arrow) meshes.push(arrow);
+    }
+
+    if (stepIndex >= 2) {
       meshes.push(
         buildExtrusionMesh(
           scene,

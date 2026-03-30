@@ -51,8 +51,15 @@ export const extrusionCircleSample: SampleDef = {
         "Edit the radius using the profile editor above.",
     },
     {
+      id: "direction",
+      label: "Step 2: Extruded Direction",
+      description:
+        "The extrusion direction vector specifies where the circular profile will be swept. " +
+        "Adjust direction and depth to inspect the setup before creating the final solid.",
+    },
+    {
       id: "solid",
-      label: "Step 2: Extruded Solid",
+      label: "Step 3: Extruded Solid",
       description:
         "The circle is extruded along the Z-axis by the given depth to produce a cylinder. " +
         "This is equivalent to IfcExtrudedAreaSolid applied to an IfcCircleProfileDef.",
@@ -156,6 +163,9 @@ export const extrusionCircleSample: SampleDef = {
         "dir_arrow",
       );
       if (arrow) meshes.push(arrow);
+    }
+
+    if (stepIndex >= 2) {
       meshes.push(
         buildExtrusionMesh(
           scene,

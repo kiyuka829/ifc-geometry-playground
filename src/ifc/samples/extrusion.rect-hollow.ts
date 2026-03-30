@@ -53,8 +53,15 @@ export const extrusionRectHollowSample: SampleDef = {
         "The wall thickness is uniform on all four sides.",
     },
     {
+      id: "direction",
+      label: "Step 2: Extruded Direction",
+      description:
+        "The extrusion direction vector specifies where the hollow section is swept. " +
+        "Use this step to inspect direction and depth before generating the final solid.",
+    },
+    {
       id: "solid",
-      label: "Step 2: Extruded Solid",
+      label: "Step 3: Extruded Solid",
       description:
         "The rectangular hollow cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).",
     },
@@ -173,6 +180,9 @@ export const extrusionRectHollowSample: SampleDef = {
         "dir_arrow",
       );
       if (arrow) meshes.push(arrow);
+    }
+
+    if (stepIndex >= 2) {
       meshes.push(
         buildExtrusionMesh(
           scene,
