@@ -107,6 +107,9 @@ export class ExtrusionEditor {
     );
     let lastAzimuthDeg = this._directionToAngles(normalizedInitial).azimuthDeg;
 
+    const directionReadoutValue = document.createElement("div");
+    directionReadoutValue.className = "param-label";
+
     const modeTabs = document.createElement("div");
     modeTabs.className = "profile-type-tabs";
     dirContent.appendChild(modeTabs);
@@ -151,9 +154,6 @@ export class ExtrusionEditor {
       elevation: document.createElement("span"),
     };
 
-    const ifcVectorValue = document.createElement("div");
-    ifcVectorValue.className = "param-label";
-
     const syncDirectionUI = (dir: Vec3) => {
       dirInputs.x.value = String(dir.x);
       dirInputs.y.value = String(dir.y);
@@ -170,13 +170,13 @@ export class ExtrusionEditor {
       angleValueSpans.azimuth.textContent = `${angles.azimuthDeg.toFixed(0)}°`;
       angleValueSpans.elevation.textContent = `${angles.elevationDeg.toFixed(0)}°`;
 
-      const ifcText = `(${normalized.x.toFixed(3)}, ${normalized.y.toFixed(3)}, ${normalized.z.toFixed(3)})`;
-      ifcVectorValue.innerHTML = "";
+      const directionText = `(${normalized.x.toFixed(3)}, ${normalized.y.toFixed(3)}, ${normalized.z.toFixed(3)})`;
+      directionReadoutValue.innerHTML = "";
       const left = document.createElement("span");
-      left.textContent = "IFC XYZ";
+      left.textContent = "XYZ";
       const right = document.createElement("span");
-      right.textContent = ifcText;
-      ifcVectorValue.append(left, right);
+      right.textContent = directionText;
+      directionReadoutValue.append(left, right);
     };
 
     const applyDirection = (dir: Vec3) => {
@@ -290,19 +290,7 @@ export class ExtrusionEditor {
     xyzPanel.appendChild(bindDirectionSlider("y"));
     xyzPanel.appendChild(bindDirectionSlider("z"));
 
-    const ifcGroup = document.createElement("div");
-    ifcGroup.className = "param-group";
-    ifcGroup.appendChild(ifcVectorValue);
-    dirContent.appendChild(ifcGroup);
-
-    const hint = document.createElement("div");
-    hint.className = "param-label";
-    hint.style.fontSize = "0.72em";
-    hint.style.color = "#6a8aaa";
-    hint.style.marginTop = "2px";
-    hint.style.display = "block";
-    hint.textContent = "Angles for easy input, XYZ kept for IFC output.";
-    dirContent.appendChild(hint);
+    dirContent.appendChild(directionReadoutValue);
 
     modeBtnAngles.addEventListener("click", () => setDirectionMode("angles"));
     modeBtnXyz.addEventListener("click", () => setDirectionMode("xyz"));
