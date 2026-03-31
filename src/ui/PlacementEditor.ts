@@ -172,7 +172,7 @@ export class PlacementEditor {
 
     // ── Orientation ────────────────────────────────────────────────────────
 
-    const orientSection = makeSection("Orientation", false);
+    const orientSection = makeSection("Orientation");
 
     const axis = this.placement.axis ?? { x: 0, y: 0, z: 1 };
     const refDir = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
