@@ -10,8 +10,12 @@ const ROTATION_STEP = 1;
 const EPSILON = 1e-6;
 
 /**
- * Euler angles (degrees) in intrinsic ZYX order.
- * R = Rz(rz) · Ry(ry) · Rx(rx)
+ * Euler angles (degrees).
+ * R = Rx(rx) · Ry(ry) · Rz(rz)
+ *
+ * - Rotation X / Y control the tilt (where the local Z axis points).
+ * - Rotation Z spins around the local Z axis (only affects RefDirection).
+ *
  * Default (0, 0, 0) → Axis = (0, 0, 1), RefDirection = (1, 0, 0).
  */
 interface EulerAngles {
@@ -272,13 +276,18 @@ export class PlacementEditor {
 
   // ── Euler ↔ Axis/RefDirection conversion ─────────────────────────────────
   //
-  // Rotation matrix R = Rz(rz) · Ry(ry) · Rx(rx)
+  // Rotation matrix R = Rx(rx) · Ry(ry) · Rz(rz)
   //
-  // X-column (RefDirection):
-  //   ( cz·cy,  sz·cy,  -sy )
+  // Rz is innermost → Rotation Z spins around the LOCAL Z axis.
+  // Rx/Ry are outer  → they tilt the Z axis direction.
   //
-  // Z-column (Axis):
-  //   ( cz·sy·cx + sz·sx,  sz·sy·cx − cz·sx,  cy·cx )
+  // Column 0 (RefDirection / X axis):
+  //   ( cy·cz,  cx·sz + sx·sy·cz,  sx·sz − cx·sy·cz )
+  //
+  // Column 2 (Axis / Z axis):
+  //   ( sy,  −sx·cy,  cx·cy )
+  //
+  // Key property: Axis does NOT depend on rz.
 
   private _eulerToAxes(e: EulerAngles): { axis: Vec3; refDirection: Vec3 } {
     const cx = Math.cos(this._degToRad(e.rx));
@@ -289,15 +298,15 @@ export class PlacementEditor {
     const sz = Math.sin(this._degToRad(e.rz));
 
     const refDirection: Vec3 = {
-      x: cz * cy,
-      y: sz * cy,
-      z: -sy,
+      x: cy * cz,
+      y: cx * sz + sx * sy * cz,
+      z: sx * sz - cx * sy * cz,
     };
 
     const axis: Vec3 = {
-      x: cz * sy * cx + sz * sx,
-      y: sz * sy * cx - cz * sx,
-      z: cy * cx,
+      x: sy,
+      y: -sx * cy,
+      z: cx * cy,
     };
 
     return { axis, refDirection };
@@ -308,8 +317,8 @@ export class PlacementEditor {
     const a = this._normalize(axis, { x: 0, y: 0, z: 1 });
     const r = this._normalize(refDirection, { x: 1, y: 0, z: 0 });
 
-    // ry from RefDirection z-component: sin(ry) = -r.z
-    const sinRy = this._clamp(-r.z, -1, 1);
+    // ry from axis.x: sin(ry) = axis.x
+    const sinRy = this._clamp(a.x, -1, 1);
     const ry = Math.asin(sinRy);
     const cy = Math.cos(ry);
 
@@ -317,21 +326,22 @@ export class PlacementEditor {
     let rz: number;
 
     if (Math.abs(cy) > EPSILON) {
-      // Normal case
-      rz = Math.atan2(r.y, r.x);
+      // rx from axis: -sx·cy = a.y, cx·cy = a.z
+      rx = Math.atan2(-a.y, a.z);
 
-      // Y-column of rotation matrix = Axis × RefDirection (right-handed)
-      const yColZ = a.x * r.y - a.y * r.x;
-      rx = Math.atan2(yColZ, a.z);
+      // rz: Y-column x-component = -cy·sz
+      // Y = cross(axis, refDirection)
+      const yDirX = a.y * r.z - a.z * r.y;
+      rz = Math.atan2(-yDirX, r.x);
     } else {
-      // Gimbal lock: ry ≈ ±90°, only (rz − rx) or (rz + rx) is determined
+      // Gimbal lock: ry ≈ ±90°
       rz = 0;
       if (sinRy > 0) {
-        // sy = 1: axis ≈ (cos(rz−rx), sin(rz−rx), 0), rz=0
-        rx = Math.atan2(-a.y, a.x);
+        // ry ≈ 90°: refDir ≈ (0, sx, -cx) when rz=0
+        rx = Math.atan2(r.y, -r.z);
       } else {
-        // sy = −1: axis ≈ (−cos(rz+rx), −sin(rz+rx), 0), rz=0
-        rx = Math.atan2(-a.y, -a.x);
+        // ry ≈ -90°: refDir ≈ (0, -sx, cx) when rz=0
+        rx = Math.atan2(-r.y, r.z);
       }
     }
 
