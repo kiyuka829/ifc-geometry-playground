@@ -255,8 +255,13 @@ export class PlacementEditor {
     orientSection.appendChild(axisReadout);
     orientSection.appendChild(refDirReadout);
 
-    // Initial sync (populate readouts without triggering notify)
+    // Initial sync: update placement to the normalised/orthogonal frame and
+    // populate readouts — without firing _notify() so callers are not triggered
+    // before any user interaction.
     const { axis: initA, refDirection: initR } = this._eulerToAxes(euler);
+    this.placement.axis = initA;
+    this.placement.refDirection = initR;
+
     axisReadout.innerHTML = "";
     const axL = document.createElement("span");
     axL.textContent = "Axis";

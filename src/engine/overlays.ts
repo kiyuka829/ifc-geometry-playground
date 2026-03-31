@@ -1,4 +1,4 @@
-import { Color3, Vector3 } from "@babylonjs/core";
+import { Color3, Vector3, StandardMaterial } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
 import type { IfcProfileDef, IfcAxis2Placement3D } from "../types.ts";
 import { buildProfileOutlines } from "../ifc/operations/extrusion.ts";
@@ -6,6 +6,49 @@ import { createAxisGizmo, createArrow } from "./gizmos.ts";
 
 /** Minimum direction vector length to treat as a valid extrusion direction. */
 const MIN_DIRECTION_LENGTH = 0.001;
+
+/**
+ * Dot-product threshold above which two unit vectors are considered nearly
+ * parallel.  Used when selecting a world-axis fallback that is least aligned
+ * with the local Z axis so that the cross-product yields a stable result.
+ */
+const NEAR_PARALLEL_DOT_THRESHOLD = 0.9;
+
+// ---------------------------------------------------------------------------
+// Placement-axis material cache
+// ---------------------------------------------------------------------------
+// One set of materials is created per Babylon.js scene and reused across all
+// subsequent calls to buildPlacementAxesOverlay for that scene.  Because the
+// cache is a WeakMap keyed on the scene object, the entry becomes eligible for
+// GC once the scene is disposed and no other code holds a reference to it.
+// ---------------------------------------------------------------------------
+
+interface AxisMaterials {
+  x: StandardMaterial;
+  y: StandardMaterial;
+  z: StandardMaterial;
+}
+
+const _axisMatCache = new WeakMap<Scene, AxisMaterials>();
+
+function _getPlacementAxisMaterials(scene: Scene): AxisMaterials {
+  let mats = _axisMatCache.get(scene);
+  if (!mats) {
+    const makeMat = (name: string, color: Color3): StandardMaterial => {
+      const m = new StandardMaterial(name, scene);
+      m.diffuseColor = color;
+      m.emissiveColor = color;
+      return m;
+    };
+    mats = {
+      x: makeMat("placement_x_mat", new Color3(1, 0.2, 0.2)),
+      y: makeMat("placement_y_mat", new Color3(0.2, 1, 0.2)),
+      z: makeMat("placement_z_mat", new Color3(0.3, 0.5, 1)),
+    };
+    _axisMatCache.set(scene, mats);
+  }
+  return mats;
+}
 
 /**
  * Build 3D overlay meshes that represent a profile cross-section in the
@@ -98,14 +141,43 @@ export function buildPlacementAxesOverlay(
   const rawAxis = placement.axis ?? { x: 0, y: 0, z: 1 };
   const rawRef = placement.refDirection ?? { x: 1, y: 0, z: 0 };
 
-  const zAxis = new Vector3(rawAxis.x, rawAxis.y, rawAxis.z).normalize();
-  // IFC: X = RefDirection − (RefDirection · Z)Z, then normalise
-  const refVec = new Vector3(rawRef.x, rawRef.y, rawRef.z);
-  const xAxis = refVec
-    .subtract(zAxis.scale(Vector3.Dot(refVec, zAxis)))
-    .normalize();
-  const yAxis = Vector3.Cross(zAxis, xAxis).normalize();
+  // Normalise axis; fall back to world Z if near-zero.
+  let zAxis = new Vector3(rawAxis.x, rawAxis.y, rawAxis.z);
+  if (zAxis.length() < MIN_DIRECTION_LENGTH) {
+    zAxis = new Vector3(0, 0, 1);
+  } else {
+    zAxis = zAxis.normalize();
+  }
 
+  // IFC: X = RefDirection − (RefDirection · Z)Z, then normalise.
+  // If RefDirection is parallel to Z (or near-zero), choose a stable fallback.
+  const refVec = new Vector3(rawRef.x, rawRef.y, rawRef.z);
+  const xTemp = refVec.subtract(zAxis.scale(Vector3.Dot(refVec, zAxis)));
+
+  let xAxis: Vector3;
+  let yAxis: Vector3;
+
+  if (xTemp.length() >= MIN_DIRECTION_LENGTH) {
+    xAxis = xTemp.normalize();
+    const yCross = Vector3.Cross(zAxis, xAxis);
+    if (yCross.length() >= MIN_DIRECTION_LENGTH) {
+      yAxis = yCross.normalize();
+    } else {
+      // RefDirection nearly collinear with axis — build a robust basis.
+      const worldFallback =
+        Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD ? Vector3.Up() : Vector3.Right();
+      xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
+      yAxis = Vector3.Cross(zAxis, xAxis).normalize();
+    }
+  } else {
+    // RefDirection parallel to axis or near-zero — build a robust basis.
+    const worldFallback =
+      Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD ? Vector3.Up() : Vector3.Right();
+    xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
+    yAxis = Vector3.Cross(zAxis, xAxis).normalize();
+  }
+
+  const mats = _getPlacementAxisMaterials(scene);
   const meshes: Mesh[] = [];
   meshes.push(
     createArrow(
@@ -115,6 +187,7 @@ export function buildPlacementAxesOverlay(
       arrowLength,
       new Color3(1, 0.2, 0.2),
       "placement_x",
+      mats.x,
     ),
   );
   meshes.push(
@@ -125,6 +198,7 @@ export function buildPlacementAxesOverlay(
       arrowLength,
       new Color3(0.2, 1, 0.2),
       "placement_y",
+      mats.y,
     ),
   );
   meshes.push(
@@ -135,6 +209,7 @@ export function buildPlacementAxesOverlay(
       arrowLength,
       new Color3(0.3, 0.5, 1),
       "placement_z",
+      mats.z,
     ),
   );
 
