@@ -1,6 +1,6 @@
 import { Color3, Vector3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
-import type { IfcProfileDef } from "../types.ts";
+import type { IfcProfileDef, IfcAxis2Placement3D } from "../types.ts";
 import { buildProfileOutlines } from "../ifc/operations/extrusion.ts";
 import { createAxisGizmo, createArrow } from "./gizmos.ts";
 
@@ -71,4 +71,51 @@ export function buildExtrusionDirectionOverlay(
     new Color3(0.2, 0.9, 0.2),
     name,
   );
+}
+
+/**
+ * Build 3 coloured arrows representing the local coordinate frame defined
+ * by an `IfcAxis2Placement3D`.
+ *
+ * - **Red**  = X axis (RefDirection)
+ * - **Green** = Y axis (Axis × RefDirection)
+ * - **Blue** = Z axis (Axis)
+ *
+ * Axis and RefDirection are normalised internally and the Y axis is derived
+ * via cross-product so orthogonality is guaranteed.
+ */
+export function buildPlacementAxesOverlay(
+  scene: Scene,
+  placement: IfcAxis2Placement3D,
+  arrowLength = 3,
+): Mesh[] {
+  const loc = new Vector3(
+    placement.location.x,
+    placement.location.y,
+    placement.location.z,
+  );
+
+  const rawAxis = placement.axis ?? { x: 0, y: 0, z: 1 };
+  const rawRef = placement.refDirection ?? { x: 1, y: 0, z: 0 };
+
+  const zAxis = new Vector3(rawAxis.x, rawAxis.y, rawAxis.z).normalize();
+  // IFC: X = RefDirection − (RefDirection · Z)Z, then normalise
+  const refVec = new Vector3(rawRef.x, rawRef.y, rawRef.z);
+  const xAxis = refVec
+    .subtract(zAxis.scale(Vector3.Dot(refVec, zAxis)))
+    .normalize();
+  const yAxis = Vector3.Cross(zAxis, xAxis).normalize();
+
+  const meshes: Mesh[] = [];
+  meshes.push(
+    createArrow(scene, loc, xAxis, arrowLength, new Color3(1, 0.2, 0.2), "placement_x"),
+  );
+  meshes.push(
+    createArrow(scene, loc, yAxis, arrowLength, new Color3(0.2, 1, 0.2), "placement_y"),
+  );
+  meshes.push(
+    createArrow(scene, loc, zAxis, arrowLength, new Color3(0.3, 0.5, 1), "placement_z"),
+  );
+
+  return meshes;
 }
