@@ -108,13 +108,34 @@ export function buildPlacementAxesOverlay(
 
   const meshes: Mesh[] = [];
   meshes.push(
-    createArrow(scene, loc, xAxis, arrowLength, new Color3(1, 0.2, 0.2), "placement_x"),
+    createArrow(
+      scene,
+      loc,
+      xAxis,
+      arrowLength,
+      new Color3(1, 0.2, 0.2),
+      "placement_x",
+    ),
   );
   meshes.push(
-    createArrow(scene, loc, yAxis, arrowLength, new Color3(0.2, 1, 0.2), "placement_y"),
+    createArrow(
+      scene,
+      loc,
+      yAxis,
+      arrowLength,
+      new Color3(0.2, 1, 0.2),
+      "placement_y",
+    ),
   );
   meshes.push(
-    createArrow(scene, loc, zAxis, arrowLength, new Color3(0.3, 0.5, 1), "placement_z"),
+    createArrow(
+      scene,
+      loc,
+      zAxis,
+      arrowLength,
+      new Color3(0.3, 0.5, 1),
+      "placement_z",
+    ),
   );
 
   return meshes;
