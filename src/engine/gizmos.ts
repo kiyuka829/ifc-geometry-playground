@@ -7,7 +7,8 @@ export function createArrow(
   direction: Vector3,
   length: number,
   color: Color3,
-  name: string
+  name: string,
+  sharedMaterial?: StandardMaterial,
 ): Mesh {
   const dir = direction.normalize()
   const end = origin.add(dir.scale(length))
@@ -23,9 +24,14 @@ export function createArrow(
     diameterBottom: 0.15,
     tessellation: 8,
   }, scene)
-  const mat = new StandardMaterial(`${name}_mat`, scene)
-  mat.diffuseColor = color
-  mat.emissiveColor = color
+  let mat: StandardMaterial
+  if (sharedMaterial) {
+    mat = sharedMaterial
+  } else {
+    mat = new StandardMaterial(`${name}_mat`, scene)
+    mat.diffuseColor = color
+    mat.emissiveColor = color
+  }
   cone.material = mat
   cone.position = end.clone()
 

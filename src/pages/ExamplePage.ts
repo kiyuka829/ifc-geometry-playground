@@ -18,6 +18,7 @@ import { PathEditor } from "../ui/PathEditor.ts";
 import { ExtrusionEditor } from "../ui/ExtrusionEditor.ts";
 import { PlacementEditor } from "../ui/PlacementEditor.ts";
 import { SweepViewToggles } from "../ui/SweepViewToggles.ts";
+import { buildPlacementAxesOverlay } from "../engine/overlays.ts";
 
 export class ExamplePage {
   private appContainer: HTMLElement;
@@ -308,6 +309,16 @@ export class ExamplePage {
       this.currentPlacement,
       this.currentSweepView,
     );
+
+    // Show local coordinate axes when a placement editor is active
+    if (this.currentPlacement) {
+      this.currentMeshes.push(
+        ...buildPlacementAxesOverlay(
+          this.sceneManager.scene,
+          this.currentPlacement,
+        ),
+      );
+    }
   }
 
   unmount() {
