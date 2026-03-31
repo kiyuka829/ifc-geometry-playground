@@ -55,8 +55,15 @@ export const extrusionRectangleSample: SampleDef = {
         "Edit dimensions in the profile editor above.",
     },
     {
+      id: "direction",
+      label: "Step 2: Extruded Direction",
+      description:
+        "The extrusion direction vector defines where the profile will be swept. " +
+        "Adjust direction and depth to inspect how IfcExtrudedAreaSolid is configured before generating the solid.",
+    },
+    {
       id: "solid",
-      label: "Step 2: Extruded Solid",
+      label: "Step 3: Extruded Solid",
       description:
         "The rectangle is extruded along the Y-axis by the given depth to produce a rectangular prism. " +
         "This is equivalent to IfcExtrudedAreaSolid applied to an IfcRectangleProfileDef.",
@@ -171,6 +178,9 @@ export const extrusionRectangleSample: SampleDef = {
         "dir_arrow",
       );
       if (arrow) meshes.push(arrow);
+    }
+
+    if (stepIndex >= 2) {
       meshes.push(
         buildExtrusionMesh(
           scene,

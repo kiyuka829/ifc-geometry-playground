@@ -1,11 +1,11 @@
-import { Color3, Vector3 } from '@babylonjs/core'
-import type { Scene, Mesh } from '@babylonjs/core'
-import type { IfcProfileDef } from '../types.ts'
-import { buildProfileOutlines } from '../ifc/operations/extrusion.ts'
-import { createAxisGizmo, createArrow } from './gizmos.ts'
+import { Color3, Vector3 } from "@babylonjs/core";
+import type { Scene, Mesh } from "@babylonjs/core";
+import type { IfcProfileDef } from "../types.ts";
+import { buildProfileOutlines } from "../ifc/operations/extrusion.ts";
+import { createAxisGizmo, createArrow } from "./gizmos.ts";
 
 /** Minimum direction vector length to treat as a valid extrusion direction. */
-const MIN_DIRECTION_LENGTH = 0.001
+const MIN_DIRECTION_LENGTH = 0.001;
 
 /**
  * Build 3D overlay meshes that represent a profile cross-section in the
@@ -28,17 +28,17 @@ export function buildProfileOverlay(
   origin: Vector3 = Vector3.Zero(),
   axisSize = 2,
 ): Mesh[] {
-  const meshes: Mesh[] = []
+  const meshes: Mesh[] = [];
 
-  const outlines = buildProfileOutlines(scene, profile, namePrefix)
+  const outlines = buildProfileOutlines(scene, profile, namePrefix);
   for (const l of outlines) {
-    l.position = origin.clone()
-    meshes.push(l as unknown as Mesh)
+    l.position = origin.clone();
+    meshes.push(l as unknown as Mesh);
   }
 
-  meshes.push(createAxisGizmo(scene, origin, axisSize))
+  meshes.push(createAxisGizmo(scene, origin, axisSize));
 
-  return meshes
+  return meshes;
 }
 
 /**
@@ -62,6 +62,13 @@ export function buildExtrusionDirectionOverlay(
   depth: number,
   name: string,
 ): Mesh | null {
-  if (direction.length() < MIN_DIRECTION_LENGTH) return null
-  return createArrow(scene, origin, direction, depth, new Color3(0.2, 0.9, 0.2), name)
+  if (direction.length() < MIN_DIRECTION_LENGTH) return null;
+  return createArrow(
+    scene,
+    origin,
+    direction,
+    depth,
+    new Color3(0.2, 0.9, 0.2),
+    name,
+  );
 }
