@@ -54,7 +54,12 @@ export function createArrow(
   return parent
 }
 
-export function createAxisGizmo(scene: Scene, origin: Vector3, size: number): Mesh {
+/**
+ * Draws X/Y/Z axis lines at `origin` using IFC/UX axis semantics
+ * (X = right, Y = depth, Z = up). `origin` must be in Babylon space;
+ * the axis directions are converted from IFC space internally.
+ */
+export function createIfcAxisGizmo(scene: Scene, origin: Vector3, size: number): Mesh {
   const xLine = MeshBuilder.CreateLines('axis_x', {
     points: [origin, origin.add(ifcToBabylonVector({ x: size, y: 0, z: 0 }))],
   }, scene)

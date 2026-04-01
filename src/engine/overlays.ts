@@ -2,7 +2,7 @@ import { Color3, Vector3, StandardMaterial } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
 import type { IfcProfileDef, IfcAxis2Placement3D, Vec3 } from "../types.ts";
 import { buildProfileOutlines } from "../ifc/operations/extrusion.ts";
-import { createAxisGizmo, createArrow } from "./gizmos.ts";
+import { createIfcAxisGizmo, createArrow } from "./gizmos.ts";
 import {
   IFC_X_AXIS,
   IFC_Z_AXIS,
@@ -86,7 +86,7 @@ export function buildProfileOverlay(
     meshes.push(l as unknown as Mesh);
   }
 
-  meshes.push(createAxisGizmo(scene, babylonOrigin, axisSize));
+  meshes.push(createIfcAxisGizmo(scene, babylonOrigin, axisSize));
 
   return meshes;
 }

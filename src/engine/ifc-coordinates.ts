@@ -1,15 +1,8 @@
 import { Vector3 } from "@babylonjs/core";
+import type { Vec2, Vec3 } from "../types.ts";
 
-export interface CoordinateLike3 {
-  x: number;
-  y: number;
-  z: number;
-}
-
-export interface CoordinateLike2 {
-  x: number;
-  y: number;
-}
+export type CoordinateLike3 = Vec3;
+export type CoordinateLike2 = Vec2;
 
 // IFC/UX space: X = right, Y = depth, Z = up (right-handed)
 // Babylon space: X = right, Y = up, Z = depth (left-handed scene)
