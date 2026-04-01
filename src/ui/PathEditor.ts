@@ -2,7 +2,7 @@ import type { Vec3 } from '../types.ts'
 import type { PathEditorConfig } from '../types.ts'
 
 const DEFAULT_COORD_STEP = 0.5
-const DEFAULT_WAYPOINT_Z_OFFSET = 2
+const DEFAULT_WAYPOINT_Y_OFFSET = 2
 
 export class PathEditor {
   private container: HTMLElement
@@ -60,7 +60,7 @@ export class PathEditor {
     addBtn.addEventListener('click', () => {
       // Append a point offset from the last one
       const last = this.path[this.path.length - 1] ?? { x: 0, y: 0, z: 0 }
-      this.path.push({ x: last.x, y: last.y, z: last.z + DEFAULT_WAYPOINT_Z_OFFSET })
+      this.path.push({ x: last.x, y: last.y + DEFAULT_WAYPOINT_Y_OFFSET, z: last.z })
       this._refresh()
       this._notify()
     })
@@ -127,7 +127,7 @@ export class PathEditor {
     return row
   }
 
-  // ── SVG preview (top-down XZ view) ──────────────────────────────────────
+  // ── SVG preview (top-down XY view) ──────────────────────────────────────
 
   private _buildSVG(): SVGSVGElement {
     const ns = 'http://www.w3.org/2000/svg'
@@ -154,24 +154,24 @@ export class PathEditor {
       return svg
     }
 
-    // Compute bounding box of XZ plane
+    // Compute bounding box of XY plane
     const xs = this.path.map(p => p.x)
-    const zs = this.path.map(p => p.z)
+    const ys = this.path.map(p => p.y)
     const minX = Math.min(...xs)
     const maxX = Math.max(...xs)
-    const minZ = Math.min(...zs)
-    const maxZ = Math.max(...zs)
+    const minY = Math.min(...ys)
+    const maxY = Math.max(...ys)
 
     const rangeX = maxX - minX || 1
-    const rangeZ = maxZ - minZ || 1
+    const rangeY = maxY - minY || 1
 
     const scaleX = (W - PAD * 2) / rangeX
-    const scaleZ = (H - PAD * 2) / rangeZ
-    const scale = Math.min(scaleX, scaleZ)
+    const scaleY = (H - PAD * 2) / rangeY
+    const scale = Math.min(scaleX, scaleY)
 
-    const toSVG = (x: number, z: number): [number, number] => [
+    const toSVG = (x: number, y: number): [number, number] => [
       PAD + (x - minX) * scale + ((W - PAD * 2) - rangeX * scale) / 2,
-      H - PAD - (z - minZ) * scale - ((H - PAD * 2) - rangeZ * scale) / 2,
+      H - PAD - (y - minY) * scale - ((H - PAD * 2) - rangeY * scale) / 2,
     ]
 
     // Axis labels
@@ -184,17 +184,17 @@ export class PathEditor {
     labelX.textContent = 'X →'
     svg.appendChild(labelX)
 
-    const labelZ = document.createElementNS(ns, 'text')
-    labelZ.setAttribute('x', '4')
-    labelZ.setAttribute('y', '12')
-    labelZ.setAttribute('fill', '#66bb6a')
-    labelZ.setAttribute('font-size', '9')
-    labelZ.textContent = '↑ Z'
-    svg.appendChild(labelZ)
+    const labelY = document.createElementNS(ns, 'text')
+    labelY.setAttribute('x', '4')
+    labelY.setAttribute('y', '12')
+    labelY.setAttribute('fill', '#66bb6a')
+    labelY.setAttribute('font-size', '9')
+    labelY.textContent = '↑ Y'
+    svg.appendChild(labelY)
 
     // Path polyline
     const points = this.path.map(p => {
-      const [sx, sy] = toSVG(p.x, p.z)
+      const [sx, sy] = toSVG(p.x, p.y)
       return `${sx.toFixed(1)},${sy.toFixed(1)}`
     }).join(' ')
 
@@ -209,7 +209,7 @@ export class PathEditor {
 
     // Waypoint dots
     this.path.forEach((p, i) => {
-      const [sx, sy] = toSVG(p.x, p.z)
+      const [sx, sy] = toSVG(p.x, p.y)
       const circle = document.createElementNS(ns, 'circle')
       circle.setAttribute('cx', sx.toFixed(1))
       circle.setAttribute('cy', sy.toFixed(1))

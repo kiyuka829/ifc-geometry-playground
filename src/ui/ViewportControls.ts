@@ -1,14 +1,15 @@
 import { Vector3 } from "@babylonjs/core";
 import type { AbstractMesh, Observer, Camera } from "@babylonjs/core";
 import type { ViewportCamera, AxisView } from "../engine/viewport-camera.ts";
+import { ifcToBabylonVector } from "../engine/ifc-coordinates.ts";
 
 const AXIS_DEFS: Array<{ dir: AxisView; label: string; title: string }> = [
   { dir: "+x", label: "+X", title: "View from +X axis" },
   { dir: "-x", label: "−X", title: "View from −X axis" },
-  { dir: "+y", label: "+Y", title: "View from +Y axis (top)" },
-  { dir: "-y", label: "−Y", title: "View from −Y axis (bottom)" },
-  { dir: "+z", label: "+Z", title: "View from +Z axis" },
-  { dir: "-z", label: "−Z", title: "View from −Z axis" },
+  { dir: "+y", label: "+Y", title: "View from +Y axis" },
+  { dir: "-y", label: "−Y", title: "View from −Y axis" },
+  { dir: "+z", label: "+Z", title: "View from +Z axis (top)" },
+  { dir: "-z", label: "−Z", title: "View from −Z axis (bottom)" },
 ];
 
 export class ViewportControls {
@@ -164,9 +165,9 @@ export class ViewportControls {
     const R = 18;
 
     const worldAxes = [
-      { vec: new Vector3(1, 0, 0), color: "#f55", label: "X" },
-      { vec: new Vector3(0, 1, 0), color: "#5c5", label: "Y" },
-      { vec: new Vector3(0, 0, 1), color: "#55f", label: "Z" },
+      { vec: ifcToBabylonVector({ x: 1, y: 0, z: 0 }), color: "#f55", label: "X" },
+      { vec: ifcToBabylonVector({ x: 0, y: 1, z: 0 }), color: "#5c5", label: "Y" },
+      { vec: ifcToBabylonVector({ x: 0, y: 0, z: 1 }), color: "#55f", label: "Z" },
     ];
 
     const projected = worldAxes.map(({ vec, color, label }) => {

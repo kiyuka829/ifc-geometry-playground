@@ -21,10 +21,10 @@ const GIMBAL_EPSILON = 0.01;
 const AXIS_ANGLES: Record<AxisView, { alpha: number; beta: number }> = {
   "+x": { alpha: 0, beta: Math.PI / 2 },
   "-x": { alpha: Math.PI, beta: Math.PI / 2 },
-  "+y": { alpha: 0, beta: GIMBAL_EPSILON },
-  "-y": { alpha: 0, beta: Math.PI - GIMBAL_EPSILON },
-  "+z": { alpha: Math.PI / 2, beta: Math.PI / 2 },
-  "-z": { alpha: -Math.PI / 2, beta: Math.PI / 2 },
+  "+y": { alpha: Math.PI / 2, beta: Math.PI / 2 },
+  "-y": { alpha: -Math.PI / 2, beta: Math.PI / 2 },
+  "+z": { alpha: 0, beta: GIMBAL_EPSILON },
+  "-z": { alpha: 0, beta: Math.PI - GIMBAL_EPSILON },
 };
 
 export class ViewportCamera {

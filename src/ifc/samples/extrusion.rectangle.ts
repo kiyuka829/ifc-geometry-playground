@@ -1,4 +1,3 @@
-import { Vector3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
 import type {
   SampleDef,
@@ -29,7 +28,7 @@ const DEFAULT_PROFILE: IfcProfileDef = {
 
 const DEFAULT_EXTRUSION: ExtrusionParams = {
   depth: 5,
-  extrudedDirection: { x: 0, y: 1, z: 0 },
+  extrudedDirection: { x: 0, y: 0, z: 1 },
 };
 
 const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
@@ -43,7 +42,7 @@ export const extrusionRectangleSample: SampleDef = {
   id: "extrusion-rectangle",
   title: "Rectangle Profile (IfcRectangleProfileDef)",
   description:
-    "A basic rectangle profile extruded along the Y-axis to create a 3D solid. " +
+    "A basic rectangle profile extruded along the Z-axis to create a 3D solid. " +
     "Edit xDim and yDim in the profile editor.",
   parameters: [],
   steps: [
@@ -65,7 +64,7 @@ export const extrusionRectangleSample: SampleDef = {
       id: "solid",
       label: "Step 3: Extruded Solid",
       description:
-        "The rectangle is extruded along the Y-axis by the given depth to produce a rectangular prism. " +
+        "The rectangle is extruded along the Z-axis by the given depth to produce a rectangular prism. " +
         "This is equivalent to IfcExtrudedAreaSolid applied to an IfcRectangleProfileDef.",
     },
   ],
@@ -165,15 +164,10 @@ export const extrusionRectangleSample: SampleDef = {
     }
 
     if (stepIndex >= 1) {
-      const dir = new Vector3(
-        extrusionDirection.x,
-        extrusionDirection.y,
-        extrusionDirection.z,
-      );
       const arrow = buildExtrusionDirectionOverlay(
         scene,
-        Vector3.Zero(),
-        dir,
+        { x: 0, y: 0, z: 0 },
+        extrusionDirection,
         depth,
         "dir_arrow",
       );

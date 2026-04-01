@@ -1,5 +1,6 @@
 import { MeshBuilder, StandardMaterial, Color3, Vector3, Mesh, Quaternion } from '@babylonjs/core'
 import type { Scene } from '@babylonjs/core'
+import { ifcToBabylonVector } from './ifc-coordinates.ts'
 
 export function createArrow(
   scene: Scene,
@@ -53,19 +54,24 @@ export function createArrow(
   return parent
 }
 
-export function createAxisGizmo(scene: Scene, origin: Vector3, size: number): Mesh {
+/**
+ * Draws X/Y/Z axis lines at `origin` using IFC/UX axis semantics
+ * (X = right, Y = depth, Z = up). `origin` must be in Babylon space;
+ * the axis directions are converted from IFC space internally.
+ */
+export function createIfcAxisGizmo(scene: Scene, origin: Vector3, size: number): Mesh {
   const xLine = MeshBuilder.CreateLines('axis_x', {
-    points: [origin, origin.add(new Vector3(size, 0, 0))],
+    points: [origin, origin.add(ifcToBabylonVector({ x: size, y: 0, z: 0 }))],
   }, scene)
   xLine.color = new Color3(1, 0, 0)
 
   const yLine = MeshBuilder.CreateLines('axis_y', {
-    points: [origin, origin.add(new Vector3(0, size, 0))],
+    points: [origin, origin.add(ifcToBabylonVector({ x: 0, y: size, z: 0 }))],
   }, scene)
   yLine.color = new Color3(0, 1, 0)
 
   const zLine = MeshBuilder.CreateLines('axis_z', {
-    points: [origin, origin.add(new Vector3(0, 0, size))],
+    points: [origin, origin.add(ifcToBabylonVector({ x: 0, y: 0, z: size }))],
   }, scene)
   zLine.color = new Color3(0, 0, 1)
 

@@ -1,4 +1,3 @@
-import { Vector3 } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
 import type {
   SampleDef,
@@ -26,7 +25,7 @@ const DEFAULT_PROFILE: IfcProfileDef = {
 
 const DEFAULT_EXTRUSION: ExtrusionParams = {
   depth: 6,
-  extrudedDirection: { x: 0, y: 1, z: 0 },
+  extrudedDirection: { x: 0, y: 0, z: 1 },
 };
 
 const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
@@ -161,15 +160,10 @@ export const extrusionCircleHollowSample: SampleDef = {
     }
 
     if (stepIndex >= 1) {
-      const dir = new Vector3(
-        extrusionDirection.x,
-        extrusionDirection.y,
-        extrusionDirection.z,
-      );
       const arrow = buildExtrusionDirectionOverlay(
         scene,
-        Vector3.Zero(),
-        dir,
+        { x: 0, y: 0, z: 0 },
+        extrusionDirection,
         depth,
         "dir_arrow",
       );
