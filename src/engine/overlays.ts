@@ -1,8 +1,14 @@
 import { Color3, Vector3, StandardMaterial } from "@babylonjs/core";
 import type { Scene, Mesh } from "@babylonjs/core";
-import type { IfcProfileDef, IfcAxis2Placement3D } from "../types.ts";
+import type { IfcProfileDef, IfcAxis2Placement3D, Vec3 } from "../types.ts";
 import { buildProfileOutlines } from "../ifc/operations/extrusion.ts";
 import { createAxisGizmo, createArrow } from "./gizmos.ts";
+import {
+  IFC_X_AXIS,
+  IFC_Z_AXIS,
+  ifcToBabylonVector,
+  toIfcMathVector,
+} from "./ifc-coordinates.ts";
 
 /** Minimum direction vector length to treat as a valid extrusion direction. */
 const MIN_DIRECTION_LENGTH = 0.001;
@@ -68,18 +74,19 @@ export function buildProfileOverlay(
   scene: Scene,
   profile: IfcProfileDef,
   namePrefix: string,
-  origin: Vector3 = Vector3.Zero(),
+  origin: Vec3 = { x: 0, y: 0, z: 0 },
   axisSize = 2,
 ): Mesh[] {
   const meshes: Mesh[] = [];
+  const babylonOrigin = ifcToBabylonVector(origin);
 
   const outlines = buildProfileOutlines(scene, profile, namePrefix);
   for (const l of outlines) {
-    l.position = origin.clone();
+    l.position = babylonOrigin.clone();
     meshes.push(l as unknown as Mesh);
   }
 
-  meshes.push(createAxisGizmo(scene, origin, axisSize));
+  meshes.push(createAxisGizmo(scene, babylonOrigin, axisSize));
 
   return meshes;
 }
@@ -100,16 +107,17 @@ export function buildProfileOverlay(
  */
 export function buildExtrusionDirectionOverlay(
   scene: Scene,
-  origin: Vector3,
-  direction: Vector3,
+  origin: Vec3,
+  direction: Vec3,
   depth: number,
   name: string,
 ): Mesh | null {
-  if (direction.length() < MIN_DIRECTION_LENGTH) return null;
+  const ifcDirection = toIfcMathVector(direction);
+  if (ifcDirection.length() < MIN_DIRECTION_LENGTH) return null;
   return createArrow(
     scene,
-    origin,
-    direction,
+    ifcToBabylonVector(origin),
+    ifcToBabylonVector(direction),
     depth,
     new Color3(0.2, 0.9, 0.2),
     name,
@@ -132,26 +140,22 @@ export function buildPlacementAxesOverlay(
   placement: IfcAxis2Placement3D,
   arrowLength = 3,
 ): Mesh[] {
-  const loc = new Vector3(
-    placement.location.x,
-    placement.location.y,
-    placement.location.z,
-  );
+  const loc = ifcToBabylonVector(placement.location);
 
   const rawAxis = placement.axis ?? { x: 0, y: 0, z: 1 };
   const rawRef = placement.refDirection ?? { x: 1, y: 0, z: 0 };
 
   // Normalise axis; fall back to world Z if near-zero.
-  let zAxis = new Vector3(rawAxis.x, rawAxis.y, rawAxis.z);
+  let zAxis = toIfcMathVector(rawAxis);
   if (zAxis.length() < MIN_DIRECTION_LENGTH) {
-    zAxis = new Vector3(0, 0, 1);
+    zAxis = IFC_Z_AXIS.clone();
   } else {
     zAxis = zAxis.normalize();
   }
 
   // IFC: X = RefDirection − (RefDirection · Z)Z, then normalise.
   // If RefDirection is parallel to Z (or near-zero), choose a stable fallback.
-  const refVec = new Vector3(rawRef.x, rawRef.y, rawRef.z);
+  const refVec = toIfcMathVector(rawRef);
   const xTemp = refVec.subtract(zAxis.scale(Vector3.Dot(refVec, zAxis)));
 
   let xAxis: Vector3;
@@ -165,14 +169,16 @@ export function buildPlacementAxesOverlay(
     } else {
       // RefDirection nearly collinear with axis — build a robust basis.
       const worldFallback =
-        Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD ? Vector3.Up() : Vector3.Right();
+        Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD
+          ? IFC_Z_AXIS
+          : IFC_X_AXIS;
       xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
       yAxis = Vector3.Cross(zAxis, xAxis).normalize();
     }
   } else {
     // RefDirection parallel to axis or near-zero — build a robust basis.
     const worldFallback =
-      Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD ? Vector3.Up() : Vector3.Right();
+      Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD ? IFC_Z_AXIS : IFC_X_AXIS;
     xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
     yAxis = Vector3.Cross(zAxis, xAxis).normalize();
   }
@@ -183,7 +189,7 @@ export function buildPlacementAxesOverlay(
     createArrow(
       scene,
       loc,
-      xAxis,
+      ifcToBabylonVector(xAxis),
       arrowLength,
       new Color3(1, 0.2, 0.2),
       "placement_x",
@@ -194,7 +200,7 @@ export function buildPlacementAxesOverlay(
     createArrow(
       scene,
       loc,
-      yAxis,
+      ifcToBabylonVector(yAxis),
       arrowLength,
       new Color3(0.2, 1, 0.2),
       "placement_y",
@@ -205,7 +211,7 @@ export function buildPlacementAxesOverlay(
     createArrow(
       scene,
       loc,
-      zAxis,
+      ifcToBabylonVector(zAxis),
       arrowLength,
       new Color3(0.3, 0.5, 1),
       "placement_z",

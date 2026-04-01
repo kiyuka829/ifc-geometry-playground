@@ -305,8 +305,8 @@ export class ExtrusionEditor {
     const cosEl = Math.cos(el);
     return this._sanitizeDirection({
       x: cosEl * Math.cos(az),
-      y: Math.sin(el),
-      z: cosEl * Math.sin(az),
+      y: cosEl * Math.sin(az),
+      z: Math.sin(el),
     });
   }
 
@@ -315,12 +315,12 @@ export class ExtrusionEditor {
     fallbackAzimuthDeg = 0,
   ): DirectionAngles {
     const n = this._normalizeDirection(direction);
-    const horizontal = Math.sqrt(n.x * n.x + n.z * n.z);
+    const horizontal = Math.sqrt(n.x * n.x + n.y * n.y);
     const atPole = horizontal < ANGLE_EPSILON;
     const azimuthDeg = atPole
       ? fallbackAzimuthDeg
-      : this._radToDeg(Math.atan2(n.z, n.x));
-    const elevationDeg = this._radToDeg(Math.atan2(n.y, horizontal));
+      : this._radToDeg(Math.atan2(n.y, n.x));
+    const elevationDeg = this._radToDeg(Math.atan2(n.z, horizontal));
     return {
       azimuthDeg: this._clamp(azimuthDeg, AZIMUTH_MIN, AZIMUTH_MAX),
       elevationDeg: this._clamp(elevationDeg, ELEVATION_MIN, ELEVATION_MAX),
@@ -360,7 +360,7 @@ export class ExtrusionEditor {
         direction.z * direction.z,
     );
     if (len < ANGLE_EPSILON) {
-      return { x: 0, y: 1, z: 0 };
+      return { x: 0, y: 0, z: 1 };
     }
     return direction;
   }

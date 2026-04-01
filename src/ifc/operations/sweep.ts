@@ -1,6 +1,12 @@
 import { MeshBuilder, Vector3, Color3, Mesh } from '@babylonjs/core'
 import type { Scene, StandardMaterial } from '@babylonjs/core'
 import type { IfcSweptDiskSolid, Vec3 } from '../../types.ts'
+import {
+  IFC_Y_AXIS,
+  IFC_Z_AXIS,
+  ifcToBabylonVector,
+  toIfcMathVector,
+} from '../../engine/ifc-coordinates.ts'
 
 const TUBE_TESSELLATION = 16
 const INNER_RADIUS_EPS = 0.001
@@ -20,7 +26,7 @@ export function buildSweptDiskSolid(
   material: StandardMaterial,
   name: string,
 ): Mesh {
-  const path = solid.directrix.points.map(p => new Vector3(p.x, p.y, p.z))
+  const path = solid.directrix.points.map((p) => ifcToBabylonVector(p))
 
   if (path.length < 2) {
     // Degenerate: return an invisible empty mesh
@@ -65,7 +71,7 @@ export function buildSweptDiskSolid(
 export function buildPathLines(scene: Scene, path: Vec3[], name: string): Mesh {
   if (path.length < 2) return new Mesh(`${name}_empty`, scene)
 
-  const pts = path.map(p => new Vector3(p.x, p.y, p.z))
+  const pts = path.map((p) => ifcToBabylonVector(p))
   const lines = MeshBuilder.CreateLines(name, { points: pts }, scene)
   lines.color = new Color3(0.2, 0.9, 0.2)
   return lines
@@ -85,7 +91,7 @@ export function buildPathLines(scene: Scene, path: Vec3[], name: string): Mesh {
 export function buildPathFrames(scene: Scene, path: Vec3[], size = 0.4): Mesh[] {
   if (path.length < 2) return []
 
-  const pts = path.map(p => new Vector3(p.x, p.y, p.z))
+  const pts = path.map((p) => toIfcMathVector(p))
 
   /** Compute the path tangent at index i using central/forward/backward difference. */
   function tangentAt(i: number): Vector3 {
@@ -100,9 +106,9 @@ export function buildPathFrames(scene: Scene, path: Vec3[], size = 0.4): Mesh[] 
    */
   function frameAt(tangent: Vector3): { xAxis: Vector3; yAxis: Vector3; zAxis: Vector3 } {
     const zAxis = tangent.clone()
-    const ref = Math.abs(Vector3.Dot(zAxis, Vector3.Up())) < 0.9
-      ? Vector3.Up()
-      : Vector3.Forward()
+    const ref = Math.abs(Vector3.Dot(zAxis, IFC_Z_AXIS)) < 0.9
+      ? IFC_Z_AXIS
+      : IFC_Y_AXIS
     const xAxis = Vector3.Cross(ref, zAxis).normalize()
     const yAxis = Vector3.Cross(zAxis, xAxis).normalize()
     return { xAxis, yAxis, zAxis }
@@ -111,17 +117,18 @@ export function buildPathFrames(scene: Scene, path: Vec3[], size = 0.4): Mesh[] 
   return pts.map((origin, i) => {
     const { xAxis, yAxis, zAxis } = frameAt(tangentAt(i))
 
-    const xEnd = origin.add(xAxis.scale(size))
-    const yEnd = origin.add(yAxis.scale(size))
-    const zEnd = origin.add(zAxis.scale(size))
+    const babylonOrigin = ifcToBabylonVector(origin)
+    const xEnd = babylonOrigin.add(ifcToBabylonVector(xAxis.scale(size)))
+    const yEnd = babylonOrigin.add(ifcToBabylonVector(yAxis.scale(size)))
+    const zEnd = babylonOrigin.add(ifcToBabylonVector(zAxis.scale(size)))
 
-    const xLine = MeshBuilder.CreateLines(`frame${i}_x`, { points: [origin, xEnd] }, scene)
+    const xLine = MeshBuilder.CreateLines(`frame${i}_x`, { points: [babylonOrigin, xEnd] }, scene)
     xLine.color = new Color3(1, 0, 0)
 
-    const yLine = MeshBuilder.CreateLines(`frame${i}_y`, { points: [origin, yEnd] }, scene)
+    const yLine = MeshBuilder.CreateLines(`frame${i}_y`, { points: [babylonOrigin, yEnd] }, scene)
     yLine.color = new Color3(0, 1, 0)
 
-    const zLine = MeshBuilder.CreateLines(`frame${i}_z`, { points: [origin, zEnd] }, scene)
+    const zLine = MeshBuilder.CreateLines(`frame${i}_z`, { points: [babylonOrigin, zEnd] }, scene)
     zLine.color = new Color3(0.3, 0.5, 1)
 
     const parent = new Mesh(`frame${i}`, scene)
@@ -131,4 +138,3 @@ export function buildPathFrames(scene: Scene, path: Vec3[], size = 0.4): Mesh[] 
     return parent
   })
 }
-

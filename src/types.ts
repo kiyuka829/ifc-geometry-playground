@@ -26,7 +26,10 @@ export interface Vec2 {
   x: number;
   y: number;
 }
-/** 3D coordinate used in path editing and simplified IFC placements. */
+/**
+ * 3D coordinate used in UI/state/IFC-domain code.
+ * Axis convention: X = right, Y = depth, Z = up.
+ */
 export interface Vec3 {
   x: number;
   y: number;

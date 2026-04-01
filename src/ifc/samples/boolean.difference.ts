@@ -149,7 +149,7 @@ export const booleanDifferenceSample: SampleDef = {
           type: "IfcAxis2Placement3D",
           location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
         },
-        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
+        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 0, 1] },
         depth: getNumber(params, "mainDepth"),
       },
       secondOperand: {
@@ -167,7 +167,7 @@ export const booleanDifferenceSample: SampleDef = {
             coordinates: [getNumber(params, "cutterOffsetX"), 0, 0],
           },
         },
-        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
+        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 0, 1] },
         depth: getNumber(params, "cutterDepth"),
       },
     };
@@ -201,7 +201,7 @@ export const booleanDifferenceSample: SampleDef = {
           type: "IfcAxis2Placement3D",
           location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
         },
-        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
+        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 0, 1] },
         depth: getNumber(params, "mainDepth"),
       },
       secondOperand: {
@@ -219,7 +219,7 @@ export const booleanDifferenceSample: SampleDef = {
             coordinates: [getNumber(params, "cutterOffsetX"), 0, 0],
           },
         },
-        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 1, 0] },
+        extrudedDirection: { type: "IfcDirection", directionRatios: [0, 0, 1] },
         depth: getNumber(params, "cutterDepth"),
       },
     };
