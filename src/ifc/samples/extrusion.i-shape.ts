@@ -178,6 +178,7 @@ export const extrusionIShapeSample: SampleDef = {
         extrusionDirection,
         depth,
         "dir_arrow",
+        activePlacement,
       );
       if (arrow) meshes.push(arrow);
     }

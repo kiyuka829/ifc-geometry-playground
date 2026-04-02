@@ -166,6 +166,7 @@ export const extrusionCircleHollowSample: SampleDef = {
         extrusionDirection,
         depth,
         "dir_arrow",
+        activePlacement,
       );
       if (arrow) meshes.push(arrow);
     }
