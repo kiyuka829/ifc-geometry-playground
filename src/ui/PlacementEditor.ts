@@ -13,9 +13,10 @@ const ORTHOGONAL_FALLBACK_THRESHOLD = 0.9;
 /**
  * Slider values shown in the UI (degrees).
  *
- * They are seeded from the initial placement's intrinsic XYZ decomposition,
- * then used as accumulators so each slider change can apply only the delta
- * around the current local axis.
+ * They are seeded from the initial placement's normalized/orthogonalized XYZ
+ * basis (as produced by the placement basis helper), then used as accumulators
+ * so each slider change can apply only the delta around the current local axis
+ * in that normalized placement frame.
  */
 interface EulerAngles {
   rx: number;
