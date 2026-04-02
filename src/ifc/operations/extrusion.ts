@@ -26,6 +26,14 @@ import {
 
 const CIRCLE_SEGMENTS = 48;
 
+function isIndexInRange(
+  index: number,
+  start: number,
+  length: number,
+): boolean {
+  return index >= start && index < start + length;
+}
+
 // ── Polygon generators ─────────────────────────────────────────────────────
 
 function circleVec2(radius: number, segments = CIRCLE_SEGMENTS): Vec2[] {
@@ -243,6 +251,21 @@ export function buildExtrusionMeshFromNormalized(
     throw new Error("ExtrudePolygon did not return positions/indices");
   }
 
+  const totalLoopVertexCount =
+    profile.outerLoop.length +
+    profile.innerLoops.reduce((sum, loop) => sum + loop.length, 0);
+  const capVertexCount = totalLoopVertexCount * 2;
+  const outerSideVertexCount = profile.outerLoop.length * 4;
+  const innerSideRanges = profile.innerLoops.map((loop, holeIndex) => {
+    const priorHoleSideVertexCount = profile.innerLoops
+      .slice(0, holeIndex)
+      .reduce((sum, innerLoop) => sum + innerLoop.length * 4, 0);
+    return {
+      start: capVertexCount + outerSideVertexCount + priorHoleSideVertexCount,
+      length: loop.length * 4,
+    };
+  });
+
   // Babylon builds the polygon in local XZ and extrudes along local -Y.
   // Reinterpret those vertices as an IFC swept area in the placement XY plane,
   // then translate each layer along the IFC extrudedDirection.
@@ -282,6 +305,25 @@ export function buildExtrusionMeshFromNormalized(
     }
     mesh.setIndices(indices);
   }
+
+  // Babylon's hole side quads end up inward-facing for the cavity after the IFC
+  // reinterpretation. Flip only those side triangles so interior wall normals
+  // point into the void instead of into the surrounding solid.
+  for (let i = 0; i < indices.length; i += 3) {
+    const i0 = indices[i];
+    const i1 = indices[i + 1];
+    const i2 = indices[i + 2];
+    const isInnerSideTriangle = innerSideRanges.some(
+      ({ start, length }) =>
+        isIndexInRange(i0, start, length) &&
+        isIndexInRange(i1, start, length) &&
+        isIndexInRange(i2, start, length),
+    );
+    if (!isInnerSideTriangle) continue;
+    indices[i] = i1;
+    indices[i + 1] = i0;
+  }
+  mesh.setIndices(indices);
 
   const normals = new Array<number>(positions.length).fill(0);
   VertexData.ComputeNormals(positions, indices, normals, {
