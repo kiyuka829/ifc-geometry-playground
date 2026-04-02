@@ -169,11 +169,20 @@ export function buildProfileOverlay(
  * normalised), and has the same length as the extrusion depth so that
  * it lines up with the extruded solid.
  *
+ * When `placement` is provided, `origin` and `direction` are interpreted in
+ * that placement's local coordinate system and are transformed to world space
+ * before the arrow is built. Without `placement`, they are interpreted as
+ * world-space IFC coordinates directly.
+ *
  * @param scene     Active Babylon.js scene.
- * @param origin    Base of the arrow in world space.
- * @param direction Extrusion direction vector (normalised internally).
+ * @param origin    Base of the arrow in IFC world space, or in placement-local
+ *                  space when `placement` is provided.
+ * @param direction Extrusion direction vector in IFC world space, or in
+ *                  placement-local space when `placement` is provided.
  * @param depth     Extrusion depth — used as the arrow length.
  * @param name      Mesh name (must be unique per call).
+ * @param placement Optional local placement used to transform `origin` and
+ *                  `direction` into world space.
  * @returns         Arrow parent mesh, or null if direction vector is negligible.
  */
 export function buildExtrusionDirectionOverlay(
