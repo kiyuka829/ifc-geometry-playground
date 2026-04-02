@@ -1,9 +1,9 @@
 import {
   MeshBuilder,
-  Matrix,
-  Quaternion,
   Vector3,
   Color3,
+  VertexBuffer,
+  VertexData,
 } from "@babylonjs/core";
 import type { Scene, StandardMaterial, Mesh, LinesMesh } from "@babylonjs/core";
 import earcut from "earcut";
@@ -221,20 +221,11 @@ export function buildExtrusionMeshFromNormalized(
     earcut,
   );
 
-  // Apply 3D placement and extrusion direction
   const { origin, zAxis, xAxis } = placement;
-  mesh.position = ifcToBabylonVector(origin);
-
   const ifcXAxis = toIfcMathVector(xAxis);
   const ifcZAxis = toIfcMathVector(zAxis);
-  // Placement Y = Cross(Z, X) per IFC right-hand rule, so compute in IFC space
-  // before converting into Babylon space.
   const ifcYAxis = Vector3.Cross(ifcZAxis, ifcXAxis).normalize();
-
-  // Convert extrusionDirection from placement-local space to world space.
-  // extrusionDirection is expressed in the placement's local coordinate system
-  // where local (1,0,0) = X, (0,1,0) = Y, (0,0,1) = Z in IFC space.
-  const ifcE = new Vector3(
+  const ifcExtrusionVector = new Vector3(
     extrusionDirection.x * ifcXAxis.x +
       extrusionDirection.y * ifcYAxis.x +
       extrusionDirection.z * ifcZAxis.x,
@@ -244,43 +235,61 @@ export function buildExtrusionMeshFromNormalized(
     extrusionDirection.x * ifcXAxis.z +
       extrusionDirection.y * ifcYAxis.z +
       extrusionDirection.z * ifcZAxis.z,
-  ).normalize();
-
-  // Build a rotation matrix that maps BJS local axes to world axes such that:
-  //   BJS local X → col0: profile X direction (orthogonalised against E)
-  //   BJS local Y → col1: negative world extrusion direction (-E), so BJS -Y → E
-  //   BJS local Z → col2: profile Y direction (right-hand rule from col0 × col1)
-  //
-  // This ensures ExtrudePolygon (which extrudes in -Y in BJS local space) produces
-  // a solid whose extrusion axis aligns with the IFC extrudedDirection in world space.
-  const dot = Vector3.Dot(ifcXAxis, ifcE);
-  const ifcCol0 = ifcXAxis.subtract(ifcE.scale(dot)).normalize();
-  const ifcCol1 = ifcE.negate();
-  const ifcCol2 = Vector3.Cross(ifcCol0, ifcCol1).normalize();
-
-  const col0 = ifcToBabylonVector(ifcCol0);
-  const col1 = ifcToBabylonVector(ifcCol1);
-  const col2 = ifcToBabylonVector(ifcCol2);
-
-  const rotMatrix = Matrix.FromValues(
-    col0.x,
-    col1.x,
-    col2.x,
-    0,
-    col0.y,
-    col1.y,
-    col2.y,
-    0,
-    col0.z,
-    col1.z,
-    col2.z,
-    0,
-    0,
-    0,
-    0,
-    1,
   );
-  mesh.rotationQuaternion = Quaternion.FromRotationMatrix(rotMatrix);
+
+  const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
+  const indices = mesh.getIndices();
+  if (!positions || !indices) {
+    throw new Error("ExtrudePolygon did not return positions/indices");
+  }
+
+  // Babylon builds the polygon in local XZ and extrudes along local -Y.
+  // Reinterpret those vertices as an IFC swept area in the placement XY plane,
+  // then translate each layer along the IFC extrudedDirection.
+  for (let i = 0; i < positions.length; i += 3) {
+    const localX = positions[i];
+    const localY = positions[i + 1];
+    const localZ = positions[i + 2];
+
+    const ifcRelative = {
+      x:
+        localX * ifcXAxis.x +
+        localZ * ifcYAxis.x -
+        localY * ifcExtrusionVector.x,
+      y:
+        localX * ifcXAxis.y +
+        localZ * ifcYAxis.y -
+        localY * ifcExtrusionVector.y,
+      z:
+        localX * ifcXAxis.z +
+        localZ * ifcYAxis.z -
+        localY * ifcExtrusionVector.z,
+    };
+    const babylonRelative = ifcToBabylonVector(ifcRelative);
+    positions[i] = babylonRelative.x;
+    positions[i + 1] = babylonRelative.y;
+    positions[i + 2] = babylonRelative.z;
+  }
+
+  // The reinterpretation basis is [placement X, -extrusion, placement Y].
+  // After the IFC->Babylon axis swap, its determinant becomes -extrusion.z,
+  // so only extrusions with a positive local Z component need winding flipped.
+  if (extrusionDirection.z > 0) {
+    for (let i = 0; i < indices.length; i += 3) {
+      const a = indices[i];
+      indices[i] = indices[i + 1];
+      indices[i + 1] = a;
+    }
+    mesh.setIndices(indices);
+  }
+
+  const normals = new Array<number>(positions.length).fill(0);
+  VertexData.ComputeNormals(positions, indices, normals, {
+    useRightHandedSystem: scene.useRightHandedSystem,
+  });
+  mesh.setVerticesData(VertexBuffer.PositionKind, positions, false);
+  mesh.setVerticesData(VertexBuffer.NormalKind, normals, false);
+  mesh.position = ifcToBabylonVector(origin);
 
   mesh.material = material;
   return mesh;

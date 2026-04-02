@@ -56,6 +56,77 @@ function _getPlacementAxisMaterials(scene: Scene): AxisMaterials {
   return mats;
 }
 
+function getPlacementBasis(placement: IfcAxis2Placement3D): {
+  origin: Vec3;
+  xAxis: Vector3;
+  yAxis: Vector3;
+  zAxis: Vector3;
+} {
+  const rawAxis = placement.axis ?? { x: 0, y: 0, z: 1 };
+  const rawRef = placement.refDirection ?? { x: 1, y: 0, z: 0 };
+
+  let zAxis = toIfcMathVector(rawAxis);
+  if (zAxis.length() < MIN_DIRECTION_LENGTH) {
+    zAxis = IFC_Z_AXIS.clone();
+  } else {
+    zAxis = zAxis.normalize();
+  }
+
+  const refVec = toIfcMathVector(rawRef);
+  const xTemp = refVec.subtract(zAxis.scale(Vector3.Dot(refVec, zAxis)));
+
+  let xAxis: Vector3;
+  let yAxis: Vector3;
+
+  if (xTemp.length() >= MIN_DIRECTION_LENGTH) {
+    xAxis = xTemp.normalize();
+    const yCross = Vector3.Cross(zAxis, xAxis);
+    if (yCross.length() >= MIN_DIRECTION_LENGTH) {
+      yAxis = yCross.normalize();
+    } else {
+      const worldFallback =
+        Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD
+          ? IFC_Z_AXIS
+          : IFC_X_AXIS;
+      xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
+      yAxis = Vector3.Cross(zAxis, xAxis).normalize();
+    }
+  } else {
+    const worldFallback =
+      Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD ? IFC_Z_AXIS : IFC_X_AXIS;
+    xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
+    yAxis = Vector3.Cross(zAxis, xAxis).normalize();
+  }
+
+  return { origin: placement.location, xAxis, yAxis, zAxis };
+}
+
+function transformPointByPlacement(
+  point: Vec3,
+  placement?: IfcAxis2Placement3D,
+): Vec3 {
+  if (!placement) return point;
+  const { origin, xAxis, yAxis, zAxis } = getPlacementBasis(placement);
+  return {
+    x: origin.x + point.x * xAxis.x + point.y * yAxis.x + point.z * zAxis.x,
+    y: origin.y + point.x * xAxis.y + point.y * yAxis.y + point.z * zAxis.y,
+    z: origin.z + point.x * xAxis.z + point.y * yAxis.z + point.z * zAxis.z,
+  };
+}
+
+function transformVectorByPlacement(
+  vector: Vec3,
+  placement?: IfcAxis2Placement3D,
+): Vec3 {
+  if (!placement) return vector;
+  const { xAxis, yAxis, zAxis } = getPlacementBasis(placement);
+  return {
+    x: vector.x * xAxis.x + vector.y * yAxis.x + vector.z * zAxis.x,
+    y: vector.x * xAxis.y + vector.y * yAxis.y + vector.z * zAxis.y,
+    z: vector.x * xAxis.z + vector.y * yAxis.z + vector.z * zAxis.z,
+  };
+}
+
 /**
  * Build 3D overlay meshes that represent a profile cross-section in the
  * 3D viewport: profile boundary lines and local placement axes.
@@ -111,13 +182,16 @@ export function buildExtrusionDirectionOverlay(
   direction: Vec3,
   depth: number,
   name: string,
+  placement?: IfcAxis2Placement3D,
 ): Mesh | null {
-  const ifcDirection = toIfcMathVector(direction);
+  const worldOrigin = transformPointByPlacement(origin, placement);
+  const worldDirection = transformVectorByPlacement(direction, placement);
+  const ifcDirection = toIfcMathVector(worldDirection);
   if (ifcDirection.length() < MIN_DIRECTION_LENGTH) return null;
   return createArrow(
     scene,
-    ifcToBabylonVector(origin),
-    ifcToBabylonVector(direction),
+    ifcToBabylonVector(worldOrigin),
+    ifcToBabylonVector(worldDirection),
     depth,
     new Color3(0.2, 0.9, 0.2),
     name,
@@ -140,48 +214,8 @@ export function buildPlacementAxesOverlay(
   placement: IfcAxis2Placement3D,
   arrowLength = 3,
 ): Mesh[] {
-  const loc = ifcToBabylonVector(placement.location);
-
-  const rawAxis = placement.axis ?? { x: 0, y: 0, z: 1 };
-  const rawRef = placement.refDirection ?? { x: 1, y: 0, z: 0 };
-
-  // Normalise axis; fall back to world Z if near-zero.
-  let zAxis = toIfcMathVector(rawAxis);
-  if (zAxis.length() < MIN_DIRECTION_LENGTH) {
-    zAxis = IFC_Z_AXIS.clone();
-  } else {
-    zAxis = zAxis.normalize();
-  }
-
-  // IFC: X = RefDirection − (RefDirection · Z)Z, then normalise.
-  // If RefDirection is parallel to Z (or near-zero), choose a stable fallback.
-  const refVec = toIfcMathVector(rawRef);
-  const xTemp = refVec.subtract(zAxis.scale(Vector3.Dot(refVec, zAxis)));
-
-  let xAxis: Vector3;
-  let yAxis: Vector3;
-
-  if (xTemp.length() >= MIN_DIRECTION_LENGTH) {
-    xAxis = xTemp.normalize();
-    const yCross = Vector3.Cross(zAxis, xAxis);
-    if (yCross.length() >= MIN_DIRECTION_LENGTH) {
-      yAxis = yCross.normalize();
-    } else {
-      // RefDirection nearly collinear with axis — build a robust basis.
-      const worldFallback =
-        Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD
-          ? IFC_Z_AXIS
-          : IFC_X_AXIS;
-      xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
-      yAxis = Vector3.Cross(zAxis, xAxis).normalize();
-    }
-  } else {
-    // RefDirection parallel to axis or near-zero — build a robust basis.
-    const worldFallback =
-      Math.abs(zAxis.z) < NEAR_PARALLEL_DOT_THRESHOLD ? IFC_Z_AXIS : IFC_X_AXIS;
-    xAxis = Vector3.Cross(worldFallback, zAxis).normalize();
-    yAxis = Vector3.Cross(zAxis, xAxis).normalize();
-  }
+  const { origin, xAxis, yAxis, zAxis } = getPlacementBasis(placement);
+  const loc = ifcToBabylonVector(origin);
 
   const mats = _getPlacementAxisMaterials(scene);
   const meshes: Mesh[] = [];
