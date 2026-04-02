@@ -247,10 +247,13 @@ export class PlacementEditor {
         fmtDeg,
         (next) => {
           const delta = next - euler[key];
-          euler[key] = next;
-          if (Math.abs(delta) > EPSILON) {
-            basis = this._applyLocalRotation(basis, key, delta);
+          if (Math.abs(delta) <= EPSILON) {
+            // Ignore negligible changes to avoid redundant _notify() calls
+            euler[key] = next;
+            return;
           }
+          euler[key] = next;
+          basis = this._applyLocalRotation(basis, key, delta);
           syncOrientationUI();
         },
       );
