@@ -8,20 +8,25 @@ const ROTATION_MIN = -180;
 const ROTATION_MAX = 180;
 const ROTATION_STEP = 1;
 const EPSILON = 1e-6;
+const ORTHOGONAL_FALLBACK_THRESHOLD = 0.9;
 
 /**
- * Euler angles (degrees).
- * R = Rx(rx) · Ry(ry) · Rz(rz)
+ * Slider values shown in the UI (degrees).
  *
- * - Rotation X / Y control the tilt (where the local Z axis points).
- * - Rotation Z spins around the local Z axis (only affects RefDirection).
- *
- * Default (0, 0, 0) → Axis = (0, 0, 1), RefDirection = (1, 0, 0).
+ * They are seeded from the initial placement's intrinsic XYZ decomposition,
+ * then used as accumulators so each slider change can apply only the delta
+ * around the current local axis.
  */
 interface EulerAngles {
   rx: number;
   ry: number;
   rz: number;
+}
+
+interface OrientationBasis {
+  xAxis: Vec3;
+  yAxis: Vec3;
+  zAxis: Vec3;
 }
 
 export class PlacementEditor {
@@ -174,9 +179,8 @@ export class PlacementEditor {
 
     const orientSection = makeSection("Orientation");
 
-    const axis = this.placement.axis ?? { x: 0, y: 0, z: 1 };
-    const refDir = this.placement.refDirection ?? { x: 1, y: 0, z: 0 };
-    const initialEuler = this._axesToEuler(axis, refDir);
+    let basis = this._getPlacementBasis(this.placement);
+    const initialEuler = this._axesToEuler(basis.zAxis, basis.xAxis);
 
     const euler: EulerAngles = { ...initialEuler };
 
@@ -205,9 +209,10 @@ export class PlacementEditor {
     };
 
     const syncOrientationUI = () => {
-      const { axis: a, refDirection: r } = this._eulerToAxes(euler);
-      this.placement.axis = a;
-      this.placement.refDirection = r;
+      const a = basis.zAxis;
+      const r = basis.xAxis;
+      this.placement.axis = { ...a };
+      this.placement.refDirection = { ...r };
 
       for (const key of ["rx", "ry", "rz"] as const) {
         sliderRefs[key].input.value = String(euler[key]);
@@ -241,7 +246,11 @@ export class PlacementEditor {
         ROTATION_STEP,
         fmtDeg,
         (next) => {
+          const delta = next - euler[key];
           euler[key] = next;
+          if (Math.abs(delta) > EPSILON) {
+            basis = this._applyLocalRotation(basis, key, delta);
+          }
           syncOrientationUI();
         },
       );
@@ -256,11 +265,11 @@ export class PlacementEditor {
     orientSection.appendChild(refDirReadout);
 
     // Initial sync: update placement to the normalised/orthogonal frame and
-    // populate readouts — without firing _notify() so callers are not triggered
-    // before any user interaction.
-    const { axis: initA, refDirection: initR } = this._eulerToAxes(euler);
-    this.placement.axis = initA;
-    this.placement.refDirection = initR;
+    // populate readouts without firing _notify() before user interaction.
+    const initA = basis.zAxis;
+    const initR = basis.xAxis;
+    this.placement.axis = { ...initA };
+    this.placement.refDirection = { ...initR };
 
     axisReadout.innerHTML = "";
     const axL = document.createElement("span");
@@ -279,43 +288,7 @@ export class PlacementEditor {
     this.container.appendChild(wrapper);
   }
 
-  // ── Euler ↔ Axis/RefDirection conversion ─────────────────────────────────
-  //
-  // Rotation matrix R = Rx(rx) · Ry(ry) · Rz(rz)
-  //
-  // Rz is innermost → Rotation Z spins around the LOCAL Z axis.
-  // Rx/Ry are outer  → they tilt the Z axis direction.
-  //
-  // Column 0 (RefDirection / X axis):
-  //   ( cy·cz,  cx·sz + sx·sy·cz,  sx·sz − cx·sy·cz )
-  //
-  // Column 2 (Axis / Z axis):
-  //   ( sy,  −sx·cy,  cx·cy )
-  //
-  // Key property: Axis does NOT depend on rz.
-
-  private _eulerToAxes(e: EulerAngles): { axis: Vec3; refDirection: Vec3 } {
-    const cx = Math.cos(this._degToRad(e.rx));
-    const sx = Math.sin(this._degToRad(e.rx));
-    const cy = Math.cos(this._degToRad(e.ry));
-    const sy = Math.sin(this._degToRad(e.ry));
-    const cz = Math.cos(this._degToRad(e.rz));
-    const sz = Math.sin(this._degToRad(e.rz));
-
-    const refDirection: Vec3 = {
-      x: cy * cz,
-      y: cx * sz + sx * sy * cz,
-      z: sx * sz - cx * sy * cz,
-    };
-
-    const axis: Vec3 = {
-      x: sy,
-      y: -sx * cy,
-      z: cx * cy,
-    };
-
-    return { axis, refDirection };
-  }
+  // ── Orientation helpers ──────────────────────────────────────────────────
 
   private _axesToEuler(axis: Vec3, refDirection: Vec3): EulerAngles {
     // Normalize inputs
@@ -357,10 +330,110 @@ export class PlacementEditor {
     };
   }
 
+  private _getPlacementBasis(placement: IfcAxis2Placement3D): OrientationBasis {
+    const rawZ = placement.axis ?? { x: 0, y: 0, z: 1 };
+    const rawX = placement.refDirection ?? { x: 1, y: 0, z: 0 };
+
+    const zAxis = this._normalize(rawZ, { x: 0, y: 0, z: 1 });
+    const xAxis = this._orthogonalizeXAxis(zAxis, rawX);
+    const yAxis = this._normalize(
+      this._cross(zAxis, xAxis),
+      { x: 0, y: 1, z: 0 },
+    );
+
+    return { xAxis, yAxis, zAxis };
+  }
+
+  private _applyLocalRotation(
+    basis: OrientationBasis,
+    key: keyof EulerAngles,
+    deltaDegrees: number,
+  ): OrientationBasis {
+    const angle = this._degToRad(deltaDegrees);
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+
+    switch (key) {
+      case "rx":
+        return this._orthonormalizeBasis({
+          xAxis: basis.xAxis,
+          yAxis: this._add(this._scale(basis.yAxis, c), this._scale(basis.zAxis, s)),
+          zAxis: this._add(
+            this._scale(basis.yAxis, -s),
+            this._scale(basis.zAxis, c),
+          ),
+        });
+      case "ry":
+        return this._orthonormalizeBasis({
+          xAxis: this._add(this._scale(basis.xAxis, c), this._scale(basis.zAxis, -s)),
+          yAxis: basis.yAxis,
+          zAxis: this._add(this._scale(basis.xAxis, s), this._scale(basis.zAxis, c)),
+        });
+      case "rz":
+        return this._orthonormalizeBasis({
+          xAxis: this._add(this._scale(basis.xAxis, c), this._scale(basis.yAxis, s)),
+          yAxis: this._add(this._scale(basis.xAxis, -s), this._scale(basis.yAxis, c)),
+          zAxis: basis.zAxis,
+        });
+    }
+  }
+
+  private _orthonormalizeBasis(basis: OrientationBasis): OrientationBasis {
+    const zAxis = this._normalize(basis.zAxis, { x: 0, y: 0, z: 1 });
+    const xAxis = this._orthogonalizeXAxis(zAxis, basis.xAxis);
+    const yAxis = this._normalize(
+      this._cross(zAxis, xAxis),
+      { x: 0, y: 1, z: 0 },
+    );
+
+    return { xAxis, yAxis, zAxis };
+  }
+
   // ── Math helpers ─────────────────────────────────────────────────────────
 
+  private _add(a: Vec3, b: Vec3): Vec3 {
+    return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
+  }
+
+  private _sub(a: Vec3, b: Vec3): Vec3 {
+    return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+  }
+
+  private _scale(v: Vec3, scalar: number): Vec3 {
+    return { x: v.x * scalar, y: v.y * scalar, z: v.z * scalar };
+  }
+
+  private _dot(a: Vec3, b: Vec3): number {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+  }
+
+  private _cross(a: Vec3, b: Vec3): Vec3 {
+    return {
+      x: a.y * b.z - a.z * b.y,
+      y: a.z * b.x - a.x * b.z,
+      z: a.x * b.y - a.y * b.x,
+    };
+  }
+
+  private _orthogonalizeXAxis(zAxis: Vec3, candidate: Vec3): Vec3 {
+    const projected = this._sub(candidate, this._scale(zAxis, this._dot(candidate, zAxis)));
+    if (this._length(projected) >= EPSILON) {
+      return this._normalize(projected, { x: 1, y: 0, z: 0 });
+    }
+
+    const fallbackSeed =
+      Math.abs(zAxis.x) < ORTHOGONAL_FALLBACK_THRESHOLD
+        ? { x: 1, y: 0, z: 0 }
+        : { x: 0, y: 1, z: 0 };
+    return this._normalize(this._cross(fallbackSeed, zAxis), { x: 1, y: 0, z: 0 });
+  }
+
+  private _length(v: Vec3): number {
+    return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+  }
+
   private _normalize(v: Vec3, fallback: Vec3): Vec3 {
-    const len = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    const len = this._length(v);
     if (len < EPSILON) return fallback;
     return { x: v.x / len, y: v.y / len, z: v.z / len };
   }
