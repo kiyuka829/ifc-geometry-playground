@@ -347,6 +347,8 @@ function cShapeLoop(profile: Extract<IfcAreaParameterizedProfileDef, { type: 'If
     Math.PI,
     Math.PI / 2,
   )
+  // The last arc ends at (-hw + rOuter, hd) which is identical to pts[0]; drop the duplicate.
+  pts.pop()
 
   return ensureCounterClockwise(pts)
 }
