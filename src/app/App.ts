@@ -9,6 +9,7 @@ import { extrusionEllipseSample } from "../ifc/samples/extrusion.ellipse.ts";
 import { extrusionRectHollowSample } from "../ifc/samples/extrusion.rect-hollow.ts";
 import { extrusionCircleHollowSample } from "../ifc/samples/extrusion.circle-hollow.ts";
 import { extrusionCShapeSample } from "../ifc/samples/extrusion.c-shape.ts";
+import { extrusionAsymmetricIShapeSample } from "../ifc/samples/extrusion.asymmetric-i-shape.ts";
 import { extrusionIShapeSample } from "../ifc/samples/extrusion.i-shape.ts";
 import { extrusionLShapeSample } from "../ifc/samples/extrusion.l-shape.ts";
 import { extrusionTShapeSample } from "../ifc/samples/extrusion.t-shape.ts";
@@ -26,6 +27,7 @@ const samples: Record<string, SampleDef> = {
   "extrusion-rect-hollow": extrusionRectHollowSample,
   "extrusion-circle-hollow": extrusionCircleHollowSample,
   "extrusion-c-shape": extrusionCShapeSample,
+  "extrusion-asymmetric-i-shape": extrusionAsymmetricIShapeSample,
   "extrusion-i-shape": extrusionIShapeSample,
   "extrusion-l-shape": extrusionLShapeSample,
   "extrusion-t-shape": extrusionTShapeSample,

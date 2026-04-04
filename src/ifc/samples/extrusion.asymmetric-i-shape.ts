@@ -17,14 +17,18 @@ import {
 import type { IfcExtrudedAreaSolid } from "../generated/schema.ts";
 
 const DEFAULT_PROFILE: IfcProfileDef = {
-  type: "IfcIShapeProfileDef",
+  type: "IfcAsymmetricIShapeProfileDef",
   profileType: "AREA",
-  overallWidth: 3,
-  overallDepth: 5,
-  webThickness: 0.2,
-  flangeThickness: 0.3,
-  filletRadius: 0.15,
-  flangeEdgeRadius: 0.1,
+  bottomFlangeWidth: 4.2,
+  overallDepth: 5.5,
+  webThickness: 0.45,
+  bottomFlangeThickness: 0.7,
+  bottomFlangeFilletRadius: 0.2,
+  bottomFlangeEdgeRadius: 0.15,
+  topFlangeWidth: 3.1,
+  topFlangeThickness: 0.45,
+  topFlangeFilletRadius: 0.15,
+  topFlangeEdgeRadius: 0.1,
 };
 
 const DEFAULT_EXTRUSION: ExtrusionParams = {
@@ -39,37 +43,36 @@ const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
   refDirection: { x: 1, y: 0, z: 0 },
 };
 
-export const extrusionIShapeSample: SampleDef = {
-  id: "extrusion-i-shape",
-  title: "I-Shape / H-Beam Profile (IfcIShapeProfileDef)",
+export const extrusionAsymmetricIShapeSample: SampleDef = {
+  id: "extrusion-asymmetric-i-shape",
+  title: "Asymmetric I-Shape Profile (IfcAsymmetricIShapeProfileDef)",
   description:
-    "An I-shaped (or H-shaped) cross-section defined by overall width, overall depth, web thickness, and flange thickness (IfcIShapeProfileDef). " +
-    "Adjust the dimensions in the profile editor.",
+    "An asymmetric I-shaped cross-section defined by independent top and bottom flange widths and thicknesses, plus overall depth and web thickness (IfcAsymmetricIShapeProfileDef). " +
+    "Adjust the section in the profile editor.",
   parameters: [],
   steps: [
     {
       id: "profile",
-      label: "Step 1: I-Shape Cross-Section",
+      label: "Step 1: Asymmetric I-Shape Cross-Section",
       description:
-        "IfcIShapeProfileDef defines an I-shaped (or H-shaped) cross-section by overall width, overall depth, " +
-        "web thickness, and flange thickness. The section is symmetric about both axes.",
+        "IfcAsymmetricIShapeProfileDef defines an I-shaped cross-section whose top and bottom flanges may differ in width and thickness while sharing a centered web.",
     },
     {
       id: "direction",
       label: "Step 2: Extruded Direction",
       description:
-        "The extrusion direction vector specifies where the I-shaped profile is swept. " +
+        "The extrusion direction vector specifies where the asymmetric I-shaped profile is swept. " +
         "Use this step to inspect direction and depth before generating the final solid.",
     },
     {
       id: "solid",
       label: "Step 3: Extruded Solid",
       description:
-        "The I-shaped cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).",
+        "The asymmetric I-shaped cross-section is extruded along the Z-axis to produce a 3D solid (IfcExtrudedAreaSolid).",
     },
   ],
   profileEditorConfig: {
-    allowedTypes: ["i-shape"],
+    allowedTypes: ["asymmetric-i-shape"],
     defaultProfile: DEFAULT_PROFILE,
   },
   extrusionEditorConfig: {
@@ -94,42 +97,62 @@ export const extrusionIShapeSample: SampleDef = {
       extrusion?.extrudedDirection ?? DEFAULT_EXTRUSION.extrudedDirection;
     const activePlacement = placement ?? DEFAULT_PLACEMENT;
     const activeProfile: IfcProfileDef = profile ?? DEFAULT_PROFILE;
-    const overallWidth =
-      activeProfile.type === "IfcIShapeProfileDef"
-        ? activeProfile.overallWidth
-        : DEFAULT_PROFILE.overallWidth;
+    const bottomFlangeWidth =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.bottomFlangeWidth
+        : DEFAULT_PROFILE.bottomFlangeWidth;
     const overallDepth =
-      activeProfile.type === "IfcIShapeProfileDef"
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
         ? activeProfile.overallDepth
         : DEFAULT_PROFILE.overallDepth;
     const webThickness =
-      activeProfile.type === "IfcIShapeProfileDef"
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
         ? activeProfile.webThickness
         : DEFAULT_PROFILE.webThickness;
-    const flangeThickness =
-      activeProfile.type === "IfcIShapeProfileDef"
-        ? activeProfile.flangeThickness
-        : DEFAULT_PROFILE.flangeThickness;
-    const filletRadius =
-      activeProfile.type === "IfcIShapeProfileDef"
-        ? activeProfile.filletRadius
-        : DEFAULT_PROFILE.filletRadius;
-    const flangeEdgeRadius =
-      activeProfile.type === "IfcIShapeProfileDef"
-        ? activeProfile.flangeEdgeRadius
-        : DEFAULT_PROFILE.flangeEdgeRadius;
+    const bottomFlangeThickness =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.bottomFlangeThickness
+        : DEFAULT_PROFILE.bottomFlangeThickness;
+    const topFlangeWidth =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.topFlangeWidth
+        : DEFAULT_PROFILE.topFlangeWidth;
+    const topFlangeThickness =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.topFlangeThickness
+        : DEFAULT_PROFILE.topFlangeThickness;
+    const bottomFlangeFilletRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.bottomFlangeFilletRadius
+        : DEFAULT_PROFILE.bottomFlangeFilletRadius;
+    const topFlangeFilletRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.topFlangeFilletRadius
+        : DEFAULT_PROFILE.topFlangeFilletRadius;
+    const bottomFlangeEdgeRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.bottomFlangeEdgeRadius
+        : DEFAULT_PROFILE.bottomFlangeEdgeRadius;
+    const topFlangeEdgeRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.topFlangeEdgeRadius
+        : DEFAULT_PROFILE.topFlangeEdgeRadius;
 
     const generatedSolid: IfcExtrudedAreaSolid = {
       type: "IfcExtrudedAreaSolid",
       sweptArea: {
-        type: "IfcIShapeProfileDef",
+        type: "IfcAsymmetricIShapeProfileDef",
         profileType: "AREA",
-        overallWidth,
+        bottomFlangeWidth,
         overallDepth,
         webThickness,
-        flangeThickness,
-        filletRadius,
-        flangeEdgeRadius,
+        bottomFlangeThickness,
+        topFlangeWidth,
+        topFlangeThickness,
+        bottomFlangeFilletRadius,
+        topFlangeFilletRadius,
+        bottomFlangeEdgeRadius,
+        topFlangeEdgeRadius,
       },
       position: {
         type: "IfcAxis2Placement3D",
@@ -179,7 +202,7 @@ export const extrusionIShapeSample: SampleDef = {
 
     if (stepIndex >= 0) {
       meshes.push(
-        ...buildProfileOverlay(scene, activeProfile, "ishape_outline"),
+        ...buildProfileOverlay(scene, activeProfile, "asymmetric_ishape_outline"),
       );
     }
 
@@ -211,14 +234,18 @@ export const extrusionIShapeSample: SampleDef = {
   getIFCRepresentation: (_params: ParamValues) => ({
     type: "IfcExtrudedAreaSolid",
     sweptArea: {
-      type: "IfcIShapeProfileDef",
+      type: "IfcAsymmetricIShapeProfileDef",
       profileType: "AREA",
-      overallWidth: "(see profile editor)",
+      bottomFlangeWidth: "(see profile editor)",
       overallDepth: "(see profile editor)",
       webThickness: "(see profile editor)",
-      flangeThickness: "(see profile editor)",
-      filletRadius: "(see profile editor)",
-      flangeEdgeRadius: "(see profile editor)",
+      bottomFlangeThickness: "(see profile editor)",
+      topFlangeWidth: "(see profile editor)",
+      topFlangeThickness: "(see profile editor)",
+      bottomFlangeFilletRadius: "(see profile editor)",
+      topFlangeFilletRadius: "(see profile editor)",
+      bottomFlangeEdgeRadius: "(see profile editor)",
+      topFlangeEdgeRadius: "(see profile editor)",
     },
     position: {
       type: "IfcAxis2Placement3D",

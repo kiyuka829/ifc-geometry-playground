@@ -9,6 +9,7 @@ import type { Scene, StandardMaterial, Mesh, LinesMesh } from "@babylonjs/core";
 import earcut from "earcut";
 import type {
   IfcProfileDef,
+  IfcAsymmetricIShapeProfileDef,
   IfcCShapeProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
@@ -19,6 +20,7 @@ import type {
 } from "../../types.ts";
 import {
   normalizeExtrudedAreaSolid,
+  asymmetricIShapeLoop,
   type NormalizedExtrusion,
 } from "../normalize.ts";
 import type { IfcExtrudedAreaSolid as IfcGeneratedExtrudedAreaSolid } from "../generated/schema.ts";
@@ -252,24 +254,25 @@ function cShapeVec2(p: IfcCShapeProfileDef): Vec2[] {
 }
 
 function iShapeVec2(p: IfcIShapeProfileDef): Vec2[] {
-  const hw = p.overallWidth / 2;
-  const hd = p.overallDepth / 2;
-  const htw = p.webThickness / 2;
-  const tf = p.flangeThickness;
-  return [
-    { x: -hw, y: -hd },
-    { x: hw, y: -hd },
-    { x: hw, y: -hd + tf },
-    { x: htw, y: -hd + tf },
-    { x: htw, y: hd - tf },
-    { x: hw, y: hd - tf },
-    { x: hw, y: hd },
-    { x: -hw, y: hd },
-    { x: -hw, y: hd - tf },
-    { x: -htw, y: hd - tf },
-    { x: -htw, y: -hd + tf },
-    { x: -hw, y: -hd + tf },
-  ];
+  return asymmetricIShapeVec2({
+    type: "IfcAsymmetricIShapeProfileDef",
+    profileType: "AREA",
+    position: p.position,
+    bottomFlangeWidth: p.overallWidth,
+    overallDepth: p.overallDepth,
+    webThickness: p.webThickness,
+    bottomFlangeThickness: p.flangeThickness,
+    topFlangeWidth: p.overallWidth,
+    topFlangeThickness: p.flangeThickness,
+    bottomFlangeFilletRadius: p.filletRadius,
+    topFlangeFilletRadius: p.filletRadius,
+    bottomFlangeEdgeRadius: p.flangeEdgeRadius,
+    topFlangeEdgeRadius: p.flangeEdgeRadius,
+  });
+}
+
+function asymmetricIShapeVec2(p: IfcAsymmetricIShapeProfileDef): Vec2[] {
+  return asymmetricIShapeLoop(p);
 }
 
 function lShapeVec2(p: IfcLShapeProfileDef): Vec2[] {
@@ -650,6 +653,8 @@ export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
       return circleVec2(profile.radius);
     case "IfcCShapeProfileDef":
       return cShapeVec2(profile);
+    case "IfcAsymmetricIShapeProfileDef":
+      return asymmetricIShapeVec2(profile);
     case "IfcIShapeProfileDef":
       return iShapeVec2(profile);
     case "IfcLShapeProfileDef":

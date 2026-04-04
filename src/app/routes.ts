@@ -161,6 +161,16 @@ export const routes: Route[] = [
     status: "available",
   },
   {
+    hash: "#/examples/extrusion-asymmetric-i-shape",
+    title: "Asymmetric I-Shape Profile (IfcAsymmetricIShapeProfileDef)",
+    description:
+      "Extrudes an asymmetric I-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcAsymmetricIShapeProfileDef).",
+    sampleId: "extrusion-asymmetric-i-shape",
+    category: "ExtrudedAreaSolid",
+    difficulty: "intermediate",
+    status: "available",
+  },
+  {
     hash: "#/examples/extrusion-c-shape",
     title: "C-Shape Profile (IfcCShapeProfileDef)",
     description:
