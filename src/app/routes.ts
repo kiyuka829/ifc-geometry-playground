@@ -141,6 +141,16 @@ export const routes: Route[] = [
     status: "available",
   },
   {
+    hash: "#/examples/extrusion-c-shape",
+    title: "C-Shape Profile (IfcCShapeProfileDef)",
+    description:
+      "Extrudes a channel-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcCShapeProfileDef).",
+    sampleId: "extrusion-c-shape",
+    category: "ExtrudedAreaSolid",
+    difficulty: "beginner",
+    status: "available",
+  },
+  {
     hash: "#/examples/extrusion-l-shape",
     title: "L-Shape Profile (IfcLShapeProfileDef)",
     description:

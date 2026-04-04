@@ -23,6 +23,7 @@ export type {
 } from "../types.ts";
 
 export type {
+  IfcCShapeProfileDef,
   IfcRectangleProfileDef,
   IfcRectangleHollowProfileDef,
   IfcCircleProfileDef,
