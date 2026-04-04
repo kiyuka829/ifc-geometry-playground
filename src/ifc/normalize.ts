@@ -210,16 +210,37 @@ export function normalizePlacement3D(p: IfcAxis2Placement3D): NormalizedPlacemen
   }
 }
 
+/**
+ * Normalize a fallback axis vector: returns a unit-vector copy of `axis`.
+ * If `axis` is zero-length or non-finite, returns a copy of `fallback`.
+ */
+function normalizeFallbackAxis3(
+  axis: NormalizedVec3,
+  fallback: NormalizedVec3 = { x: 0, y: 0, z: 1 },
+): NormalizedVec3 {
+  const length = Math.hypot(axis.x, axis.y, axis.z)
+  if (!Number.isFinite(length) || length === 0) {
+    return { x: fallback.x, y: fallback.y, z: fallback.z }
+  }
+  return {
+    x: axis.x / length,
+    y: axis.y / length,
+    z: axis.z / length,
+  }
+}
+
 /** Convert an IfcAxis1Placement to a normalized origin + unit-axis pair. */
 export function normalizeAxis1Placement(
   p: IfcAxis1Placement,
   fallbackAxis: NormalizedVec3 = { x: 0, y: 0, z: 1 },
 ): NormalizedAxis1Placement {
+  const normalizedFallbackAxis = normalizeFallbackAxis3(fallbackAxis)
+
   return {
     origin: normalizePoint3(p.location),
     axis: p.axis
-      ? normalizeDirection3(p.axis, fallbackAxis)
-      : fallbackAxis,
+      ? normalizeDirection3(p.axis, normalizedFallbackAxis)
+      : normalizedFallbackAxis,
   }
 }
 
@@ -1144,7 +1165,7 @@ export function normalizeExtrudedAreaSolid(solid: IfcExtrudedAreaSolid): Normali
  * ready for consumption by a mesh builder.
  */
 export function normalizeRevolvedAreaSolid(solid: IfcRevolvedAreaSolid): NormalizedRevolution {
-  const axis = normalizeAxis1Placement(solid.axis, { x: 0, y: 1, z: 0 })
+  const axis = normalizeAxis1Placement(solid.axis, { x: 0, y: 0, z: 1 })
   if (Math.abs(axis.axis.z) > 1e-9) {
     throw new Error(
       "IfcRevolvedAreaSolid.Axis direction must be parallel to the local XY plane (axis.z = 0).",
