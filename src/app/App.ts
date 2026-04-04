@@ -16,6 +16,7 @@ import { extrusionTShapeSample } from "../ifc/samples/extrusion.t-shape.ts";
 import { extrusionUShapeSample } from "../ifc/samples/extrusion.u-shape.ts";
 import { extrusionZShapeSample } from "../ifc/samples/extrusion.z-shape.ts";
 import { sweptDiskBasicSample } from "../ifc/samples/swept-disk.basic.ts";
+import { revolvedRectangleSample } from "../ifc/samples/revolved.rectangle.ts";
 import type { SampleDef } from "../types.ts";
 
 const samples: Record<string, SampleDef> = {
@@ -34,6 +35,7 @@ const samples: Record<string, SampleDef> = {
   "extrusion-u-shape": extrusionUShapeSample,
   "extrusion-z-shape": extrusionZShapeSample,
   "swept-disk-basic": sweptDiskBasicSample,
+  "revolved-rectangle": revolvedRectangleSample,
 };
 
 export class App {

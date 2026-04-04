@@ -208,6 +208,34 @@ export function buildExtrusionDirectionOverlay(
 }
 
 /**
+ * Build a 3D arrow overlay that visualises a revolution axis.
+ *
+ * When `placement` is provided, the axis origin and direction are interpreted
+ * in that local placement frame and transformed to world space first.
+ */
+export function buildRevolutionAxisOverlay(
+  scene: Scene,
+  origin: Vec3,
+  direction: Vec3,
+  length: number,
+  name: string,
+  placement?: IfcAxis2Placement3D,
+): Mesh | null {
+  const worldOrigin = transformPointByPlacement(origin, placement);
+  const worldDirection = transformVectorByPlacement(direction, placement);
+  const ifcDirection = toIfcMathVector(worldDirection);
+  if (ifcDirection.length() < MIN_DIRECTION_LENGTH) return null;
+  return createArrow(
+    scene,
+    ifcToBabylonVector(worldOrigin),
+    ifcToBabylonVector(worldDirection),
+    length,
+    new Color3(1, 0.75, 0.2),
+    name,
+  );
+}
+
+/**
  * Build 3 coloured arrows representing the local coordinate frame defined
  * by an `IfcAxis2Placement3D`.
  *

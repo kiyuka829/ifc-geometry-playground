@@ -87,9 +87,10 @@ export const routes: Route[] = [
     title: "Revolved Area Solid",
     description:
       "Revolves a 2D profile around an axis to create a 3D solid (IfcRevolvedAreaSolid).",
+    sampleId: "revolved-rectangle",
     category: "Revolved Area Solid",
     difficulty: "intermediate",
-    status: "planned",
+    status: "available",
   },
   {
     hash: "#/examples/boolean",
