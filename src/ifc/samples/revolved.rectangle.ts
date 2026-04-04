@@ -27,6 +27,7 @@ const DEFAULT_PROFILE: IfcProfileDef = {
 const DEFAULT_AXIS_DIRECTION: Vec3 = { x: 0, y: 1, z: 0 };
 const DEFAULT_AXIS_ORIGIN: Vec3 = { x: 2.4, y: 0, z: 0 };
 const DEFAULT_ANGLE_DEG = 120;
+const AXIS_OVERLAY_LENGTH = 8;
 const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
   type: "IfcAxis2Placement3D",
   location: { x: 0, y: 0, z: 0 },
@@ -162,11 +163,6 @@ export const revolvedRectangleSample: SampleDef = {
       y: getNumber(params, "axisDirY"),
       z: 0,
     });
-    const axisLength = Math.max(
-      5,
-      Math.hypot(axisOrigin.x, axisOrigin.y, axisOrigin.z) * 2 +
-        Math.max(rectangleProfile.xDim, rectangleProfile.yDim) * 3,
-    );
 
     const generatedSolid: IfcRevolvedAreaSolid = {
       type: "IfcRevolvedAreaSolid",
@@ -239,12 +235,12 @@ export const revolvedRectangleSample: SampleDef = {
       const axisOverlay = buildRevolutionAxisOverlay(
         scene,
         {
-          x: axisOrigin.x - axisDirection.x * axisLength * 0.5,
-          y: axisOrigin.y - axisDirection.y * axisLength * 0.5,
-          z: axisOrigin.z - axisDirection.z * axisLength * 0.5,
+          x: axisOrigin.x - axisDirection.x * AXIS_OVERLAY_LENGTH * 0.5,
+          y: axisOrigin.y - axisDirection.y * AXIS_OVERLAY_LENGTH * 0.5,
+          z: axisOrigin.z - axisDirection.z * AXIS_OVERLAY_LENGTH * 0.5,
         },
         axisDirection,
-        axisLength,
+        AXIS_OVERLAY_LENGTH,
         "revolved_axis",
         activePlacement,
       );
