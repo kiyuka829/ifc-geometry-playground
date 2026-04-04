@@ -11,6 +11,7 @@ import type {
   IfcAxis2Placement2D,
   IfcAxis2Placement3D,
   IfcAreaParameterizedProfileDef,
+  IfcAsymmetricIShapeProfileDef,
   IfcExtrudedAreaSolid,
 } from './generated/schema.ts'
 
@@ -734,8 +735,8 @@ function uShapeLoop(profile: Extract<IfcAreaParameterizedProfileDef, { type: 'If
   return ensureCounterClockwise(pts)
 }
 
-function asymmetricIShapeLoop(
-  profile: Extract<IfcAreaParameterizedProfileDef, { type: 'IfcAsymmetricIShapeProfileDef' }>,
+export function asymmetricIShapeLoop(
+  profile: IfcAsymmetricIShapeProfileDef,
 ): NormalizedVec2[] {
   const halfTopWidth = profile.topFlangeWidth / 2
   const halfBottomWidth = profile.bottomFlangeWidth / 2
@@ -955,7 +956,8 @@ function applyPlacement2DToLoop(
  * The optional 2D placement on the profile is applied to all loop vertices.
  *
  * Supported types: Rectangle, RoundedRectangle, Circle, Ellipse, RectangleHollow,
- * CircleHollow, IShape (symmetric), TShape, UShape, ZShape, LShape, CShape.
+ * CircleHollow, AsymmetricIShape, IShape (symmetric — normalized via the asymmetric
+ * helper by mirroring top/bottom flange dimensions), TShape, UShape, ZShape, LShape, CShape.
  * Other parameterized types throw an Error.
  */
 export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): NormalizedProfile {

@@ -376,13 +376,20 @@ export class ProfileEditor {
       p.webThickness = aisWeb;
       p.bottomFlangeThickness = aisBottomFlange;
       p.topFlangeThickness = aisTopFlange;
-      p.bottomFlangeEdgeRadius = this._normalizeAsymmetricIShapeBottomEdgeRadius();
-      p.topFlangeEdgeRadius = this._normalizeAsymmetricIShapeTopEdgeRadius();
+
+      const normalizeAsymmetricIShapeEdgeRadii = (): void => {
+        p.bottomFlangeEdgeRadius =
+          this._normalizeAsymmetricIShapeBottomEdgeRadius();
+        p.topFlangeEdgeRadius = this._normalizeAsymmetricIShapeTopEdgeRadius();
+      };
+
+      // Edge and fillet radii constrain each other, so normalize edge radii
+      // both before and after fillet normalization to keep all values valid.
+      normalizeAsymmetricIShapeEdgeRadii();
       p.bottomFlangeFilletRadius =
         this._normalizeAsymmetricIShapeBottomFilletRadius();
       p.topFlangeFilletRadius = this._normalizeAsymmetricIShapeTopFilletRadius();
-      p.bottomFlangeEdgeRadius = this._normalizeAsymmetricIShapeBottomEdgeRadius();
-      p.topFlangeEdgeRadius = this._normalizeAsymmetricIShapeTopEdgeRadius();
+      normalizeAsymmetricIShapeEdgeRadii();
       return `
         ${this._sliderHTML("ais-bfw", "Bottom Flange Width", p.bottomFlangeWidth, 0.5, 10, 0.1)}
         ${this._sliderHTML("ais-tfw", "Top Flange Width", p.topFlangeWidth, 0.5, 10, 0.1)}
@@ -413,9 +420,16 @@ export class ProfileEditor {
 
       p.webThickness = isWeb;
       p.flangeThickness = isFlange;
-      p.flangeEdgeRadius = this._normalizeIShapeEdgeRadius();
-      p.filletRadius = this._normalizeIShapeFilletRadius();
-      p.flangeEdgeRadius = this._normalizeIShapeEdgeRadius();
+
+      const normalizeIShapeRadii = (): void => {
+        // Edge and fillet radius limits depend on each other, so keep the
+        // intentional two-pass normalization grouped in one helper.
+        p.flangeEdgeRadius = this._normalizeIShapeEdgeRadius();
+        p.filletRadius = this._normalizeIShapeFilletRadius();
+        p.flangeEdgeRadius = this._normalizeIShapeEdgeRadius();
+      };
+
+      normalizeIShapeRadii();
       return `
         ${this._sliderHTML("is-ow", "Overall Width", p.overallWidth, 0.5, 8, 0.1)}
         ${this._sliderHTML("is-od", "Overall Depth", p.overallDepth, 0.5, 10, 0.1)}
