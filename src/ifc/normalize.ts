@@ -478,6 +478,98 @@ function tShapeLoop(profile: Extract<IfcAreaParameterizedProfileDef, { type: 'If
   return ensureCounterClockwise(pts)
 }
 
+function uShapeLoop(profile: Extract<IfcAreaParameterizedProfileDef, { type: 'IfcUShapeProfileDef' }>): NormalizedVec2[] {
+  const hd = profile.depth / 2
+  const hw = profile.flangeWidth / 2
+  const xWeb = -hw + profile.webThickness
+  const yTop = hd
+  const yBottom = -hd
+  const yFlangeTop = hd - profile.flangeThickness
+  const yFlangeBottom = -hd + profile.flangeThickness
+  const rInner = Math.min(
+    profile.filletRadius ?? 0,
+    Math.max(0, hw - xWeb),
+    Math.max(0, profile.flangeThickness),
+  )
+  const rEdge = Math.min(
+    profile.edgeRadius ?? 0,
+    Math.max(0, profile.flangeThickness - rInner),
+    Math.max(0, profile.flangeWidth / 2),
+  )
+
+  if (rInner <= 1e-6 && rEdge <= 1e-6) {
+    return ensureCounterClockwise([
+      { x: -hw, y: yTop },
+      { x: hw, y: yTop },
+      { x: hw, y: yFlangeTop },
+      { x: xWeb, y: yFlangeTop },
+      { x: xWeb, y: yFlangeBottom },
+      { x: hw, y: yFlangeBottom },
+      { x: hw, y: yBottom },
+      { x: -hw, y: yBottom },
+    ])
+  }
+
+  const pts: NormalizedVec2[] = [
+    { x: -hw, y: yTop },
+    { x: hw, y: yTop },
+  ]
+
+  if (rEdge > 1e-6) {
+    pts.push({ x: hw, y: yFlangeTop + rEdge })
+    appendArc(pts, hw - rEdge, yFlangeTop + rEdge, rEdge, 0, -Math.PI / 2)
+  } else {
+    pts.push({ x: hw, y: yFlangeTop })
+  }
+
+  if (rInner > 1e-6) {
+    pts.push({ x: xWeb + rInner, y: yFlangeTop })
+    appendArc(
+      pts,
+      xWeb + rInner,
+      yFlangeTop - rInner,
+      rInner,
+      Math.PI / 2,
+      Math.PI,
+    )
+    pts.push({ x: xWeb, y: yFlangeBottom + rInner })
+    appendArc(
+      pts,
+      xWeb + rInner,
+      yFlangeBottom + rInner,
+      rInner,
+      Math.PI,
+      (3 * Math.PI) / 2,
+    )
+  } else {
+    pts.push(
+      { x: xWeb, y: yFlangeTop },
+      { x: xWeb, y: yFlangeBottom },
+    )
+  }
+
+  if (rEdge > 1e-6) {
+    pts.push({ x: hw - rEdge, y: yFlangeBottom })
+    appendArc(
+      pts,
+      hw - rEdge,
+      yFlangeBottom - rEdge,
+      rEdge,
+      Math.PI / 2,
+      0,
+    )
+  } else {
+    pts.push({ x: hw, y: yFlangeBottom })
+  }
+
+  pts.push(
+    { x: hw, y: yBottom },
+    { x: -hw, y: yBottom },
+  )
+
+  return ensureCounterClockwise(pts)
+}
+
 /**
  * Apply a 2D placement transform to a list of profile-space points.
  * The Y axis is the 90° CCW rotation of the X axis.
@@ -501,7 +593,7 @@ function applyPlacement2DToLoop(
  * The optional 2D placement on the profile is applied to all loop vertices.
  *
  * Supported types: Rectangle, Circle, Ellipse, RectangleHollow,
- * CircleHollow, IShape (symmetric), TShape, LShape, CShape.
+ * CircleHollow, IShape (symmetric), TShape, UShape, LShape, CShape.
  * Other parameterized types throw an Error.
  */
 export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): NormalizedProfile {
@@ -581,6 +673,10 @@ export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): No
 
     case 'IfcTShapeProfileDef':
       outerLoop = tShapeLoop(profile)
+      break
+
+    case 'IfcUShapeProfileDef':
+      outerLoop = uShapeLoop(profile)
       break
 
     case 'IfcLShapeProfileDef': {
