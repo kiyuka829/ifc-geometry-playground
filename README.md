@@ -11,10 +11,6 @@ Designed for developers and anyone looking to deepen their understanding of IFC,
 - Parameters of each operation and their effects
 - The relationship between IFC representations (pseudo-JSON) and 3D shapes
 
-## Supported Shape Types
-
-See [docs/ifc-geometry-types.md](docs/ifc-geometry-types.md) for a list of IFC geometry types and their implementation status.
-
 ## Design Principles
 
 - Handles **learning-oriented abstractions** rather than strict IFC parsing
@@ -59,16 +55,26 @@ src/
 ## Development
 
 ```bash
-npm install
-npm run dev
+bun install
+bun dev
 ```
 
 ## Build (GitHub Pages)
 
 ```bash
-npm run build
+bun run build
 # Deploy dist/ to GitHub Pages
 ```
+
+## Preview Production Build
+
+```bash
+bun run preview
+```
+
+## Package Manager
+
+This repository is managed with Bun. Please prefer `bun install` and `bun run ...` over `npm`.
 
 ## Tech Stack
 
