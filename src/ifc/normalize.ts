@@ -200,6 +200,7 @@ export function defaultPlacement3D(): NormalizedPlacement3D {
 // ── Profile polygon helpers ───────────────────────────────────────────────
 
 const CIRCLE_SEGMENTS = 48
+const FILLET_SEGMENTS = 8
 
 function circleLoop(radius: number, segments = CIRCLE_SEGMENTS): NormalizedVec2[] {
   const pts: NormalizedVec2[] = []
@@ -208,6 +209,146 @@ function circleLoop(radius: number, segments = CIRCLE_SEGMENTS): NormalizedVec2[
     pts.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius })
   }
   return pts
+}
+
+function polygonSignedArea(pts: NormalizedVec2[]): number {
+  let area = 0
+  for (let i = 0; i < pts.length; i++) {
+    const current = pts[i]
+    const next = pts[(i + 1) % pts.length]
+    area += current.x * next.y - next.x * current.y
+  }
+  return area / 2
+}
+
+function ensureCounterClockwise(pts: NormalizedVec2[]): NormalizedVec2[] {
+  return polygonSignedArea(pts) >= 0 ? pts : [...pts].reverse()
+}
+
+function appendArc(
+  pts: NormalizedVec2[],
+  centerX: number,
+  centerY: number,
+  radius: number,
+  startAngle: number,
+  endAngle: number,
+  segments = FILLET_SEGMENTS,
+): void {
+  for (let i = 1; i <= segments; i++) {
+    const t = i / segments
+    const angle = startAngle + (endAngle - startAngle) * t
+    pts.push({
+      x: centerX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius,
+    })
+  }
+}
+
+function cShapeLoop(profile: Extract<IfcAreaParameterizedProfileDef, { type: 'IfcCShapeProfileDef' }>): NormalizedVec2[] {
+  const hw = profile.width / 2
+  const hd = profile.depth / 2
+  const thickness = profile.wallThickness
+  const maxFilletRadius = Math.max(
+    0,
+    Math.min(
+      profile.girth - thickness,
+      (profile.width - 2 * thickness) / 2,
+      (profile.depth - 2 * thickness) / 2,
+    ),
+  )
+  const filletRadius = Math.min(profile.internalFilletRadius ?? 0, maxFilletRadius)
+
+  if (filletRadius <= 1e-6) {
+    return ensureCounterClockwise([
+      { x: -hw, y: hd },
+      { x: hw, y: hd },
+      { x: hw, y: hd - profile.girth },
+      { x: hw - thickness, y: hd - profile.girth },
+      { x: hw - thickness, y: hd - thickness },
+      { x: -hw + thickness, y: hd - thickness },
+      { x: -hw + thickness, y: -hd + thickness },
+      { x: hw - thickness, y: -hd + thickness },
+      { x: hw - thickness, y: -hd + profile.girth },
+      { x: hw, y: -hd + profile.girth },
+      { x: hw, y: -hd },
+      { x: -hw, y: -hd },
+    ])
+  }
+
+  const rInner = filletRadius
+  const rOuter = rInner + thickness
+  const pts: NormalizedVec2[] = [
+    { x: -hw + rOuter, y: hd },
+    { x: hw - rOuter, y: hd },
+  ]
+
+  appendArc(pts, hw - rOuter, hd - rOuter, rOuter, Math.PI / 2, 0)
+  pts.push(
+    { x: hw, y: hd - profile.girth },
+    { x: hw - thickness, y: hd - profile.girth },
+    { x: hw - thickness, y: hd - thickness - rInner },
+  )
+  appendArc(
+    pts,
+    hw - thickness - rInner,
+    hd - thickness - rInner,
+    rInner,
+    0,
+    Math.PI / 2,
+  )
+  pts.push({ x: -hw + thickness + rInner, y: hd - thickness })
+  appendArc(
+    pts,
+    -hw + thickness + rInner,
+    hd - thickness - rInner,
+    rInner,
+    Math.PI / 2,
+    Math.PI,
+  )
+  pts.push({ x: -hw + thickness, y: -hd + thickness + rInner })
+  appendArc(
+    pts,
+    -hw + thickness + rInner,
+    -hd + thickness + rInner,
+    rInner,
+    Math.PI,
+    (3 * Math.PI) / 2,
+  )
+  pts.push({ x: hw - thickness - rInner, y: -hd + thickness })
+  appendArc(
+    pts,
+    hw - thickness - rInner,
+    -hd + thickness + rInner,
+    rInner,
+    (3 * Math.PI) / 2,
+    2 * Math.PI,
+  )
+  pts.push(
+    { x: hw - thickness, y: -hd + profile.girth },
+    { x: hw, y: -hd + profile.girth },
+    { x: hw, y: -hd + rOuter },
+  )
+  appendArc(pts, hw - rOuter, -hd + rOuter, rOuter, 0, -Math.PI / 2)
+  pts.push({ x: -hw + rOuter, y: -hd })
+  appendArc(
+    pts,
+    -hw + rOuter,
+    -hd + rOuter,
+    rOuter,
+    -Math.PI / 2,
+    -Math.PI,
+  )
+  pts.push({ x: -hw, y: hd - rOuter })
+  appendArc(
+    pts,
+    -hw + rOuter,
+    hd - rOuter,
+    rOuter,
+    Math.PI,
+    Math.PI / 2,
+  )
+
+  return ensureCounterClockwise(pts)
 }
 
 /**
@@ -233,7 +374,7 @@ function applyPlacement2DToLoop(
  * The optional 2D placement on the profile is applied to all loop vertices.
  *
  * Supported types: Rectangle, Circle, RectangleHollow, CircleHollow,
- * IShape (symmetric), LShape.
+ * IShape (symmetric), LShape, CShape.
  * Other parameterized types throw an Error.
  */
 export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): NormalizedProfile {
@@ -280,6 +421,10 @@ export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): No
       innerLoops = [circleLoop(profile.radius - profile.wallThickness).reverse()]
       break
     }
+
+    case 'IfcCShapeProfileDef':
+      outerLoop = cShapeLoop(profile)
+      break
 
     case 'IfcIShapeProfileDef': {
       const hw  = profile.overallWidth / 2

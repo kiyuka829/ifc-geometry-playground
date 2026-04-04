@@ -4,6 +4,7 @@ import type {
   IfcCircleProfileDef,
   IfcRectangleHollowProfileDef,
   IfcCircleHollowProfileDef,
+  IfcCShapeProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
   IfcArbitraryClosedProfileDef,
@@ -62,6 +63,8 @@ export class ProfileEditor {
         return "rect-hollow";
       case "IfcCircleHollowProfileDef":
         return "circle-hollow";
+      case "IfcCShapeProfileDef":
+        return "c-shape";
       case "IfcIShapeProfileDef":
         return "i-shape";
       case "IfcLShapeProfileDef":
@@ -109,6 +112,17 @@ export class ProfileEditor {
           radius: 2,
           wallThickness: 0.3,
         } satisfies IfcCircleHollowProfileDef);
+        break;
+      case "c-shape":
+        this.currentProfile = this._cloneProfile({
+          type: "IfcCShapeProfileDef",
+          profileType: "AREA",
+          depth: 5,
+          width: 3,
+          wallThickness: 0.35,
+          girth: 1.3,
+          internalFilletRadius: 0.15,
+        } satisfies IfcCShapeProfileDef);
         break;
       case "i-shape":
         this.currentProfile = this._cloneProfile({
@@ -179,6 +193,41 @@ export class ProfileEditor {
       return `
         ${this._sliderHTML("ch-r", "Radius", p.radius, 0.5, 10, 0.1)}
         ${this._sliderHTML("ch-t", "Wall Thickness", chWall, chWallMin, chWallMax, 0.05)}
+      `;
+    }
+
+    if (p.type === "IfcCShapeProfileDef") {
+      const csWallMin = 0.05;
+      const csWallRawMax = Math.min(p.width / 2, p.depth / 2) - csWallMin;
+      const csWallMax = Math.max(csWallMin, csWallRawMax);
+      const csWall = Math.min(Math.max(p.wallThickness, csWallMin), csWallMax);
+      p.wallThickness = csWall;
+
+      const csGirthMin = csWall + 0.05;
+      const csGirthRawMax = p.depth / 2;
+      const csGirthMax = Math.max(csGirthMin, csGirthRawMax);
+      const csGirth = Math.min(Math.max(p.girth, csGirthMin), csGirthMax);
+      p.girth = csGirth;
+
+      const csFilletMin = 0;
+      const csFilletRawMax = Math.min(
+        csGirth - csWall,
+        (p.width - 2 * csWall) / 2,
+        (p.depth - 2 * csWall) / 2,
+      );
+      const csFilletMax = Math.max(csFilletMin, csFilletRawMax);
+      const csFillet = Math.min(
+        Math.max(p.internalFilletRadius ?? 0, csFilletMin),
+        csFilletMax,
+      );
+      p.internalFilletRadius = csFillet;
+
+      return `
+        ${this._sliderHTML("cs-d", "Depth", p.depth, 1, 10, 0.1)}
+        ${this._sliderHTML("cs-w", "Width", p.width, 0.5, 10, 0.1)}
+        ${this._sliderHTML("cs-t", "Wall Thickness", csWall, csWallMin, csWallMax, 0.05)}
+        ${this._sliderHTML("cs-g", "Girth", csGirth, csGirthMin, csGirthMax, 0.05)}
+        ${this._sliderHTML("cs-r", "Internal Fillet", csFillet, csFilletMin, csFilletMax, 0.05)}
       `;
     }
 
@@ -278,6 +327,7 @@ export class ProfileEditor {
       circle: "Circle",
       "rect-hollow": "Rect Hollow",
       "circle-hollow": "Circle Hollow",
+      "c-shape": "C-Shape",
       "i-shape": "I-Shape",
       "l-shape": "L-Shape",
       arbitrary: "Arbitrary",
@@ -358,6 +408,41 @@ export class ProfileEditor {
     });
     this._bindSlider("ch-t", (v) => {
       (this.currentProfile as IfcCircleHollowProfileDef).wallThickness = v;
+    });
+
+    // ── C-Shape ──
+    this._bindSlider("cs-d", (v) => {
+      const prof = this.currentProfile as IfcCShapeProfileDef;
+      prof.depth = v;
+      const wallMax = Math.max(0.05, Math.min(prof.width / 2, prof.depth / 2) - 0.05);
+      prof.wallThickness = this._clampDependentSlider("cs-t", wallMax);
+      const girthMin = prof.wallThickness + 0.05;
+      const girthMax = Math.max(girthMin, prof.depth / 2);
+      prof.girth = Math.max(girthMin, this._clampDependentSlider("cs-g", girthMax));
+      prof.internalFilletRadius = this._clampCShapeFilletRadius();
+    });
+    this._bindSlider("cs-w", (v) => {
+      const prof = this.currentProfile as IfcCShapeProfileDef;
+      prof.width = v;
+      const wallMax = Math.max(0.05, Math.min(prof.width / 2, prof.depth / 2) - 0.05);
+      prof.wallThickness = this._clampDependentSlider("cs-t", wallMax);
+      prof.internalFilletRadius = this._clampCShapeFilletRadius();
+    });
+    this._bindSlider("cs-t", (v) => {
+      const prof = this.currentProfile as IfcCShapeProfileDef;
+      prof.wallThickness = v;
+      const girthMin = prof.wallThickness + 0.05;
+      const girthMax = Math.max(girthMin, prof.depth / 2);
+      prof.girth = Math.max(girthMin, this._clampDependentSlider("cs-g", girthMax));
+      prof.internalFilletRadius = this._clampCShapeFilletRadius();
+    });
+    this._bindSlider("cs-g", (v) => {
+      const prof = this.currentProfile as IfcCShapeProfileDef;
+      prof.girth = v;
+      prof.internalFilletRadius = this._clampCShapeFilletRadius();
+    });
+    this._bindSlider("cs-r", (v) => {
+      (this.currentProfile as IfcCShapeProfileDef).internalFilletRadius = v;
     });
 
     // ── I-Shape ──
@@ -483,5 +568,19 @@ export class ProfileEditor {
       return safeMax;
     }
     return current;
+  }
+
+  private _clampCShapeFilletRadius(): number {
+    if (this.currentProfile.type !== "IfcCShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    const max = Math.max(
+      0,
+      Math.min(
+        prof.girth - prof.wallThickness,
+        (prof.width - 2 * prof.wallThickness) / 2,
+        (prof.depth - 2 * prof.wallThickness) / 2,
+      ),
+    );
+    return this._clampDependentSlider("cs-r", max);
   }
 }

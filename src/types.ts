@@ -12,6 +12,7 @@ export type {
   IfcAreaParameterizedProfileDef,
   IfcParameterizedProfileDef,
   IfcProfileTypeEnum,
+  IfcCShapeProfileDef,
   IfcRectangleProfileDef,
   IfcRectangleHollowProfileDef,
   IfcCircleProfileDef,
@@ -162,6 +163,7 @@ export type ProfileType =
   | "circle"
   | "rect-hollow"
   | "circle-hollow"
+  | "c-shape"
   | "i-shape"
   | "l-shape"
   | "arbitrary";

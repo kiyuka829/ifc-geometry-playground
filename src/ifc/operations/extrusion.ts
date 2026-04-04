@@ -9,6 +9,7 @@ import type { Scene, StandardMaterial, Mesh, LinesMesh } from "@babylonjs/core";
 import earcut from "earcut";
 import type {
   IfcProfileDef,
+  IfcCShapeProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
   Vec2,
@@ -25,6 +26,7 @@ import {
 } from "../../engine/ifc-coordinates.ts";
 
 const CIRCLE_SEGMENTS = 48;
+const FILLET_SEGMENTS = 8;
 
 function isIndexInRange(
   index: number,
@@ -43,6 +45,146 @@ function circleVec2(radius: number, segments = CIRCLE_SEGMENTS): Vec2[] {
     pts.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
   }
   return pts;
+}
+
+function polygonSignedArea(pts: Vec2[]): number {
+  let area = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const current = pts[i];
+    const next = pts[(i + 1) % pts.length];
+    area += current.x * next.y - next.x * current.y;
+  }
+  return area / 2;
+}
+
+function ensureCounterClockwise(pts: Vec2[]): Vec2[] {
+  return polygonSignedArea(pts) >= 0 ? pts : [...pts].reverse();
+}
+
+function appendArc(
+  pts: Vec2[],
+  centerX: number,
+  centerY: number,
+  radius: number,
+  startAngle: number,
+  endAngle: number,
+  segments = FILLET_SEGMENTS,
+): void {
+  for (let i = 1; i <= segments; i++) {
+    const t = i / segments;
+    const angle = startAngle + (endAngle - startAngle) * t;
+    pts.push({
+      x: centerX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius,
+    });
+  }
+}
+
+function cShapeVec2(p: IfcCShapeProfileDef): Vec2[] {
+  const hw = p.width / 2;
+  const hd = p.depth / 2;
+  const thickness = p.wallThickness;
+  const maxFilletRadius = Math.max(
+    0,
+    Math.min(
+      p.girth - thickness,
+      (p.width - 2 * thickness) / 2,
+      (p.depth - 2 * thickness) / 2,
+    ),
+  );
+  const filletRadius = Math.min(p.internalFilletRadius ?? 0, maxFilletRadius);
+
+  if (filletRadius <= 1e-6) {
+    return ensureCounterClockwise([
+      { x: -hw, y: hd },
+      { x: hw, y: hd },
+      { x: hw, y: hd - p.girth },
+      { x: hw - thickness, y: hd - p.girth },
+      { x: hw - thickness, y: hd - thickness },
+      { x: -hw + thickness, y: hd - thickness },
+      { x: -hw + thickness, y: -hd + thickness },
+      { x: hw - thickness, y: -hd + thickness },
+      { x: hw - thickness, y: -hd + p.girth },
+      { x: hw, y: -hd + p.girth },
+      { x: hw, y: -hd },
+      { x: -hw, y: -hd },
+    ]);
+  }
+
+  const rInner = filletRadius;
+  const rOuter = rInner + thickness;
+  const pts: Vec2[] = [
+    { x: -hw + rOuter, y: hd },
+    { x: hw - rOuter, y: hd },
+  ];
+
+  appendArc(pts, hw - rOuter, hd - rOuter, rOuter, Math.PI / 2, 0);
+  pts.push(
+    { x: hw, y: hd - p.girth },
+    { x: hw - thickness, y: hd - p.girth },
+    { x: hw - thickness, y: hd - thickness - rInner },
+  );
+  appendArc(
+    pts,
+    hw - thickness - rInner,
+    hd - thickness - rInner,
+    rInner,
+    0,
+    Math.PI / 2,
+  );
+  pts.push({ x: -hw + thickness + rInner, y: hd - thickness });
+  appendArc(
+    pts,
+    -hw + thickness + rInner,
+    hd - thickness - rInner,
+    rInner,
+    Math.PI / 2,
+    Math.PI,
+  );
+  pts.push({ x: -hw + thickness, y: -hd + thickness + rInner });
+  appendArc(
+    pts,
+    -hw + thickness + rInner,
+    -hd + thickness + rInner,
+    rInner,
+    Math.PI,
+    (3 * Math.PI) / 2,
+  );
+  pts.push({ x: hw - thickness - rInner, y: -hd + thickness });
+  appendArc(
+    pts,
+    hw - thickness - rInner,
+    -hd + thickness + rInner,
+    rInner,
+    (3 * Math.PI) / 2,
+    2 * Math.PI,
+  );
+  pts.push(
+    { x: hw - thickness, y: -hd + p.girth },
+    { x: hw, y: -hd + p.girth },
+    { x: hw, y: -hd + rOuter },
+  );
+  appendArc(pts, hw - rOuter, -hd + rOuter, rOuter, 0, -Math.PI / 2);
+  pts.push({ x: -hw + rOuter, y: -hd });
+  appendArc(
+    pts,
+    -hw + rOuter,
+    -hd + rOuter,
+    rOuter,
+    -Math.PI / 2,
+    -Math.PI,
+  );
+  pts.push({ x: -hw, y: hd - rOuter });
+  appendArc(
+    pts,
+    -hw + rOuter,
+    hd - rOuter,
+    rOuter,
+    Math.PI,
+    Math.PI / 2,
+  );
+
+  return ensureCounterClockwise(pts);
 }
 
 function iShapeVec2(p: IfcIShapeProfileDef): Vec2[] {
@@ -110,6 +252,8 @@ export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
       return circleVec2(profile.radius);
     case "IfcCircleHollowProfileDef":
       return circleVec2(profile.radius);
+    case "IfcCShapeProfileDef":
+      return cShapeVec2(profile);
     case "IfcIShapeProfileDef":
       return iShapeVec2(profile);
     case "IfcLShapeProfileDef":
