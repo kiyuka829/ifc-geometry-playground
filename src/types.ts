@@ -14,6 +14,7 @@ export type {
   IfcProfileTypeEnum,
   IfcCShapeProfileDef,
   IfcRectangleProfileDef,
+  IfcRoundedRectangleProfileDef,
   IfcRectangleHollowProfileDef,
   IfcCircleProfileDef,
   IfcCircleHollowProfileDef,
@@ -164,6 +165,7 @@ export interface StepDef {
 /** Which profile types the ProfileEditor should expose for a given sample. */
 export type ProfileType =
   | "rectangle"
+  | "rounded-rectangle"
   | "circle"
   | "ellipse"
   | "rect-hollow"

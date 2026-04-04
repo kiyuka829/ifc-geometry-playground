@@ -63,6 +63,16 @@ export const routes: Route[] = [
     status: "available",
   },
   {
+    hash: "#/examples/extrusion-rounded-rectangle",
+    title: "Rounded Rectangle Profile (IfcRoundedRectangleProfileDef)",
+    description:
+      "Extrudes a rounded rectangular cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcRoundedRectangleProfileDef).",
+    sampleId: "extrusion-rounded-rectangle",
+    category: "ExtrudedAreaSolid",
+    difficulty: "beginner",
+    status: "available",
+  },
+  {
     hash: "#/examples/swept-disk",
     title: "Swept Disk Solid",
     description:
