@@ -129,16 +129,6 @@ export class ExamplePage {
                 : ""
             }
             ${
-              hasPlacementEditor
-                ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor ? " left-panel-section-mt" : ""}">
-                <summary class="params-title">${sample.placementEditorConfig!.label ?? "Placement"}</summary>
-                <div class="left-collapsible-content" id="placement-editor-panel"></div>
-              </details>
-            `
-                : ""
-            }
-            ${
               hasSweepToggles
                 ? `
               <details class="left-collapsible left-panel-section-mt" open>
@@ -151,9 +141,19 @@ export class ExamplePage {
             ${
               sample.parameters.length > 0
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasPlacementEditor || hasSweepToggles ? " left-panel-section-mt" : ""}" open>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasSweepToggles ? " left-panel-section-mt" : ""}" open>
                 <summary class="params-title">Parameters</summary>
                 <div class="left-collapsible-content" id="param-panel"></div>
+              </details>
+            `
+                : ""
+            }
+            ${
+              hasPlacementEditor
+                ? `
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}">
+                <summary class="params-title">${sample.placementEditorConfig!.label ?? "Placement"}</summary>
+                <div class="left-collapsible-content" id="placement-editor-panel"></div>
               </details>
             `
                 : ""

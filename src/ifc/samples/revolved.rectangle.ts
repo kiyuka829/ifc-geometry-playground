@@ -27,6 +27,12 @@ const DEFAULT_PROFILE: IfcProfileDef = {
 const DEFAULT_AXIS_DIRECTION: Vec3 = { x: 0, y: 1, z: 0 };
 const DEFAULT_AXIS_ORIGIN: Vec3 = { x: 2.4, y: 0, z: 0 };
 const DEFAULT_ANGLE_DEG = 270;
+const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
+  type: "IfcAxis2Placement3D",
+  location: { x: 0, y: 0, z: 0 },
+  axis: { x: 0, y: 0, z: 1 },
+  refDirection: { x: 1, y: 0, z: 0 },
+};
 
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180;
@@ -124,6 +130,9 @@ export const revolvedRectangleSample: SampleDef = {
     allowedTypes: ["rectangle"],
     defaultProfile: DEFAULT_PROFILE,
   },
+  placementEditorConfig: {
+    defaultPlacement: DEFAULT_PLACEMENT,
+  },
   buildGeometry: (
     scene: Scene,
     params: ParamValues,
@@ -131,11 +140,12 @@ export const revolvedRectangleSample: SampleDef = {
     profile?: IfcProfileDef,
     _path?: Vec3[],
     _extrusion?: ExtrusionParams,
-    _placement?: IfcAxis2Placement3D,
+    placement?: IfcAxis2Placement3D,
     _sweepView?: SweepViewState,
   ): Mesh[] => {
     const meshes: Mesh[] = [];
     const activeProfile = profile ?? DEFAULT_PROFILE;
+    const activePlacement = placement ?? DEFAULT_PLACEMENT;
     const rectangleProfile =
       activeProfile.type === "IfcRectangleProfileDef"
         ? activeProfile
@@ -170,16 +180,36 @@ export const revolvedRectangleSample: SampleDef = {
         type: "IfcAxis2Placement3D",
         location: {
           type: "IfcCartesianPoint",
-          coordinates: [0, 0, 0],
+          coordinates: [
+            activePlacement.location.x,
+            activePlacement.location.y,
+            activePlacement.location.z,
+          ],
         },
-        axis: {
-          type: "IfcDirection",
-          directionRatios: [0, 0, 1],
-        },
-        refDirection: {
-          type: "IfcDirection",
-          directionRatios: [1, 0, 0],
-        },
+        ...(activePlacement.axis
+          ? {
+              axis: {
+                type: "IfcDirection",
+                directionRatios: [
+                  activePlacement.axis.x,
+                  activePlacement.axis.y,
+                  activePlacement.axis.z,
+                ],
+              },
+            }
+          : {}),
+        ...(activePlacement.refDirection
+          ? {
+              refDirection: {
+                type: "IfcDirection",
+                directionRatios: [
+                  activePlacement.refDirection.x,
+                  activePlacement.refDirection.y,
+                  activePlacement.refDirection.z,
+                ],
+              },
+            }
+          : {}),
       },
       axis: {
         type: "IfcAxis1Placement",
@@ -216,11 +246,12 @@ export const revolvedRectangleSample: SampleDef = {
         axisDirection,
         axisLength,
         "revolved_axis",
+        activePlacement,
       );
       if (axisOverlay) meshes.push(axisOverlay);
     }
 
-    if (stepIndex >= 2) {
+    if (stepIndex >= 3) {
       meshes.push(
         buildRevolvedAreaSolidMesh(
           scene,
@@ -243,9 +274,9 @@ export const revolvedRectangleSample: SampleDef = {
     },
     position: {
       type: "IfcAxis2Placement3D",
-      location: { type: "IfcCartesianPoint", coordinates: [0, 0, 0] },
-      axis: { type: "IfcDirection", directionRatios: [0, 0, 1] },
-      refDirection: { type: "IfcDirection", directionRatios: [1, 0, 0] },
+      location: "(see placement editor)",
+      axis: "(see placement editor)",
+      refDirection: "(see placement editor)",
     },
     axis: {
       type: "IfcAxis1Placement",
