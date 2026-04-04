@@ -14,6 +14,7 @@ import type {
   IfcLShapeProfileDef,
   IfcTShapeProfileDef,
   IfcUShapeProfileDef,
+  IfcZShapeProfileDef,
   Vec2,
 } from "../../types.ts";
 import {
@@ -455,6 +456,118 @@ function uShapeVec2(p: IfcUShapeProfileDef): Vec2[] {
   return ensureCounterClockwise(pts);
 }
 
+function zShapeVec2(p: IfcZShapeProfileDef): Vec2[] {
+  const hd = p.depth / 2;
+  const hweb = p.webThickness / 2;
+  const hw = p.flangeWidth - hweb;
+  const yTop = hd;
+  const yBottom = -hd;
+  const yBottomFlangeTop = -hd + p.flangeThickness;
+  const yTopFlangeBottom = hd - p.flangeThickness;
+  const horizontalRadiusBudget = Math.max(0, p.flangeWidth - p.webThickness);
+  const innerVerticalBudget = Math.max(0, p.depth - p.flangeThickness);
+  const edgeVerticalBudget = Math.max(0, p.flangeThickness);
+  const rawInner = Math.max(0, p.filletRadius ?? 0);
+  const rawEdge = Math.max(0, p.edgeRadius ?? 0);
+
+  let rEdge = Math.min(
+    rawEdge,
+    edgeVerticalBudget,
+    Math.max(0, horizontalRadiusBudget - rawInner),
+  );
+  const rInner = Math.min(
+    rawInner,
+    innerVerticalBudget,
+    Math.max(0, horizontalRadiusBudget - rEdge),
+  );
+  rEdge = Math.min(
+    rEdge,
+    edgeVerticalBudget,
+    Math.max(0, horizontalRadiusBudget - rInner),
+  );
+
+  if (rInner <= 1e-6 && rEdge <= 1e-6) {
+    return ensureCounterClockwise([
+      { x: -hw, y: yTop },
+      { x: hweb, y: yTop },
+      { x: hweb, y: yBottomFlangeTop },
+      { x: hw, y: yBottomFlangeTop },
+      { x: hw, y: yBottom },
+      { x: -hweb, y: yBottom },
+      { x: -hweb, y: yTopFlangeBottom },
+      { x: -hw, y: yTopFlangeBottom },
+    ]);
+  }
+
+  const pts: Vec2[] = [
+    { x: -hw, y: yTop },
+    { x: hweb, y: yTop },
+  ];
+
+  if (rInner > 1e-6) {
+    pts.push({ x: hweb, y: yBottomFlangeTop + rInner });
+    appendArc(
+      pts,
+      hweb + rInner,
+      yBottomFlangeTop + rInner,
+      rInner,
+      Math.PI,
+      (3 * Math.PI) / 2,
+    );
+  } else {
+    pts.push({ x: hweb, y: yBottomFlangeTop });
+  }
+
+  if (rEdge > 1e-6) {
+    pts.push({ x: hw - rEdge, y: yBottomFlangeTop });
+    appendArc(
+      pts,
+      hw - rEdge,
+      yBottomFlangeTop - rEdge,
+      rEdge,
+      Math.PI / 2,
+      0,
+    );
+  } else {
+    pts.push({ x: hw, y: yBottomFlangeTop });
+  }
+
+  pts.push(
+    { x: hw, y: yBottom },
+    { x: -hweb, y: yBottom },
+  );
+
+  if (rInner > 1e-6) {
+    pts.push({ x: -hweb, y: yTopFlangeBottom - rInner });
+    appendArc(
+      pts,
+      -hweb - rInner,
+      yTopFlangeBottom - rInner,
+      rInner,
+      0,
+      Math.PI / 2,
+    );
+  } else {
+    pts.push({ x: -hweb, y: yTopFlangeBottom });
+  }
+
+  if (rEdge > 1e-6) {
+    pts.push({ x: -hw + rEdge, y: yTopFlangeBottom });
+    appendArc(
+      pts,
+      -hw + rEdge,
+      yTopFlangeBottom + rEdge,
+      rEdge,
+      (3 * Math.PI) / 2,
+      Math.PI,
+    );
+  } else {
+    pts.push({ x: -hw, y: yTopFlangeBottom });
+  }
+
+  return ensureCounterClockwise(pts);
+}
+
 // ── Public polygon accessors ───────────────────────────────────────────────
 
 /** Outer boundary of any profile as Vec2 list. */
@@ -496,6 +609,8 @@ export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
       return tShapeVec2(profile);
     case "IfcUShapeProfileDef":
       return uShapeVec2(profile);
+    case "IfcZShapeProfileDef":
+      return zShapeVec2(profile);
     case "IfcArbitraryClosedProfileDef":
     case "IfcArbitraryProfileDefWithVoids":
       return profile.outerCurve;
