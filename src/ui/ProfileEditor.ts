@@ -423,7 +423,7 @@ export class ProfileEditor {
       const zsWeb = Math.min(Math.max(p.webThickness, zsWebMin), zsWebMax);
 
       const zsFlangeMin = 0.05;
-      const zsFlangeRawMax = p.depth;
+      const zsFlangeRawMax = p.depth / 2 - zsFlangeMin;
       const zsFlangeMax = Math.max(zsFlangeMin, zsFlangeRawMax);
       const zsFlange = Math.min(
         Math.max(p.flangeThickness, zsFlangeMin),
@@ -769,7 +769,7 @@ export class ProfileEditor {
     this._bindSlider("zs-d", (v) => {
       const prof = this.currentProfile as IfcZShapeProfileDef;
       prof.depth = v;
-      const flangeMax = Math.max(0.05, prof.depth);
+      const flangeMax = Math.max(0.05, prof.depth / 2 - 0.05);
       prof.flangeThickness = this._clampDependentSlider("zs-ft", flangeMax);
       this._syncZShapeRadii();
     });
