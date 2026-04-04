@@ -56,7 +56,7 @@ src/
 
 ```bash
 bun install
-bun dev
+bun run dev
 ```
 
 ## Build (GitHub Pages)
@@ -71,10 +71,6 @@ bun run build
 ```bash
 bun run preview
 ```
-
-## Package Manager
-
-This repository is managed with Bun. Please prefer `bun install` and `bun run ...` over `npm`.
 
 ## Tech Stack
 
