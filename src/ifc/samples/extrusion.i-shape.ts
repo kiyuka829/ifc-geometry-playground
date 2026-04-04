@@ -23,6 +23,8 @@ const DEFAULT_PROFILE: IfcProfileDef = {
   overallDepth: 5,
   webThickness: 0.2,
   flangeThickness: 0.3,
+  filletRadius: 0.15,
+  flangeEdgeRadius: 0.1,
 };
 
 const DEFAULT_EXTRUSION: ExtrusionParams = {
@@ -108,6 +110,14 @@ export const extrusionIShapeSample: SampleDef = {
       activeProfile.type === "IfcIShapeProfileDef"
         ? activeProfile.flangeThickness
         : DEFAULT_PROFILE.flangeThickness;
+    const filletRadius =
+      activeProfile.type === "IfcIShapeProfileDef"
+        ? activeProfile.filletRadius
+        : DEFAULT_PROFILE.filletRadius;
+    const flangeEdgeRadius =
+      activeProfile.type === "IfcIShapeProfileDef"
+        ? activeProfile.flangeEdgeRadius
+        : DEFAULT_PROFILE.flangeEdgeRadius;
 
     const generatedSolid: IfcExtrudedAreaSolid = {
       type: "IfcExtrudedAreaSolid",
@@ -118,6 +128,8 @@ export const extrusionIShapeSample: SampleDef = {
         overallDepth,
         webThickness,
         flangeThickness,
+        filletRadius,
+        flangeEdgeRadius,
       },
       position: {
         type: "IfcAxis2Placement3D",
@@ -205,6 +217,8 @@ export const extrusionIShapeSample: SampleDef = {
       overallDepth: "(see profile editor)",
       webThickness: "(see profile editor)",
       flangeThickness: "(see profile editor)",
+      filletRadius: "(see profile editor)",
+      flangeEdgeRadius: "(see profile editor)",
     },
     position: {
       type: "IfcAxis2Placement3D",

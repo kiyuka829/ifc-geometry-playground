@@ -23,8 +23,12 @@ const DEFAULT_PROFILE: IfcProfileDef = {
   overallDepth: 5.5,
   webThickness: 0.45,
   bottomFlangeThickness: 0.7,
+  bottomFlangeFilletRadius: 0.2,
+  bottomFlangeEdgeRadius: 0.15,
   topFlangeWidth: 3.1,
   topFlangeThickness: 0.45,
+  topFlangeFilletRadius: 0.15,
+  topFlangeEdgeRadius: 0.1,
 };
 
 const DEFAULT_EXTRUSION: ExtrusionParams = {
@@ -117,6 +121,22 @@ export const extrusionAsymmetricIShapeSample: SampleDef = {
       activeProfile.type === "IfcAsymmetricIShapeProfileDef"
         ? activeProfile.topFlangeThickness
         : DEFAULT_PROFILE.topFlangeThickness;
+    const bottomFlangeFilletRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.bottomFlangeFilletRadius
+        : DEFAULT_PROFILE.bottomFlangeFilletRadius;
+    const topFlangeFilletRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.topFlangeFilletRadius
+        : DEFAULT_PROFILE.topFlangeFilletRadius;
+    const bottomFlangeEdgeRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.bottomFlangeEdgeRadius
+        : DEFAULT_PROFILE.bottomFlangeEdgeRadius;
+    const topFlangeEdgeRadius =
+      activeProfile.type === "IfcAsymmetricIShapeProfileDef"
+        ? activeProfile.topFlangeEdgeRadius
+        : DEFAULT_PROFILE.topFlangeEdgeRadius;
 
     const generatedSolid: IfcExtrudedAreaSolid = {
       type: "IfcExtrudedAreaSolid",
@@ -129,6 +149,10 @@ export const extrusionAsymmetricIShapeSample: SampleDef = {
         bottomFlangeThickness,
         topFlangeWidth,
         topFlangeThickness,
+        bottomFlangeFilletRadius,
+        topFlangeFilletRadius,
+        bottomFlangeEdgeRadius,
+        topFlangeEdgeRadius,
       },
       position: {
         type: "IfcAxis2Placement3D",
@@ -218,6 +242,10 @@ export const extrusionAsymmetricIShapeSample: SampleDef = {
       bottomFlangeThickness: "(see profile editor)",
       topFlangeWidth: "(see profile editor)",
       topFlangeThickness: "(see profile editor)",
+      bottomFlangeFilletRadius: "(see profile editor)",
+      topFlangeFilletRadius: "(see profile editor)",
+      bottomFlangeEdgeRadius: "(see profile editor)",
+      topFlangeEdgeRadius: "(see profile editor)",
     },
     position: {
       type: "IfcAxis2Placement3D",

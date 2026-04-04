@@ -743,21 +743,193 @@ function asymmetricIShapeLoop(
   const halfWebThickness = profile.webThickness / 2
   const bottomFlangeThickness = profile.bottomFlangeThickness
   const topFlangeThickness = profile.topFlangeThickness ?? bottomFlangeThickness
+  const yTop = halfDepth
+  const yBottom = -halfDepth
+  const yTopFlangeBottom = halfDepth - topFlangeThickness
+  const yBottomFlangeTop = -halfDepth + bottomFlangeThickness
+  const topFlangeSpan = Math.max(0, halfTopWidth - halfWebThickness)
+  const bottomFlangeSpan = Math.max(0, halfBottomWidth - halfWebThickness)
+  const webHeight = Math.max(0, yTopFlangeBottom - yBottomFlangeTop)
 
-  return [
-    { x: -halfBottomWidth, y: -halfDepth },
-    { x: halfBottomWidth, y: -halfDepth },
-    { x: halfBottomWidth, y: -halfDepth + bottomFlangeThickness },
-    { x: halfWebThickness, y: -halfDepth + bottomFlangeThickness },
-    { x: halfWebThickness, y: halfDepth - topFlangeThickness },
-    { x: halfTopWidth, y: halfDepth - topFlangeThickness },
-    { x: halfTopWidth, y: halfDepth },
-    { x: -halfTopWidth, y: halfDepth },
-    { x: -halfTopWidth, y: halfDepth - topFlangeThickness },
-    { x: -halfWebThickness, y: halfDepth - topFlangeThickness },
-    { x: -halfWebThickness, y: -halfDepth + bottomFlangeThickness },
-    { x: -halfBottomWidth, y: -halfDepth + bottomFlangeThickness },
+  let topEdgeRadius = Math.min(
+    Math.max(0, profile.topFlangeEdgeRadius ?? 0),
+    topFlangeThickness,
+    topFlangeSpan,
+  )
+  let bottomEdgeRadius = Math.min(
+    Math.max(0, profile.bottomFlangeEdgeRadius ?? 0),
+    bottomFlangeThickness,
+    bottomFlangeSpan,
+  )
+  let topFilletRadius = Math.min(
+    Math.max(0, profile.topFlangeFilletRadius ?? 0),
+    topFlangeThickness,
+    Math.max(0, topFlangeSpan - topEdgeRadius),
+    webHeight,
+  )
+  let bottomFilletRadius = Math.min(
+    Math.max(0, profile.bottomFlangeFilletRadius ?? 0),
+    bottomFlangeThickness,
+    Math.max(0, bottomFlangeSpan - bottomEdgeRadius),
+    Math.max(0, webHeight - topFilletRadius),
+  )
+  topFilletRadius = Math.min(topFilletRadius, Math.max(0, webHeight - bottomFilletRadius))
+  topEdgeRadius = Math.min(
+    topEdgeRadius,
+    topFlangeThickness,
+    Math.max(0, topFlangeSpan - topFilletRadius),
+  )
+  bottomEdgeRadius = Math.min(
+    bottomEdgeRadius,
+    bottomFlangeThickness,
+    Math.max(0, bottomFlangeSpan - bottomFilletRadius),
+  )
+
+  if (
+    topFilletRadius <= 1e-6 &&
+    bottomFilletRadius <= 1e-6 &&
+    topEdgeRadius <= 1e-6 &&
+    bottomEdgeRadius <= 1e-6
+  ) {
+    return ensureCounterClockwise([
+      { x: -halfTopWidth, y: yTop },
+      { x: halfTopWidth, y: yTop },
+      { x: halfTopWidth, y: yTopFlangeBottom },
+      { x: halfWebThickness, y: yTopFlangeBottom },
+      { x: halfWebThickness, y: yBottomFlangeTop },
+      { x: halfBottomWidth, y: yBottomFlangeTop },
+      { x: halfBottomWidth, y: yBottom },
+      { x: -halfBottomWidth, y: yBottom },
+      { x: -halfBottomWidth, y: yBottomFlangeTop },
+      { x: -halfWebThickness, y: yBottomFlangeTop },
+      { x: -halfWebThickness, y: yTopFlangeBottom },
+      { x: -halfTopWidth, y: yTopFlangeBottom },
+    ])
+  }
+
+  const pts: NormalizedVec2[] = [
+    { x: -halfTopWidth, y: yTop },
+    { x: halfTopWidth, y: yTop },
   ]
+
+  if (topEdgeRadius > 1e-6) {
+    pts.push({ x: halfTopWidth, y: yTopFlangeBottom + topEdgeRadius })
+    appendArc(
+      pts,
+      halfTopWidth - topEdgeRadius,
+      yTopFlangeBottom + topEdgeRadius,
+      topEdgeRadius,
+      0,
+      -Math.PI / 2,
+    )
+  } else {
+    pts.push({ x: halfTopWidth, y: yTopFlangeBottom })
+  }
+
+  if (topFilletRadius > 1e-6) {
+    pts.push({ x: halfWebThickness + topFilletRadius, y: yTopFlangeBottom })
+    appendArc(
+      pts,
+      halfWebThickness + topFilletRadius,
+      yTopFlangeBottom - topFilletRadius,
+      topFilletRadius,
+      Math.PI / 2,
+      Math.PI,
+    )
+  } else {
+    pts.push({ x: halfWebThickness, y: yTopFlangeBottom })
+  }
+
+  if (bottomFilletRadius > 1e-6) {
+    pts.push({ x: halfWebThickness, y: yBottomFlangeTop + bottomFilletRadius })
+    appendArc(
+      pts,
+      halfWebThickness + bottomFilletRadius,
+      yBottomFlangeTop + bottomFilletRadius,
+      bottomFilletRadius,
+      Math.PI,
+      (3 * Math.PI) / 2,
+    )
+  } else {
+    pts.push({ x: halfWebThickness, y: yBottomFlangeTop })
+  }
+
+  if (bottomEdgeRadius > 1e-6) {
+    pts.push({ x: halfBottomWidth - bottomEdgeRadius, y: yBottomFlangeTop })
+    appendArc(
+      pts,
+      halfBottomWidth - bottomEdgeRadius,
+      yBottomFlangeTop - bottomEdgeRadius,
+      bottomEdgeRadius,
+      Math.PI / 2,
+      0,
+    )
+  } else {
+    pts.push({ x: halfBottomWidth, y: yBottomFlangeTop })
+  }
+
+  pts.push(
+    { x: halfBottomWidth, y: yBottom },
+    { x: -halfBottomWidth, y: yBottom },
+  )
+
+  if (bottomEdgeRadius > 1e-6) {
+    pts.push({ x: -halfBottomWidth, y: yBottomFlangeTop - bottomEdgeRadius })
+    appendArc(
+      pts,
+      -halfBottomWidth + bottomEdgeRadius,
+      yBottomFlangeTop - bottomEdgeRadius,
+      bottomEdgeRadius,
+      -Math.PI,
+      (-3 * Math.PI) / 2,
+    )
+  } else {
+    pts.push({ x: -halfBottomWidth, y: yBottomFlangeTop })
+  }
+
+  if (bottomFilletRadius > 1e-6) {
+    pts.push({ x: -halfWebThickness - bottomFilletRadius, y: yBottomFlangeTop })
+    appendArc(
+      pts,
+      -halfWebThickness - bottomFilletRadius,
+      yBottomFlangeTop + bottomFilletRadius,
+      bottomFilletRadius,
+      -Math.PI / 2,
+      0,
+    )
+  } else {
+    pts.push({ x: -halfWebThickness, y: yBottomFlangeTop })
+  }
+
+  if (topFilletRadius > 1e-6) {
+    pts.push({ x: -halfWebThickness, y: yTopFlangeBottom - topFilletRadius })
+    appendArc(
+      pts,
+      -halfWebThickness - topFilletRadius,
+      yTopFlangeBottom - topFilletRadius,
+      topFilletRadius,
+      0,
+      Math.PI / 2,
+    )
+  } else {
+    pts.push({ x: -halfWebThickness, y: yTopFlangeBottom })
+  }
+
+  if (topEdgeRadius > 1e-6) {
+    pts.push({ x: -halfTopWidth + topEdgeRadius, y: yTopFlangeBottom })
+    appendArc(
+      pts,
+      -halfTopWidth + topEdgeRadius,
+      yTopFlangeBottom + topEdgeRadius,
+      topEdgeRadius,
+      -Math.PI / 2,
+      -Math.PI,
+    )
+  } else {
+    pts.push({ x: -halfTopWidth, y: yTopFlangeBottom })
+  }
+
+  return ensureCounterClockwise(pts)
 }
 
 /**
@@ -862,6 +1034,10 @@ export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): No
         bottomFlangeThickness: profile.flangeThickness,
         topFlangeWidth: profile.overallWidth,
         topFlangeThickness: profile.flangeThickness,
+        bottomFlangeFilletRadius: profile.filletRadius,
+        topFlangeFilletRadius: profile.filletRadius,
+        bottomFlangeEdgeRadius: profile.flangeEdgeRadius,
+        topFlangeEdgeRadius: profile.flangeEdgeRadius,
       })
       break
     }
