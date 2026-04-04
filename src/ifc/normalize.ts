@@ -756,7 +756,7 @@ function applyPlacement2DToLoop(
  * Normalize a generated-schema area profile into outer/inner planar loops.
  * The optional 2D placement on the profile is applied to all loop vertices.
  *
- * Supported types: Rectangle, Circle, Ellipse, RectangleHollow,
+ * Supported types: Rectangle, RoundedRectangle, Circle, Ellipse, RectangleHollow,
  * CircleHollow, IShape (symmetric), TShape, UShape, ZShape, LShape, CShape.
  * Other parameterized types throw an Error.
  */
