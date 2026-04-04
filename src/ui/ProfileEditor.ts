@@ -1,5 +1,6 @@
 import type {
   IfcProfileDef,
+  IfcAsymmetricIShapeProfileDef,
   IfcRectangleProfileDef,
   IfcRoundedRectangleProfileDef,
   IfcCircleProfileDef,
@@ -74,6 +75,8 @@ export class ProfileEditor {
         return "circle-hollow";
       case "IfcCShapeProfileDef":
         return "c-shape";
+      case "IfcAsymmetricIShapeProfileDef":
+        return "asymmetric-i-shape";
       case "IfcIShapeProfileDef":
         return "i-shape";
       case "IfcLShapeProfileDef":
@@ -155,6 +158,18 @@ export class ProfileEditor {
           girth: 1.3,
           internalFilletRadius: 0.15,
         } satisfies IfcCShapeProfileDef);
+        break;
+      case "asymmetric-i-shape":
+        this.currentProfile = this._cloneProfile({
+          type: "IfcAsymmetricIShapeProfileDef",
+          profileType: "AREA",
+          bottomFlangeWidth: 4.2,
+          overallDepth: 5.5,
+          webThickness: 0.45,
+          bottomFlangeThickness: 0.7,
+          topFlangeWidth: 3.1,
+          topFlangeThickness: 0.45,
+        } satisfies IfcAsymmetricIShapeProfileDef);
         break;
       case "i-shape":
         this.currentProfile = this._cloneProfile({
@@ -318,6 +333,50 @@ export class ProfileEditor {
         ${this._sliderHTML("cs-t", "Wall Thickness", csWall, csWallMin, csWallMax, 0.05)}
         ${this._sliderHTML("cs-g", "Girth", csGirth, csGirthMin, csGirthMax, 0.05)}
         ${this._sliderHTML("cs-r", "Internal Fillet", csFillet, csFilletMin, csFilletMax, 0.05)}
+      `;
+    }
+
+    if (p.type === "IfcAsymmetricIShapeProfileDef") {
+      const aisWebMin = 0.05;
+      const aisWebRawMax =
+        Math.min(p.topFlangeWidth, p.bottomFlangeWidth) - aisWebMin;
+      const aisWebMax = Math.max(aisWebMin, aisWebRawMax);
+      const aisWeb = Math.min(
+        Math.max(p.webThickness, aisWebMin),
+        aisWebMax,
+      );
+
+      const aisBottomFlangeMin = 0.05;
+      const aisTopFlangeMin = 0.05;
+      const aisBottomBase = Math.max(
+        p.bottomFlangeThickness,
+        aisBottomFlangeMin,
+      );
+      const aisTopBase = Math.max(
+        p.topFlangeThickness ?? aisBottomBase,
+        aisTopFlangeMin,
+      );
+      const aisBottomMax = Math.max(
+        aisBottomFlangeMin,
+        p.overallDepth - aisTopBase - aisBottomFlangeMin,
+      );
+      const aisBottomFlange = Math.min(aisBottomBase, aisBottomMax);
+      const aisTopMax = Math.max(
+        aisTopFlangeMin,
+        p.overallDepth - aisBottomFlange - aisTopFlangeMin,
+      );
+      const aisTopFlange = Math.min(aisTopBase, aisTopMax);
+
+      p.webThickness = aisWeb;
+      p.bottomFlangeThickness = aisBottomFlange;
+      p.topFlangeThickness = aisTopFlange;
+      return `
+        ${this._sliderHTML("ais-bfw", "Bottom Flange Width", p.bottomFlangeWidth, 0.5, 10, 0.1)}
+        ${this._sliderHTML("ais-tfw", "Top Flange Width", p.topFlangeWidth, 0.5, 10, 0.1)}
+        ${this._sliderHTML("ais-od", "Overall Depth", p.overallDepth, 0.5, 10, 0.1)}
+        ${this._sliderHTML("ais-wt", "Web Thickness", aisWeb, aisWebMin, aisWebMax, 0.05)}
+        ${this._sliderHTML("ais-bft", "Bottom Flange Thickness", aisBottomFlange, aisBottomFlangeMin, aisBottomMax, 0.05)}
+        ${this._sliderHTML("ais-tft", "Top Flange Thickness", aisTopFlange, aisTopFlangeMin, aisTopMax, 0.05)}
       `;
     }
 
@@ -540,6 +599,7 @@ export class ProfileEditor {
       "rect-hollow": "Rect Hollow",
       "circle-hollow": "Circle Hollow",
       "c-shape": "C-Shape",
+      "asymmetric-i-shape": "Asymmetric I-Shape",
       "i-shape": "I-Shape",
       "l-shape": "L-Shape",
       "t-shape": "T-Shape",
@@ -683,6 +743,45 @@ export class ProfileEditor {
     });
     this._bindSlider("cs-r", (v) => {
       (this.currentProfile as IfcCShapeProfileDef).internalFilletRadius = v;
+    });
+
+    // ── Asymmetric I-Shape ──
+    this._bindSlider("ais-bfw", (v) => {
+      const prof = this.currentProfile as IfcAsymmetricIShapeProfileDef;
+      prof.bottomFlangeWidth = v;
+      prof.webThickness = this._clampAsymmetricIShapeWebThickness();
+    });
+    this._bindSlider("ais-tfw", (v) => {
+      const prof = this.currentProfile as IfcAsymmetricIShapeProfileDef;
+      prof.topFlangeWidth = v;
+      prof.webThickness = this._clampAsymmetricIShapeWebThickness();
+    });
+    this._bindSlider("ais-od", (v) => {
+      const prof = this.currentProfile as IfcAsymmetricIShapeProfileDef;
+      prof.overallDepth = v;
+      prof.bottomFlangeThickness =
+        this._clampAsymmetricIShapeBottomFlangeThickness();
+      prof.topFlangeThickness =
+        this._clampAsymmetricIShapeTopFlangeThickness();
+      prof.bottomFlangeThickness =
+        this._clampAsymmetricIShapeBottomFlangeThickness();
+    });
+    this._bindSlider("ais-wt", (v) => {
+      (this.currentProfile as IfcAsymmetricIShapeProfileDef).webThickness = v;
+    });
+    this._bindSlider("ais-bft", (v) => {
+      const prof = this.currentProfile as IfcAsymmetricIShapeProfileDef;
+      prof.bottomFlangeThickness = v;
+      prof.topFlangeThickness = this._clampAsymmetricIShapeTopFlangeThickness();
+      prof.bottomFlangeThickness =
+        this._clampAsymmetricIShapeBottomFlangeThickness();
+    });
+    this._bindSlider("ais-tft", (v) => {
+      const prof = this.currentProfile as IfcAsymmetricIShapeProfileDef;
+      prof.topFlangeThickness = v;
+      prof.bottomFlangeThickness =
+        this._clampAsymmetricIShapeBottomFlangeThickness();
+      prof.topFlangeThickness = this._clampAsymmetricIShapeTopFlangeThickness();
     });
 
     // ── I-Shape ──
@@ -937,6 +1036,53 @@ export class ProfileEditor {
       ),
     );
     return this._clampDependentSlider("cs-r", max);
+  }
+
+  private _maxAsymmetricIShapeWebThickness(): number {
+    if (this.currentProfile.type !== "IfcAsymmetricIShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    return Math.max(
+      0.05,
+      Math.min(prof.topFlangeWidth, prof.bottomFlangeWidth) - 0.05,
+    );
+  }
+
+  private _maxAsymmetricIShapeBottomFlangeThickness(): number {
+    if (this.currentProfile.type !== "IfcAsymmetricIShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    return Math.max(
+      0.05,
+      prof.overallDepth -
+        (prof.topFlangeThickness ?? prof.bottomFlangeThickness) -
+        0.05,
+    );
+  }
+
+  private _maxAsymmetricIShapeTopFlangeThickness(): number {
+    if (this.currentProfile.type !== "IfcAsymmetricIShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    return Math.max(0.05, prof.overallDepth - prof.bottomFlangeThickness - 0.05);
+  }
+
+  private _clampAsymmetricIShapeWebThickness(): number {
+    return this._clampDependentSlider(
+      "ais-wt",
+      this._maxAsymmetricIShapeWebThickness(),
+    );
+  }
+
+  private _clampAsymmetricIShapeBottomFlangeThickness(): number {
+    return this._clampDependentSlider(
+      "ais-bft",
+      this._maxAsymmetricIShapeBottomFlangeThickness(),
+    );
+  }
+
+  private _clampAsymmetricIShapeTopFlangeThickness(): number {
+    return this._clampDependentSlider(
+      "ais-tft",
+      this._maxAsymmetricIShapeTopFlangeThickness(),
+    );
   }
 
   private _maxTShapeFilletRadius(): number {

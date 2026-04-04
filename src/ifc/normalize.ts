@@ -734,6 +734,32 @@ function uShapeLoop(profile: Extract<IfcAreaParameterizedProfileDef, { type: 'If
   return ensureCounterClockwise(pts)
 }
 
+function asymmetricIShapeLoop(
+  profile: Extract<IfcAreaParameterizedProfileDef, { type: 'IfcAsymmetricIShapeProfileDef' }>,
+): NormalizedVec2[] {
+  const halfTopWidth = profile.topFlangeWidth / 2
+  const halfBottomWidth = profile.bottomFlangeWidth / 2
+  const halfDepth = profile.overallDepth / 2
+  const halfWebThickness = profile.webThickness / 2
+  const bottomFlangeThickness = profile.bottomFlangeThickness
+  const topFlangeThickness = profile.topFlangeThickness ?? bottomFlangeThickness
+
+  return [
+    { x: -halfBottomWidth, y: -halfDepth },
+    { x: halfBottomWidth, y: -halfDepth },
+    { x: halfBottomWidth, y: -halfDepth + bottomFlangeThickness },
+    { x: halfWebThickness, y: -halfDepth + bottomFlangeThickness },
+    { x: halfWebThickness, y: halfDepth - topFlangeThickness },
+    { x: halfTopWidth, y: halfDepth - topFlangeThickness },
+    { x: halfTopWidth, y: halfDepth },
+    { x: -halfTopWidth, y: halfDepth },
+    { x: -halfTopWidth, y: halfDepth - topFlangeThickness },
+    { x: -halfWebThickness, y: halfDepth - topFlangeThickness },
+    { x: -halfWebThickness, y: -halfDepth + bottomFlangeThickness },
+    { x: -halfBottomWidth, y: -halfDepth + bottomFlangeThickness },
+  ]
+}
+
 /**
  * Apply a 2D placement transform to a list of profile-space points.
  * The Y axis is the 90° CCW rotation of the X axis.
@@ -821,25 +847,22 @@ export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): No
       outerLoop = cShapeLoop(profile)
       break
 
+    case 'IfcAsymmetricIShapeProfileDef':
+      outerLoop = asymmetricIShapeLoop(profile)
+      break
+
     case 'IfcIShapeProfileDef': {
-      const hw  = profile.overallWidth / 2
-      const hd  = profile.overallDepth / 2
-      const htw = profile.webThickness / 2
-      const tf  = profile.flangeThickness
-      outerLoop = [
-        { x: -hw,  y: -hd        },
-        { x:  hw,  y: -hd        },
-        { x:  hw,  y: -hd + tf   },
-        { x:  htw, y: -hd + tf   },
-        { x:  htw, y:  hd - tf   },
-        { x:  hw,  y:  hd - tf   },
-        { x:  hw,  y:  hd        },
-        { x: -hw,  y:  hd        },
-        { x: -hw,  y:  hd - tf   },
-        { x: -htw, y:  hd - tf   },
-        { x: -htw, y: -hd + tf   },
-        { x: -hw,  y: -hd + tf   },
-      ]
+      outerLoop = asymmetricIShapeLoop({
+        type: 'IfcAsymmetricIShapeProfileDef',
+        profileType: 'AREA',
+        position: profile.position,
+        bottomFlangeWidth: profile.overallWidth,
+        overallDepth: profile.overallDepth,
+        webThickness: profile.webThickness,
+        bottomFlangeThickness: profile.flangeThickness,
+        topFlangeWidth: profile.overallWidth,
+        topFlangeThickness: profile.flangeThickness,
+      })
       break
     }
 

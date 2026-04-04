@@ -9,6 +9,7 @@ import type { Scene, StandardMaterial, Mesh, LinesMesh } from "@babylonjs/core";
 import earcut from "earcut";
 import type {
   IfcProfileDef,
+  IfcAsymmetricIShapeProfileDef,
   IfcCShapeProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
@@ -252,23 +253,39 @@ function cShapeVec2(p: IfcCShapeProfileDef): Vec2[] {
 }
 
 function iShapeVec2(p: IfcIShapeProfileDef): Vec2[] {
-  const hw = p.overallWidth / 2;
-  const hd = p.overallDepth / 2;
-  const htw = p.webThickness / 2;
-  const tf = p.flangeThickness;
+  return asymmetricIShapeVec2({
+    type: "IfcAsymmetricIShapeProfileDef",
+    profileType: "AREA",
+    position: p.position,
+    bottomFlangeWidth: p.overallWidth,
+    overallDepth: p.overallDepth,
+    webThickness: p.webThickness,
+    bottomFlangeThickness: p.flangeThickness,
+    topFlangeWidth: p.overallWidth,
+    topFlangeThickness: p.flangeThickness,
+  });
+}
+
+function asymmetricIShapeVec2(p: IfcAsymmetricIShapeProfileDef): Vec2[] {
+  const halfTopWidth = p.topFlangeWidth / 2;
+  const halfBottomWidth = p.bottomFlangeWidth / 2;
+  const halfDepth = p.overallDepth / 2;
+  const halfWebThickness = p.webThickness / 2;
+  const bottomFlangeThickness = p.bottomFlangeThickness;
+  const topFlangeThickness = p.topFlangeThickness ?? bottomFlangeThickness;
   return [
-    { x: -hw, y: -hd },
-    { x: hw, y: -hd },
-    { x: hw, y: -hd + tf },
-    { x: htw, y: -hd + tf },
-    { x: htw, y: hd - tf },
-    { x: hw, y: hd - tf },
-    { x: hw, y: hd },
-    { x: -hw, y: hd },
-    { x: -hw, y: hd - tf },
-    { x: -htw, y: hd - tf },
-    { x: -htw, y: -hd + tf },
-    { x: -hw, y: -hd + tf },
+    { x: -halfBottomWidth, y: -halfDepth },
+    { x: halfBottomWidth, y: -halfDepth },
+    { x: halfBottomWidth, y: -halfDepth + bottomFlangeThickness },
+    { x: halfWebThickness, y: -halfDepth + bottomFlangeThickness },
+    { x: halfWebThickness, y: halfDepth - topFlangeThickness },
+    { x: halfTopWidth, y: halfDepth - topFlangeThickness },
+    { x: halfTopWidth, y: halfDepth },
+    { x: -halfTopWidth, y: halfDepth },
+    { x: -halfTopWidth, y: halfDepth - topFlangeThickness },
+    { x: -halfWebThickness, y: halfDepth - topFlangeThickness },
+    { x: -halfWebThickness, y: -halfDepth + bottomFlangeThickness },
+    { x: -halfBottomWidth, y: -halfDepth + bottomFlangeThickness },
   ];
 }
 
@@ -650,6 +667,8 @@ export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
       return circleVec2(profile.radius);
     case "IfcCShapeProfileDef":
       return cShapeVec2(profile);
+    case "IfcAsymmetricIShapeProfileDef":
+      return asymmetricIShapeVec2(profile);
     case "IfcIShapeProfileDef":
       return iShapeVec2(profile);
     case "IfcLShapeProfileDef":
