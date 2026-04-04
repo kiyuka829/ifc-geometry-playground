@@ -8,11 +8,13 @@
 import type {
   IfcCartesianPoint,
   IfcDirection,
+  IfcAxis1Placement,
   IfcAxis2Placement2D,
   IfcAxis2Placement3D,
   IfcAreaParameterizedProfileDef,
   IfcAsymmetricIShapeProfileDef,
   IfcExtrudedAreaSolid,
+  IfcRevolvedAreaSolid,
 } from './generated/schema.ts'
 
 // ── Internal geometry model ───────────────────────────────────────────────
@@ -46,6 +48,13 @@ export interface NormalizedPlacement3D {
   xAxis: NormalizedVec3;
 }
 
+/** A normalized 3D axis placement used by revolution-based solids. */
+export interface NormalizedAxis1Placement {
+  origin: NormalizedVec3;
+  /** Unit vector along the revolution axis. Defaults to (0, 0, 1). */
+  axis: NormalizedVec3;
+}
+
 /** A profile normalized into closed planar loops ready for triangulation. */
 export interface NormalizedProfile {
   /** Outer boundary polygon (counter-clockwise winding). */
@@ -64,6 +73,18 @@ export interface NormalizedExtrusion {
   extrusionDirection: NormalizedVec3;
   /** Length of the extrusion. */
   depth: number;
+}
+
+/** A renderer-friendly revolution specification. */
+export interface NormalizedRevolution {
+  /** Normalized cross-section profile. */
+  profile: NormalizedProfile;
+  /** 3D placement of the solid's local coordinate system. */
+  placement: NormalizedPlacement3D;
+  /** Axis of revolution expressed in placement-local coordinates. */
+  axis: NormalizedAxis1Placement;
+  /** Signed revolution angle in radians. */
+  angle: number;
 }
 
 // ── Vector helpers ────────────────────────────────────────────────────────
@@ -186,6 +207,40 @@ export function normalizePlacement3D(p: IfcAxis2Placement3D): NormalizedPlacemen
     origin: normalizePoint3(p.location),
     zAxis,
     xAxis: orthogonalizeXAxis(zAxis, refDirection),
+  }
+}
+
+/**
+ * Normalize a fallback axis vector: returns a unit-vector copy of `axis`.
+ * If `axis` is zero-length or non-finite, returns a copy of `fallback`.
+ */
+function normalizeFallbackAxis3(
+  axis: NormalizedVec3,
+  fallback: NormalizedVec3 = { x: 0, y: 0, z: 1 },
+): NormalizedVec3 {
+  const length = Math.hypot(axis.x, axis.y, axis.z)
+  if (!Number.isFinite(length) || length === 0) {
+    return { x: fallback.x, y: fallback.y, z: fallback.z }
+  }
+  return {
+    x: axis.x / length,
+    y: axis.y / length,
+    z: axis.z / length,
+  }
+}
+
+/** Convert an IfcAxis1Placement to a normalized origin + unit-axis pair. */
+export function normalizeAxis1Placement(
+  p: IfcAxis1Placement,
+  fallbackAxis: NormalizedVec3 = { x: 0, y: 0, z: 1 },
+): NormalizedAxis1Placement {
+  const normalizedFallbackAxis = normalizeFallbackAxis3(fallbackAxis)
+
+  return {
+    origin: normalizePoint3(p.location),
+    axis: p.axis
+      ? normalizeDirection3(p.axis, normalizedFallbackAxis)
+      : normalizedFallbackAxis,
   }
 }
 
@@ -1102,5 +1157,32 @@ export function normalizeExtrudedAreaSolid(solid: IfcExtrudedAreaSolid): Normali
       : defaultPlacement3D(),
     extrusionDirection: normalizeDirection3(solid.extrudedDirection),
     depth: solid.depth,
+  }
+}
+
+/**
+ * Convert a generated-schema IfcRevolvedAreaSolid to a NormalizedRevolution
+ * ready for consumption by a mesh builder.
+ */
+export function normalizeRevolvedAreaSolid(solid: IfcRevolvedAreaSolid): NormalizedRevolution {
+  const axis = normalizeAxis1Placement(solid.axis, { x: 0, y: 0, z: 1 })
+  if (Math.abs(axis.axis.z) > 1e-9) {
+    throw new Error(
+      "IfcRevolvedAreaSolid.Axis direction must be parallel to the local XY plane (axis.z = 0).",
+    )
+  }
+  if (Math.abs(axis.origin.z) > 1e-9) {
+    throw new Error(
+      "IfcRevolvedAreaSolid.Axis location must lie in the local XY plane (location.z = 0).",
+    )
+  }
+
+  return {
+    profile: normalizeProfileDef(solid.sweptArea),
+    placement: solid.position
+      ? normalizePlacement3D(solid.position)
+      : defaultPlacement3D(),
+    axis,
+    angle: solid.angle,
   }
 }
