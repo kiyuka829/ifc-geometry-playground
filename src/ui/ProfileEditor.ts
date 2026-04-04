@@ -8,6 +8,7 @@ import type {
   IfcCShapeProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
+  IfcTShapeProfileDef,
   IfcArbitraryClosedProfileDef,
   Vec2,
 } from "../types.ts";
@@ -72,6 +73,8 @@ export class ProfileEditor {
         return "i-shape";
       case "IfcLShapeProfileDef":
         return "l-shape";
+      case "IfcTShapeProfileDef":
+        return "t-shape";
       case "IfcArbitraryClosedProfileDef":
       case "IfcArbitraryProfileDefWithVoids":
         return "arbitrary";
@@ -153,6 +156,16 @@ export class ProfileEditor {
           width: 3,
           thickness: 0.4,
         } satisfies IfcLShapeProfileDef);
+        break;
+      case "t-shape":
+        this.currentProfile = this._cloneProfile({
+          type: "IfcTShapeProfileDef",
+          profileType: "AREA",
+          depth: 5,
+          flangeWidth: 4,
+          webThickness: 0.8,
+          flangeThickness: 1.2,
+        } satisfies IfcTShapeProfileDef);
         break;
       case "arbitrary":
         this.currentProfile = this._cloneProfile({
@@ -286,6 +299,31 @@ export class ProfileEditor {
       `;
     }
 
+    if (p.type === "IfcTShapeProfileDef") {
+      const tsWebMin = 0.05;
+      const tsWebRawMax = p.flangeWidth;
+      const tsWebMax = Math.max(tsWebMin, tsWebRawMax);
+      const tsWeb = Math.min(Math.max(p.webThickness, tsWebMin), tsWebMax);
+
+      const tsFlangeMin = 0.05;
+      const tsFlangeRawMax = p.depth;
+      const tsFlangeMax = Math.max(tsFlangeMin, tsFlangeRawMax);
+      const tsFlange = Math.min(
+        Math.max(p.flangeThickness, tsFlangeMin),
+        tsFlangeMax,
+      );
+
+      p.webThickness = tsWeb;
+      p.flangeThickness = tsFlange;
+
+      return `
+        ${this._sliderHTML("ts-d", "Depth", p.depth, 0.5, 10, 0.1)}
+        ${this._sliderHTML("ts-fw", "Flange Width", p.flangeWidth, 0.5, 10, 0.1)}
+        ${this._sliderHTML("ts-wt", "Web Thickness", tsWeb, tsWebMin, tsWebMax, 0.05)}
+        ${this._sliderHTML("ts-ft", "Flange Thickness", tsFlange, tsFlangeMin, tsFlangeMax, 0.05)}
+      `;
+    }
+
     if (
       p.type === "IfcArbitraryClosedProfileDef" ||
       p.type === "IfcArbitraryProfileDefWithVoids"
@@ -349,6 +387,7 @@ export class ProfileEditor {
       "c-shape": "C-Shape",
       "i-shape": "I-Shape",
       "l-shape": "L-Shape",
+      "t-shape": "T-Shape",
       arbitrary: "Arbitrary",
     };
     return labels[t];
@@ -513,6 +552,26 @@ export class ProfileEditor {
     });
     this._bindSlider("ls-t", (v) => {
       (this.currentProfile as IfcLShapeProfileDef).thickness = v;
+    });
+
+    // ── T-Shape ──
+    this._bindSlider("ts-d", (v) => {
+      const prof = this.currentProfile as IfcTShapeProfileDef;
+      prof.depth = v;
+      const max = Math.max(0.05, prof.depth);
+      prof.flangeThickness = this._clampDependentSlider("ts-ft", max);
+    });
+    this._bindSlider("ts-fw", (v) => {
+      const prof = this.currentProfile as IfcTShapeProfileDef;
+      prof.flangeWidth = v;
+      const max = Math.max(0.05, prof.flangeWidth);
+      prof.webThickness = this._clampDependentSlider("ts-wt", max);
+    });
+    this._bindSlider("ts-wt", (v) => {
+      (this.currentProfile as IfcTShapeProfileDef).webThickness = v;
+    });
+    this._bindSlider("ts-ft", (v) => {
+      (this.currentProfile as IfcTShapeProfileDef).flangeThickness = v;
     });
 
     // ── Arbitrary point inputs ──

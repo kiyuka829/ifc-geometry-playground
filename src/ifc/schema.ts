@@ -31,4 +31,5 @@ export type {
   IfcEllipseProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
+  IfcTShapeProfileDef,
 } from "./generated/schema.ts";

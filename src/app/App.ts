@@ -10,6 +10,7 @@ import { extrusionCircleHollowSample } from "../ifc/samples/extrusion.circle-hol
 import { extrusionCShapeSample } from "../ifc/samples/extrusion.c-shape.ts";
 import { extrusionIShapeSample } from "../ifc/samples/extrusion.i-shape.ts";
 import { extrusionLShapeSample } from "../ifc/samples/extrusion.l-shape.ts";
+import { extrusionTShapeSample } from "../ifc/samples/extrusion.t-shape.ts";
 import { sweptDiskBasicSample } from "../ifc/samples/swept-disk.basic.ts";
 import type { SampleDef } from "../types.ts";
 
@@ -23,6 +24,7 @@ const samples: Record<string, SampleDef> = {
   "extrusion-c-shape": extrusionCShapeSample,
   "extrusion-i-shape": extrusionIShapeSample,
   "extrusion-l-shape": extrusionLShapeSample,
+  "extrusion-t-shape": extrusionTShapeSample,
   "swept-disk-basic": sweptDiskBasicSample,
 };
 
