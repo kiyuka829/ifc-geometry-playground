@@ -387,18 +387,9 @@ export class ProfileEditor {
       p.edgeRadius = this._normalizeUShapeEdgeRadius();
 
       const usFilletMax = this._maxUShapeFilletRadius();
-      const usFillet = Math.min(
-        Math.max(p.filletRadius ?? 0, 0),
-        usFilletMax,
-      );
-      p.filletRadius = usFillet;
-
       const usEdgeMax = this._maxUShapeEdgeRadius();
-      const usEdge = Math.min(
-        Math.max(p.edgeRadius ?? 0, 0),
-        usEdgeMax,
-      );
-      p.edgeRadius = usEdge;
+      const usFillet = p.filletRadius ?? 0;
+      const usEdge = p.edgeRadius ?? 0;
 
       return `
         ${this._sliderHTML("us-d", "Depth", p.depth, 0.5, 10, 0.1)}
@@ -694,31 +685,22 @@ export class ProfileEditor {
       prof.depth = v;
       const flangeMax = Math.max(0.05, prof.depth / 2 - 0.05);
       prof.flangeThickness = this._clampDependentSlider("us-ft", flangeMax);
-      prof.filletRadius = this._clampUShapeFilletRadius();
-      prof.edgeRadius = this._clampUShapeEdgeRadius();
+      this._syncUShapeRadii();
     });
     this._bindSlider("us-fw", (v) => {
       const prof = this.currentProfile as IfcUShapeProfileDef;
       prof.flangeWidth = v;
       const webMax = Math.max(0.05, prof.flangeWidth - 0.05);
       prof.webThickness = this._clampDependentSlider("us-wt", webMax);
-      prof.edgeRadius = this._clampUShapeEdgeRadius();
-      prof.filletRadius = this._clampUShapeFilletRadius();
-      prof.edgeRadius = this._clampUShapeEdgeRadius();
+      this._syncUShapeRadii();
     });
     this._bindSlider("us-wt", (v) => {
-      const prof = this.currentProfile as IfcUShapeProfileDef;
-      prof.webThickness = v;
-      prof.edgeRadius = this._clampUShapeEdgeRadius();
-      prof.filletRadius = this._clampUShapeFilletRadius();
-      prof.edgeRadius = this._clampUShapeEdgeRadius();
+      (this.currentProfile as IfcUShapeProfileDef).webThickness = v;
+      this._syncUShapeRadii();
     });
     this._bindSlider("us-ft", (v) => {
-      const prof = this.currentProfile as IfcUShapeProfileDef;
-      prof.flangeThickness = v;
-      prof.edgeRadius = this._clampUShapeEdgeRadius();
-      prof.filletRadius = this._clampUShapeFilletRadius();
-      prof.edgeRadius = this._clampUShapeEdgeRadius();
+      (this.currentProfile as IfcUShapeProfileDef).flangeThickness = v;
+      this._syncUShapeRadii();
     });
     this._bindSlider("us-fr", (v) => {
       (this.currentProfile as IfcUShapeProfileDef).filletRadius = v;
@@ -930,6 +912,16 @@ export class ProfileEditor {
     );
     prof.edgeRadius = next;
     return next;
+  }
+
+  private _syncUShapeRadii(): void {
+    const prof = this.currentProfile as IfcUShapeProfileDef;
+    // edgeRadius and filletRadius are mutually dependent, so we clamp edge
+    // first, then fillet (which may tighten edgeMax), then edge again to
+    // ensure both constraints are satisfied simultaneously.
+    prof.edgeRadius = this._clampUShapeEdgeRadius();
+    prof.filletRadius = this._clampUShapeFilletRadius();
+    prof.edgeRadius = this._clampUShapeEdgeRadius();
   }
 
   private _clampUShapeFilletRadius(): number {

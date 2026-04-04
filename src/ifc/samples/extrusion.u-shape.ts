@@ -51,7 +51,7 @@ export const extrusionUShapeSample: SampleDef = {
       id: "profile",
       label: "Step 1: U-Shape Cross-Section",
       description:
-        "IfcUShapeProfileDef defines a channel-like section with a left web and top/bottom flanges opening to the left. " +
+        "IfcUShapeProfileDef defines a channel-like section with a left web and top/bottom flanges opening to the right. " +
         "This sample exposes the optional inner fillet radius and outer edge radius used by the profile.",
     },
     {
