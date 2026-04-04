@@ -37,6 +37,28 @@
         }
       ]
     },
+    "IfcAxis1Placement": {
+      "name": "IfcAxis1Placement",
+      "supertype": "IfcPlacement",
+      "attributes": [
+        {
+          "name": "Location",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPoint"
+          }
+        },
+        {
+          "name": "Axis",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        }
+      ]
+    },
     "IfcAxis2Placement2D": {
       "name": "IfcAxis2Placement2D",
       "supertype": "IfcPlacement",
@@ -1101,6 +1123,44 @@
           "type": {
             "kind": "number",
             "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcRevolvedAreaSolid": {
+      "name": "IfcRevolvedAreaSolid",
+      "supertype": "IfcSweptAreaSolid",
+      "attributes": [
+        {
+          "name": "SweptArea",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcProfileDef"
+          }
+        },
+        {
+          "name": "Position",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis2Placement3D"
+          }
+        },
+        {
+          "name": "Axis",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcAxis1Placement"
+          }
+        },
+        {
+          "name": "Angle",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPlaneAngleMeasure"
           }
         }
       ]

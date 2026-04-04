@@ -18,6 +18,12 @@ export interface IfcDirection {
   directionRatios: number[];
 }
 
+export interface IfcAxis1Placement {
+  type: 'IfcAxis1Placement';
+  location: IfcCartesianPoint;
+  axis?: IfcDirection;
+}
+
 export interface IfcAxis2Placement2D {
   type: 'IfcAxis2Placement2D';
   location: IfcCartesianPoint;
@@ -208,4 +214,12 @@ export interface IfcExtrudedAreaSolid {
   position?: IfcAxis2Placement3D;
   extrudedDirection: IfcDirection;
   depth: number;
+}
+
+export interface IfcRevolvedAreaSolid {
+  type: 'IfcRevolvedAreaSolid';
+  sweptArea: IfcAreaParameterizedProfileDef;
+  position?: IfcAxis2Placement3D;
+  axis: IfcAxis1Placement;
+  angle: number;
 }

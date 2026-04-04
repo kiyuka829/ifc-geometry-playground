@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate IFC schema JSON and TypeScript type definitions from IfcOpenShell.
 
-Extracts attribute metadata for IfcExtrudedAreaSolid and all supported
-subclasses of IfcParameterizedProfileDef (excluding explicitly unsupported
-entities such as IfcTrapeziumProfileDef), plus the supporting geometry entities.
+Extracts attribute metadata for IfcExtrudedAreaSolid, IfcRevolvedAreaSolid,
+and all supported subclasses of IfcParameterizedProfileDef (excluding
+explicitly unsupported entities such as IfcTrapeziumProfileDef), plus the
+supporting geometry entities.
 
 Outputs:
   src/ifc/generated/schema.json  — raw IFC4 attribute schema (PascalCase)
@@ -34,6 +35,7 @@ OUTPUT_DIR = REPO_ROOT / "src" / "ifc" / "generated"
 GEOMETRY_ENTITIES = [
     "IfcCartesianPoint",
     "IfcDirection",
+    "IfcAxis1Placement",
     "IfcAxis2Placement2D",
     "IfcAxis2Placement3D",
 ]
@@ -44,7 +46,13 @@ UNSUPPORTED_PROFILE_ENTITIES = frozenset({"IfcTrapeziumProfileDef"})
 
 SOLID_ENTITIES = [
     "IfcExtrudedAreaSolid",
+    "IfcRevolvedAreaSolid",
 ]
+
+# Swept-area solids require an AREA profile by formal proposition, so we
+# narrow SweptArea from the broad IfcProfileDef select to supported area
+# parameterized profiles in generated TypeScript interfaces.
+AREA_PROFILE_SOLID_ENTITIES = frozenset({"IfcExtrudedAreaSolid", "IfcRevolvedAreaSolid"})
 
 # IFC attribute names that carry no geometric meaning and are omitted from
 # the generated TypeScript (e.g. human-readable labels).
@@ -347,7 +355,7 @@ def generate_ts_file(schema, profile_entities: list[str]) -> str:
             # supported parameterized AREA profiles; swept-area solids require
             # SweptArea.ProfileType = AREA by formal proposition.
             # Ref: https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcSweptAreaSolid.htm#:~:text=SweptAreaType,IfcProfileTypeEnum.Area
-            if ifc_name == "IfcExtrudedAreaSolid" and attr_name == "SweptArea":
+            if ifc_name in AREA_PROFILE_SOLID_ENTITIES and attr_name == "SweptArea":
                 ts_type = "IfcAreaParameterizedProfileDef"
             else:
                 ts_type = type_info_to_ts(type_info)
