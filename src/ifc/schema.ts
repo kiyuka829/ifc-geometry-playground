@@ -32,4 +32,5 @@ export type {
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
   IfcTShapeProfileDef,
+  IfcUShapeProfileDef,
 } from "./generated/schema.ts";

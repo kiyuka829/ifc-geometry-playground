@@ -181,6 +181,16 @@ export const routes: Route[] = [
     status: "available",
   },
   {
+    hash: "#/examples/extrusion-u-shape",
+    title: "U-Shape Profile (IfcUShapeProfileDef)",
+    description:
+      "Extrudes a U-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcUShapeProfileDef).",
+    sampleId: "extrusion-u-shape",
+    category: "ExtrudedAreaSolid",
+    difficulty: "beginner",
+    status: "available",
+  },
+  {
     hash: "#/examples/tessellation",
     title: "Triangulated Face Set",
     description:
