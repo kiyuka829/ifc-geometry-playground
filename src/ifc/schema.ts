@@ -28,6 +28,7 @@ export type {
   IfcRectangleHollowProfileDef,
   IfcCircleProfileDef,
   IfcCircleHollowProfileDef,
+  IfcEllipseProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
 } from "./generated/schema.ts";

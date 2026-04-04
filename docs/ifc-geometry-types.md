@@ -268,7 +268,7 @@ IfcOpenShell のスキーマを基に、IFC で扱われるジオメトリ種類
 | `IfcCircleProfileDef` | 円形 | `Radius` | 🔨 |
 | `IfcCircleHollowProfileDef` | 円形中空（丸パイプ） | `Radius`, `WallThickness` | 🔨 |
 | `IfcRoundedRectangleProfileDef` | 角丸矩形 | `XDim`, `YDim`, `RoundingRadius` | 📋 |
-| `IfcEllipseProfileDef` | 楕円形 | `SemiAxis1`, `SemiAxis2` | 📋 |
+| `IfcEllipseProfileDef` | 楕円形 | `SemiAxis1`, `SemiAxis2` | ✅ |
 | `IfcTrapeziumProfileDef` | 台形 | `BottomXDim`, `TopXDim`, `YDim`, `TopXOffset` | 📋 |
 
 ### 5.2 鋼材断面プロファイル

@@ -17,6 +17,7 @@ export type {
   IfcRectangleHollowProfileDef,
   IfcCircleProfileDef,
   IfcCircleHollowProfileDef,
+  IfcEllipseProfileDef,
   IfcIShapeProfileDef,
   IfcLShapeProfileDef,
 } from "./ifc/generated/schema.ts";
@@ -161,6 +162,7 @@ export interface StepDef {
 export type ProfileType =
   | "rectangle"
   | "circle"
+  | "ellipse"
   | "rect-hollow"
   | "circle-hollow"
   | "c-shape"

@@ -4,6 +4,7 @@ import { ExamplePage } from "../pages/ExamplePage.ts";
 import { extrusionRectangleSample } from "../ifc/samples/extrusion.rectangle.ts";
 import { booleanDifferenceSample } from "../ifc/samples/boolean.difference.ts";
 import { extrusionCircleSample } from "../ifc/samples/extrusion.circle.ts";
+import { extrusionEllipseSample } from "../ifc/samples/extrusion.ellipse.ts";
 import { extrusionRectHollowSample } from "../ifc/samples/extrusion.rect-hollow.ts";
 import { extrusionCircleHollowSample } from "../ifc/samples/extrusion.circle-hollow.ts";
 import { extrusionCShapeSample } from "../ifc/samples/extrusion.c-shape.ts";
@@ -16,6 +17,7 @@ const samples: Record<string, SampleDef> = {
   "extrusion-rectangle": extrusionRectangleSample,
   "boolean-difference": booleanDifferenceSample,
   "extrusion-circle": extrusionCircleSample,
+  "extrusion-ellipse": extrusionEllipseSample,
   "extrusion-rect-hollow": extrusionRectHollowSample,
   "extrusion-circle-hollow": extrusionCircleHollowSample,
   "extrusion-c-shape": extrusionCShapeSample,

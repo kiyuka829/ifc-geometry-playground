@@ -2,6 +2,7 @@ import type {
   IfcProfileDef,
   IfcRectangleProfileDef,
   IfcCircleProfileDef,
+  IfcEllipseProfileDef,
   IfcRectangleHollowProfileDef,
   IfcCircleHollowProfileDef,
   IfcCShapeProfileDef,
@@ -59,6 +60,8 @@ export class ProfileEditor {
         return "rectangle";
       case "IfcCircleProfileDef":
         return "circle";
+      case "IfcEllipseProfileDef":
+        return "ellipse";
       case "IfcRectangleHollowProfileDef":
         return "rect-hollow";
       case "IfcCircleHollowProfileDef":
@@ -95,6 +98,14 @@ export class ProfileEditor {
           profileType: "AREA",
           radius: 2,
         } satisfies IfcCircleProfileDef);
+        break;
+      case "ellipse":
+        this.currentProfile = this._cloneProfile({
+          type: "IfcEllipseProfileDef",
+          profileType: "AREA",
+          semiAxis1: 3,
+          semiAxis2: 2,
+        } satisfies IfcEllipseProfileDef);
         break;
       case "rect-hollow":
         this.currentProfile = this._cloneProfile({
@@ -169,6 +180,13 @@ export class ProfileEditor {
 
     if (p.type === "IfcCircleProfileDef") {
       return this._sliderHTML("circle-r", "Radius", p.radius, 0.1, 10, 0.1);
+    }
+
+    if (p.type === "IfcEllipseProfileDef") {
+      return `
+        ${this._sliderHTML("ellipse-a", "Semi Axis 1", p.semiAxis1, 0.1, 10, 0.1)}
+        ${this._sliderHTML("ellipse-b", "Semi Axis 2", p.semiAxis2, 0.1, 10, 0.1)}
+      `;
     }
 
     if (p.type === "IfcRectangleHollowProfileDef") {
@@ -325,6 +343,7 @@ export class ProfileEditor {
     const labels: Record<ProfileType, string> = {
       rectangle: "Rectangle",
       circle: "Circle",
+      ellipse: "Ellipse",
       "rect-hollow": "Rect Hollow",
       "circle-hollow": "Circle Hollow",
       "c-shape": "C-Shape",
@@ -380,6 +399,14 @@ export class ProfileEditor {
     // ── Circle ──
     this._bindSlider("circle-r", (v) => {
       (this.currentProfile as IfcCircleProfileDef).radius = v;
+    });
+
+    // ── Ellipse ──
+    this._bindSlider("ellipse-a", (v) => {
+      (this.currentProfile as IfcEllipseProfileDef).semiAxis1 = v;
+    });
+    this._bindSlider("ellipse-b", (v) => {
+      (this.currentProfile as IfcEllipseProfileDef).semiAxis2 = v;
     });
 
     // ── Rectangle Hollow ──
