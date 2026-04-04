@@ -23,6 +23,9 @@ const DEFAULT_PROFILE: IfcProfileDef = {
   flangeWidth: 4,
   webThickness: 0.8,
   flangeThickness: 1.2,
+  filletRadius: 0.2,
+  flangeEdgeRadius: 0.15,
+  webEdgeRadius: 0.15,
 };
 
 const DEFAULT_EXTRUSION: ExtrusionParams = {
@@ -41,7 +44,7 @@ export const extrusionTShapeSample: SampleDef = {
   id: "extrusion-t-shape",
   title: "T-Shape / Tee Profile (IfcTShapeProfileDef)",
   description:
-    "A T-shaped cross-section defined by depth, flange width, web thickness, and flange thickness (IfcTShapeProfileDef). " +
+    "A T-shaped cross-section defined by depth, flange width, web thickness, flange thickness, and optional edge radii (IfcTShapeProfileDef). " +
     "Adjust the dimensions in the profile editor.",
   parameters: [],
   steps: [
@@ -50,7 +53,7 @@ export const extrusionTShapeSample: SampleDef = {
       label: "Step 1: T-Shape Cross-Section",
       description:
         "IfcTShapeProfileDef defines a tee-shaped section with a top flange and a centered web. " +
-        "This sample focuses on the main dimensional parameters used to form the profile.",
+        "This sample also exposes the optional fillet, flange-edge, and web-edge radii from the profile definition.",
     },
     {
       id: "direction",
@@ -108,6 +111,18 @@ export const extrusionTShapeSample: SampleDef = {
       activeProfile.type === "IfcTShapeProfileDef"
         ? activeProfile.flangeThickness
         : DEFAULT_PROFILE.flangeThickness;
+    const filletRadius =
+      activeProfile.type === "IfcTShapeProfileDef"
+        ? activeProfile.filletRadius
+        : DEFAULT_PROFILE.filletRadius;
+    const flangeEdgeRadius =
+      activeProfile.type === "IfcTShapeProfileDef"
+        ? activeProfile.flangeEdgeRadius
+        : DEFAULT_PROFILE.flangeEdgeRadius;
+    const webEdgeRadius =
+      activeProfile.type === "IfcTShapeProfileDef"
+        ? activeProfile.webEdgeRadius
+        : DEFAULT_PROFILE.webEdgeRadius;
 
     const generatedSolid: IfcExtrudedAreaSolid = {
       type: "IfcExtrudedAreaSolid",
@@ -118,6 +133,9 @@ export const extrusionTShapeSample: SampleDef = {
         flangeWidth,
         webThickness,
         flangeThickness,
+        filletRadius,
+        flangeEdgeRadius,
+        webEdgeRadius,
       },
       position: {
         type: "IfcAxis2Placement3D",
@@ -205,6 +223,9 @@ export const extrusionTShapeSample: SampleDef = {
       flangeWidth: "(see profile editor)",
       webThickness: "(see profile editor)",
       flangeThickness: "(see profile editor)",
+      filletRadius: "(see profile editor)",
+      flangeEdgeRadius: "(see profile editor)",
+      webEdgeRadius: "(see profile editor)",
     },
     position: {
       type: "IfcAxis2Placement3D",
