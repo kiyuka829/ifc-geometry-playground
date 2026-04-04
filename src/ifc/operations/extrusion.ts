@@ -66,6 +66,49 @@ function ellipseVec2(
   return pts;
 }
 
+function roundedRectangleVec2(
+  xDim: number,
+  yDim: number,
+  roundingRadius: number,
+): Vec2[] {
+  const hw = xDim / 2;
+  const hd = yDim / 2;
+  const radius = Math.max(0, Math.min(roundingRadius, hw, hd));
+
+  if (radius <= 1e-6) {
+    return [
+      { x: -hw, y: -hd },
+      { x: hw, y: -hd },
+      { x: hw, y: hd },
+      { x: -hw, y: hd },
+    ];
+  }
+
+  const pts: Vec2[] = [
+    { x: -hw + radius, y: -hd },
+    { x: hw - radius, y: -hd },
+  ];
+
+  appendArc(pts, hw - radius, -hd + radius, radius, -Math.PI / 2, 0);
+  pts.push({ x: hw, y: hd - radius });
+  appendArc(pts, hw - radius, hd - radius, radius, 0, Math.PI / 2);
+  pts.push({ x: -hw + radius, y: hd });
+  appendArc(pts, -hw + radius, hd - radius, radius, Math.PI / 2, Math.PI);
+  pts.push({ x: -hw, y: -hd + radius });
+  appendArc(
+    pts,
+    -hw + radius,
+    -hd + radius,
+    radius,
+    Math.PI,
+    (3 * Math.PI) / 2,
+  );
+  // The last arc ends at (-hw + radius, -hd), which matches pts[0].
+  pts.pop();
+
+  return ensureCounterClockwise(pts);
+}
+
 function polygonSignedArea(pts: Vec2[]): number {
   let area = 0;
   for (let i = 0; i < pts.length; i++) {
@@ -583,6 +626,12 @@ export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
         { x: -hw, y: hd },
       ];
     }
+    case "IfcRoundedRectangleProfileDef":
+      return roundedRectangleVec2(
+        profile.xDim,
+        profile.yDim,
+        profile.roundingRadius,
+      );
     case "IfcRectangleHollowProfileDef": {
       const hw = profile.xDim / 2,
         hd = profile.yDim / 2;

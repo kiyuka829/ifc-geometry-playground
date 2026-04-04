@@ -227,6 +227,47 @@ function ellipseLoop(
   return pts
 }
 
+function roundedRectangleLoop(
+  xDim: number,
+  yDim: number,
+  roundingRadius: number,
+): NormalizedVec2[] {
+  const hw = xDim / 2
+  const hd = yDim / 2
+  const radius = Math.max(0, Math.min(roundingRadius, hw, hd))
+
+  if (radius <= 1e-6) {
+    return [
+      { x: -hw, y: -hd }, { x: hw, y: -hd },
+      { x:  hw, y:  hd }, { x: -hw, y:  hd },
+    ]
+  }
+
+  const pts: NormalizedVec2[] = [
+    { x: -hw + radius, y: -hd },
+    { x:  hw - radius, y: -hd },
+  ]
+
+  appendArc(pts, hw - radius, -hd + radius, radius, -Math.PI / 2, 0)
+  pts.push({ x: hw, y: hd - radius })
+  appendArc(pts, hw - radius, hd - radius, radius, 0, Math.PI / 2)
+  pts.push({ x: -hw + radius, y: hd })
+  appendArc(pts, -hw + radius, hd - radius, radius, Math.PI / 2, Math.PI)
+  pts.push({ x: -hw, y: -hd + radius })
+  appendArc(
+    pts,
+    -hw + radius,
+    -hd + radius,
+    radius,
+    Math.PI,
+    (3 * Math.PI) / 2,
+  )
+  // The last arc ends at (-hw + radius, -hd), which matches pts[0].
+  pts.pop()
+
+  return ensureCounterClockwise(pts)
+}
+
 function polygonSignedArea(pts: NormalizedVec2[]): number {
   let area = 0
   for (let i = 0; i < pts.length; i++) {
@@ -737,6 +778,14 @@ export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): No
       ]
       break
     }
+
+    case 'IfcRoundedRectangleProfileDef':
+      outerLoop = roundedRectangleLoop(
+        profile.xDim,
+        profile.yDim,
+        profile.roundingRadius,
+      )
+      break
 
     case 'IfcCircleProfileDef':
       outerLoop = circleLoop(profile.radius)

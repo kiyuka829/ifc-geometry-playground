@@ -2,6 +2,7 @@ import { routes } from "./routes.ts";
 import { HomePage } from "../pages/HomePage.ts";
 import { ExamplePage } from "../pages/ExamplePage.ts";
 import { extrusionRectangleSample } from "../ifc/samples/extrusion.rectangle.ts";
+import { extrusionRoundedRectangleSample } from "../ifc/samples/extrusion.rounded-rectangle.ts";
 import { booleanDifferenceSample } from "../ifc/samples/boolean.difference.ts";
 import { extrusionCircleSample } from "../ifc/samples/extrusion.circle.ts";
 import { extrusionEllipseSample } from "../ifc/samples/extrusion.ellipse.ts";
@@ -18,6 +19,7 @@ import type { SampleDef } from "../types.ts";
 
 const samples: Record<string, SampleDef> = {
   "extrusion-rectangle": extrusionRectangleSample,
+  "extrusion-rounded-rectangle": extrusionRoundedRectangleSample,
   "boolean-difference": booleanDifferenceSample,
   "extrusion-circle": extrusionCircleSample,
   "extrusion-ellipse": extrusionEllipseSample,

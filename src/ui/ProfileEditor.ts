@@ -1,6 +1,7 @@
 import type {
   IfcProfileDef,
   IfcRectangleProfileDef,
+  IfcRoundedRectangleProfileDef,
   IfcCircleProfileDef,
   IfcEllipseProfileDef,
   IfcRectangleHollowProfileDef,
@@ -61,6 +62,8 @@ export class ProfileEditor {
     switch (this.currentProfile.type) {
       case "IfcRectangleProfileDef":
         return "rectangle";
+      case "IfcRoundedRectangleProfileDef":
+        return "rounded-rectangle";
       case "IfcCircleProfileDef":
         return "circle";
       case "IfcEllipseProfileDef":
@@ -100,6 +103,15 @@ export class ProfileEditor {
           xDim: 4,
           yDim: 3,
         } satisfies IfcRectangleProfileDef);
+        break;
+      case "rounded-rectangle":
+        this.currentProfile = this._cloneProfile({
+          type: "IfcRoundedRectangleProfileDef",
+          profileType: "AREA",
+          xDim: 4,
+          yDim: 3,
+          roundingRadius: 0.5,
+        } satisfies IfcRoundedRectangleProfileDef);
         break;
       case "circle":
         this.currentProfile = this._cloneProfile({
@@ -221,6 +233,20 @@ export class ProfileEditor {
       return `
         ${this._sliderHTML("rect-w", "xDim", p.xDim, 0.5, 10, 0.1)}
         ${this._sliderHTML("rect-h", "yDim", p.yDim, 0.5, 10, 0.1)}
+      `;
+    }
+
+    if (p.type === "IfcRoundedRectangleProfileDef") {
+      const rrRadiusMax = Math.max(0, Math.min(p.xDim, p.yDim) / 2);
+      const rrRadius = Math.min(
+        Math.max(p.roundingRadius, 0),
+        rrRadiusMax,
+      );
+      p.roundingRadius = rrRadius;
+      return `
+        ${this._sliderHTML("rr-w", "xDim", p.xDim, 0.5, 10, 0.1)}
+        ${this._sliderHTML("rr-h", "yDim", p.yDim, 0.5, 10, 0.1)}
+        ${this._sliderHTML("rr-r", "Rounding Radius", rrRadius, 0, rrRadiusMax, 0.05)}
       `;
     }
 
@@ -508,6 +534,7 @@ export class ProfileEditor {
   private _typeLabel(t: ProfileType): string {
     const labels: Record<ProfileType, string> = {
       rectangle: "Rectangle",
+      "rounded-rectangle": "Rounded Rectangle",
       circle: "Circle",
       ellipse: "Ellipse",
       "rect-hollow": "Rect Hollow",
@@ -563,6 +590,23 @@ export class ProfileEditor {
     });
     this._bindSlider("rect-h", (v) => {
       (this.currentProfile as IfcRectangleProfileDef).yDim = v;
+    });
+
+    // ── Rounded Rectangle ──
+    this._bindSlider("rr-w", (v) => {
+      const prof = this.currentProfile as IfcRoundedRectangleProfileDef;
+      prof.xDim = v;
+      const max = Math.max(0, Math.min(prof.xDim, prof.yDim) / 2);
+      prof.roundingRadius = this._clampDependentSlider("rr-r", max);
+    });
+    this._bindSlider("rr-h", (v) => {
+      const prof = this.currentProfile as IfcRoundedRectangleProfileDef;
+      prof.yDim = v;
+      const max = Math.max(0, Math.min(prof.xDim, prof.yDim) / 2);
+      prof.roundingRadius = this._clampDependentSlider("rr-r", max);
+    });
+    this._bindSlider("rr-r", (v) => {
+      (this.currentProfile as IfcRoundedRectangleProfileDef).roundingRadius = v;
     });
 
     // ── Circle ──

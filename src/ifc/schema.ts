@@ -25,6 +25,7 @@ export type {
 export type {
   IfcCShapeProfileDef,
   IfcRectangleProfileDef,
+  IfcRoundedRectangleProfileDef,
   IfcRectangleHollowProfileDef,
   IfcCircleProfileDef,
   IfcCircleHollowProfileDef,
