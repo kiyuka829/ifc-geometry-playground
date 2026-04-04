@@ -382,6 +382,10 @@ export class ProfileEditor {
       p.webThickness = usWeb;
       p.flangeThickness = usFlange;
 
+      p.edgeRadius = this._normalizeUShapeEdgeRadius();
+      p.filletRadius = this._normalizeUShapeFilletRadius();
+      p.edgeRadius = this._normalizeUShapeEdgeRadius();
+
       const usFilletMax = this._maxUShapeFilletRadius();
       const usFillet = Math.min(
         Math.max(p.filletRadius ?? 0, 0),
@@ -698,16 +702,21 @@ export class ProfileEditor {
       prof.flangeWidth = v;
       const webMax = Math.max(0.05, prof.flangeWidth - 0.05);
       prof.webThickness = this._clampDependentSlider("us-wt", webMax);
+      prof.edgeRadius = this._clampUShapeEdgeRadius();
       prof.filletRadius = this._clampUShapeFilletRadius();
+      prof.edgeRadius = this._clampUShapeEdgeRadius();
     });
     this._bindSlider("us-wt", (v) => {
       const prof = this.currentProfile as IfcUShapeProfileDef;
       prof.webThickness = v;
+      prof.edgeRadius = this._clampUShapeEdgeRadius();
       prof.filletRadius = this._clampUShapeFilletRadius();
+      prof.edgeRadius = this._clampUShapeEdgeRadius();
     });
     this._bindSlider("us-ft", (v) => {
       const prof = this.currentProfile as IfcUShapeProfileDef;
       prof.flangeThickness = v;
+      prof.edgeRadius = this._clampUShapeEdgeRadius();
       prof.filletRadius = this._clampUShapeFilletRadius();
       prof.edgeRadius = this._clampUShapeEdgeRadius();
     });
@@ -718,6 +727,8 @@ export class ProfileEditor {
     });
     this._bindSlider("us-er", (v) => {
       (this.currentProfile as IfcUShapeProfileDef).edgeRadius = v;
+      (this.currentProfile as IfcUShapeProfileDef).filletRadius =
+        this._clampUShapeFilletRadius();
     });
 
     // ── Arbitrary point inputs ──
@@ -876,11 +887,12 @@ export class ProfileEditor {
   private _maxUShapeFilletRadius(): number {
     if (this.currentProfile.type !== "IfcUShapeProfileDef") return 0;
     const prof = this.currentProfile;
+    const edgeRadius = prof.edgeRadius ?? 0;
     return Math.max(
       0,
       Math.min(
-        prof.webThickness,
-        prof.flangeThickness,
+        prof.flangeWidth - prof.webThickness - edgeRadius,
+        prof.depth / 2 - prof.flangeThickness,
       ),
     );
   }
@@ -892,10 +904,32 @@ export class ProfileEditor {
     return Math.max(
       0,
       Math.min(
-        prof.flangeThickness - filletRadius,
-        prof.flangeWidth / 2,
+        prof.flangeThickness,
+        prof.flangeWidth - prof.webThickness - filletRadius,
       ),
     );
+  }
+
+  private _normalizeUShapeFilletRadius(): number {
+    if (this.currentProfile.type !== "IfcUShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    const next = Math.min(
+      Math.max(prof.filletRadius ?? 0, 0),
+      this._maxUShapeFilletRadius(),
+    );
+    prof.filletRadius = next;
+    return next;
+  }
+
+  private _normalizeUShapeEdgeRadius(): number {
+    if (this.currentProfile.type !== "IfcUShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    const next = Math.min(
+      Math.max(prof.edgeRadius ?? 0, 0),
+      this._maxUShapeEdgeRadius(),
+    );
+    prof.edgeRadius = next;
+    return next;
   }
 
   private _clampUShapeFilletRadius(): number {

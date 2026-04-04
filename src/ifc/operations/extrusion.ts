@@ -360,15 +360,26 @@ function uShapeVec2(p: IfcUShapeProfileDef): Vec2[] {
   const yBottom = -hd;
   const yFlangeTop = hd - p.flangeThickness;
   const yFlangeBottom = -hd + p.flangeThickness;
-  const rInner = Math.min(
-    p.filletRadius ?? 0,
-    Math.max(0, hw - xWeb),
-    Math.max(0, p.flangeThickness),
+  const horizontalRadiusBudget = Math.max(0, p.flangeWidth - p.webThickness);
+  const innerVerticalBudget = Math.max(0, p.depth / 2 - p.flangeThickness);
+  const edgeVerticalBudget = Math.max(0, p.flangeThickness);
+  const rawInner = Math.max(0, p.filletRadius ?? 0);
+  const rawEdge = Math.max(0, p.edgeRadius ?? 0);
+
+  let rEdge = Math.min(
+    rawEdge,
+    edgeVerticalBudget,
+    Math.max(0, horizontalRadiusBudget - rawInner),
   );
-  const rEdge = Math.min(
-    p.edgeRadius ?? 0,
-    Math.max(0, p.flangeThickness - rInner),
-    Math.max(0, p.flangeWidth / 2),
+  const rInner = Math.min(
+    rawInner,
+    innerVerticalBudget,
+    Math.max(0, horizontalRadiusBudget - rEdge),
+  );
+  rEdge = Math.min(
+    rEdge,
+    edgeVerticalBudget,
+    Math.max(0, horizontalRadiusBudget - rInner),
   );
 
   if (rInner <= 1e-6 && rEdge <= 1e-6) {
