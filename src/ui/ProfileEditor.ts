@@ -597,6 +597,7 @@ export class ProfileEditor {
       prof.webThickness = this._clampDependentSlider("ts-wt", max);
       prof.filletRadius = this._clampTShapeFilletRadius();
       prof.flangeEdgeRadius = this._clampTShapeFlangeEdgeRadius();
+      prof.webEdgeRadius = this._clampTShapeWebEdgeRadius();
     });
     this._bindSlider("ts-wt", (v) => {
       const prof = this.currentProfile as IfcTShapeProfileDef;

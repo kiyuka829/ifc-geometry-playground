@@ -501,7 +501,7 @@ function applyPlacement2DToLoop(
  * The optional 2D placement on the profile is applied to all loop vertices.
  *
  * Supported types: Rectangle, Circle, Ellipse, RectangleHollow,
- * CircleHollow, IShape (symmetric), LShape, CShape.
+ * CircleHollow, IShape (symmetric), TShape, LShape, CShape.
  * Other parameterized types throw an Error.
  */
 export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): NormalizedProfile {
