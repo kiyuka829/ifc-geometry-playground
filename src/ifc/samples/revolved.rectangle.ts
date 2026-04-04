@@ -25,19 +25,31 @@ const DEFAULT_PROFILE: IfcProfileDef = {
 };
 
 const DEFAULT_AXIS_DIRECTION: Vec3 = { x: 0, y: 1, z: 0 };
-const DEFAULT_AXIS_OFFSET_X = 2.4;
+const DEFAULT_AXIS_ORIGIN: Vec3 = { x: 2.4, y: 0, z: 0 };
 const DEFAULT_ANGLE_DEG = 270;
 
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180;
 }
 
+function normalizeDirection(direction: Vec3): Vec3 {
+  const length = Math.hypot(direction.x, direction.y, direction.z);
+  if (length < 1e-9) {
+    return DEFAULT_AXIS_DIRECTION;
+  }
+  return {
+    x: direction.x / length,
+    y: direction.y / length,
+    z: direction.z / length,
+  };
+}
+
 export const revolvedRectangleSample: SampleDef = {
   id: "revolved-rectangle",
   title: "Revolved Area Solid (IfcRevolvedAreaSolid)",
   description:
-    "A rectangular area profile revolved around an offset local axis. " +
-    "Use the angle slider to compare open revolutions with a closed 360° solid.",
+    "A rectangular area profile revolved around a configurable local axis. " +
+    "The axis origin and direction stay in the local XY plane, matching the IFC constraints for IfcRevolvedAreaSolid.",
   parameters: [
     {
       key: "angleDeg",
@@ -49,13 +61,40 @@ export const revolvedRectangleSample: SampleDef = {
       defaultValue: DEFAULT_ANGLE_DEG,
     },
     {
-      key: "axisOffsetX",
-      label: "Axis Offset X",
+      key: "axisOriginX",
+      label: "Axis Origin X",
       type: "number",
-      min: 1,
+      min: -5,
       max: 5,
       step: 0.1,
-      defaultValue: DEFAULT_AXIS_OFFSET_X,
+      defaultValue: DEFAULT_AXIS_ORIGIN.x,
+    },
+    {
+      key: "axisOriginY",
+      label: "Axis Origin Y",
+      type: "number",
+      min: -5,
+      max: 5,
+      step: 0.1,
+      defaultValue: DEFAULT_AXIS_ORIGIN.y,
+    },
+    {
+      key: "axisDirX",
+      label: "Axis Dir X",
+      type: "number",
+      min: -1,
+      max: 1,
+      step: 0.1,
+      defaultValue: DEFAULT_AXIS_DIRECTION.x,
+    },
+    {
+      key: "axisDirY",
+      label: "Axis Dir Y",
+      type: "number",
+      min: -1,
+      max: 1,
+      step: 0.1,
+      defaultValue: DEFAULT_AXIS_DIRECTION.y,
     },
   ],
   steps: [
@@ -71,7 +110,7 @@ export const revolvedRectangleSample: SampleDef = {
       label: "Step 2: Revolution Axis",
       description:
         "IfcAxis1Placement defines the axis origin and direction in the solid's local coordinate system. " +
-        "Here the axis runs along local Y and is offset from the profile.",
+        "For IfcRevolvedAreaSolid, both the axis start point and direction must stay in the local XY plane.",
     },
     {
       id: "solid",
@@ -103,8 +142,21 @@ export const revolvedRectangleSample: SampleDef = {
         : DEFAULT_PROFILE;
 
     const angleDeg = getNumber(params, "angleDeg");
-    const axisOffsetX = getNumber(params, "axisOffsetX");
-    const axisLength = Math.max(5, axisOffsetX * 2 + rectangleProfile.yDim * 2);
+    const axisOrigin = {
+      x: getNumber(params, "axisOriginX"),
+      y: getNumber(params, "axisOriginY"),
+      z: 0,
+    };
+    const axisDirection = normalizeDirection({
+      x: getNumber(params, "axisDirX"),
+      y: getNumber(params, "axisDirY"),
+      z: 0,
+    });
+    const axisLength = Math.max(
+      5,
+      Math.hypot(axisOrigin.x, axisOrigin.y, axisOrigin.z) * 2 +
+        Math.max(rectangleProfile.xDim, rectangleProfile.yDim) * 3,
+    );
 
     const generatedSolid: IfcRevolvedAreaSolid = {
       type: "IfcRevolvedAreaSolid",
@@ -133,14 +185,14 @@ export const revolvedRectangleSample: SampleDef = {
         type: "IfcAxis1Placement",
         location: {
           type: "IfcCartesianPoint",
-          coordinates: [axisOffsetX, 0, 0],
+          coordinates: [axisOrigin.x, axisOrigin.y, axisOrigin.z],
         },
         axis: {
           type: "IfcDirection",
           directionRatios: [
-            DEFAULT_AXIS_DIRECTION.x,
-            DEFAULT_AXIS_DIRECTION.y,
-            DEFAULT_AXIS_DIRECTION.z,
+            axisDirection.x,
+            axisDirection.y,
+            axisDirection.z,
           ],
         },
       },
@@ -156,8 +208,12 @@ export const revolvedRectangleSample: SampleDef = {
     if (stepIndex >= 1) {
       const axisOverlay = buildRevolutionAxisOverlay(
         scene,
-        { x: axisOffsetX, y: -axisLength / 2, z: 0 },
-        DEFAULT_AXIS_DIRECTION,
+        {
+          x: axisOrigin.x - axisDirection.x * axisLength * 0.5,
+          y: axisOrigin.y - axisDirection.y * axisLength * 0.5,
+          z: axisOrigin.z - axisDirection.z * axisLength * 0.5,
+        },
+        axisDirection,
         axisLength,
         "revolved_axis",
       );
@@ -195,11 +251,27 @@ export const revolvedRectangleSample: SampleDef = {
       type: "IfcAxis1Placement",
       location: {
         type: "IfcCartesianPoint",
-        coordinates: [getNumber(params, "axisOffsetX"), 0, 0],
+        coordinates: [
+          getNumber(params, "axisOriginX"),
+          getNumber(params, "axisOriginY"),
+          0,
+        ],
       },
       axis: {
         type: "IfcDirection",
-        directionRatios: [0, 1, 0],
+        directionRatios: [
+          Number(normalizeDirection({
+            x: getNumber(params, "axisDirX"),
+            y: getNumber(params, "axisDirY"),
+            z: 0,
+          }).x.toFixed(4)),
+          Number(normalizeDirection({
+            x: getNumber(params, "axisDirX"),
+            y: getNumber(params, "axisDirY"),
+            z: 0,
+          }).y.toFixed(4)),
+          0,
+        ],
       },
     },
     angle: Number(toRadians(getNumber(params, "angleDeg")).toFixed(4)),

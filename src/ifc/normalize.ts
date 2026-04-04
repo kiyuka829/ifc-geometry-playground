@@ -211,12 +211,15 @@ export function normalizePlacement3D(p: IfcAxis2Placement3D): NormalizedPlacemen
 }
 
 /** Convert an IfcAxis1Placement to a normalized origin + unit-axis pair. */
-export function normalizeAxis1Placement(p: IfcAxis1Placement): NormalizedAxis1Placement {
+export function normalizeAxis1Placement(
+  p: IfcAxis1Placement,
+  fallbackAxis: NormalizedVec3 = { x: 0, y: 0, z: 1 },
+): NormalizedAxis1Placement {
   return {
     origin: normalizePoint3(p.location),
     axis: p.axis
-      ? normalizeDirection3(p.axis, { x: 0, y: 0, z: 1 })
-      : { x: 0, y: 0, z: 1 },
+      ? normalizeDirection3(p.axis, fallbackAxis)
+      : fallbackAxis,
   }
 }
 
@@ -1141,12 +1144,24 @@ export function normalizeExtrudedAreaSolid(solid: IfcExtrudedAreaSolid): Normali
  * ready for consumption by a mesh builder.
  */
 export function normalizeRevolvedAreaSolid(solid: IfcRevolvedAreaSolid): NormalizedRevolution {
+  const axis = normalizeAxis1Placement(solid.axis, { x: 0, y: 1, z: 0 })
+  if (Math.abs(axis.axis.z) > 1e-9) {
+    throw new Error(
+      "IfcRevolvedAreaSolid.Axis direction must be parallel to the local XY plane (axis.z = 0).",
+    )
+  }
+  if (Math.abs(axis.origin.z) > 1e-9) {
+    throw new Error(
+      "IfcRevolvedAreaSolid.Axis location must lie in the local XY plane (location.z = 0).",
+    )
+  }
+
   return {
     profile: normalizeProfileDef(solid.sweptArea),
     placement: solid.position
       ? normalizePlacement3D(solid.position)
       : defaultPlacement3D(),
-    axis: normalizeAxis1Placement(solid.axis),
+    axis,
     angle: solid.angle,
   }
 }
