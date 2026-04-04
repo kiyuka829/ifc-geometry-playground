@@ -26,7 +26,7 @@ const DEFAULT_PROFILE: IfcProfileDef = {
 
 const DEFAULT_AXIS_DIRECTION: Vec3 = { x: 0, y: 1, z: 0 };
 const DEFAULT_AXIS_ORIGIN: Vec3 = { x: 2.4, y: 0, z: 0 };
-const DEFAULT_ANGLE_DEG = 270;
+const DEFAULT_ANGLE_DEG = 120;
 const DEFAULT_PLACEMENT: IfcAxis2Placement3D = {
   type: "IfcAxis2Placement3D",
   location: { x: 0, y: 0, z: 0 },
@@ -57,15 +57,6 @@ export const revolvedRectangleSample: SampleDef = {
     "A rectangular area profile revolved around a configurable local axis. " +
     "The axis origin and direction stay in the local XY plane, matching the IFC constraints for IfcRevolvedAreaSolid.",
   parameters: [
-    {
-      key: "angleDeg",
-      label: "Angle (deg)",
-      type: "number",
-      min: 15,
-      max: 360,
-      step: 5,
-      defaultValue: DEFAULT_ANGLE_DEG,
-    },
     {
       key: "axisOriginX",
       label: "Axis Origin X",
@@ -101,6 +92,15 @@ export const revolvedRectangleSample: SampleDef = {
       max: 1,
       step: 0.1,
       defaultValue: DEFAULT_AXIS_DIRECTION.y,
+    },
+    {
+      key: "angleDeg",
+      label: "Angle (deg)",
+      type: "number",
+      min: 15,
+      max: 360,
+      step: 5,
+      defaultValue: DEFAULT_ANGLE_DEG,
     },
   ],
   steps: [
@@ -251,7 +251,7 @@ export const revolvedRectangleSample: SampleDef = {
       if (axisOverlay) meshes.push(axisOverlay);
     }
 
-    if (stepIndex >= 3) {
+    if (stepIndex >= 2) {
       meshes.push(
         buildRevolvedAreaSolidMesh(
           scene,
