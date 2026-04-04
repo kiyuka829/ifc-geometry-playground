@@ -47,6 +47,22 @@ function circleVec2(radius: number, segments = CIRCLE_SEGMENTS): Vec2[] {
   return pts;
 }
 
+function ellipseVec2(
+  semiAxis1: number,
+  semiAxis2: number,
+  segments = CIRCLE_SEGMENTS,
+): Vec2[] {
+  const pts: Vec2[] = [];
+  for (let i = 0; i < segments; i++) {
+    const angle = (i / segments) * Math.PI * 2;
+    pts.push({
+      x: Math.cos(angle) * semiAxis1,
+      y: Math.sin(angle) * semiAxis2,
+    });
+  }
+  return pts;
+}
+
 function polygonSignedArea(pts: Vec2[]): number {
   let area = 0;
   for (let i = 0; i < pts.length; i++) {
@@ -252,6 +268,8 @@ export function profileOuterVec2(profile: IfcProfileDef): Vec2[] {
     }
     case "IfcCircleProfileDef":
       return circleVec2(profile.radius);
+    case "IfcEllipseProfileDef":
+      return ellipseVec2(profile.semiAxis1, profile.semiAxis2);
     case "IfcCircleHollowProfileDef":
       return circleVec2(profile.radius);
     case "IfcCShapeProfileDef":

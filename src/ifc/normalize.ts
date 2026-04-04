@@ -211,6 +211,22 @@ function circleLoop(radius: number, segments = CIRCLE_SEGMENTS): NormalizedVec2[
   return pts
 }
 
+function ellipseLoop(
+  semiAxis1: number,
+  semiAxis2: number,
+  segments = CIRCLE_SEGMENTS,
+): NormalizedVec2[] {
+  const pts: NormalizedVec2[] = []
+  for (let i = 0; i < segments; i++) {
+    const angle = (i / segments) * Math.PI * 2
+    pts.push({
+      x: Math.cos(angle) * semiAxis1,
+      y: Math.sin(angle) * semiAxis2,
+    })
+  }
+  return pts
+}
+
 function polygonSignedArea(pts: NormalizedVec2[]): number {
   let area = 0
   for (let i = 0; i < pts.length; i++) {
@@ -375,8 +391,8 @@ function applyPlacement2DToLoop(
  * Normalize a generated-schema area profile into outer/inner planar loops.
  * The optional 2D placement on the profile is applied to all loop vertices.
  *
- * Supported types: Rectangle, Circle, RectangleHollow, CircleHollow,
- * IShape (symmetric), LShape, CShape.
+ * Supported types: Rectangle, Circle, Ellipse, RectangleHollow,
+ * CircleHollow, IShape (symmetric), LShape, CShape.
  * Other parameterized types throw an Error.
  */
 export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): NormalizedProfile {
@@ -400,6 +416,10 @@ export function normalizeProfileDef(profile: IfcAreaParameterizedProfileDef): No
 
     case 'IfcCircleProfileDef':
       outerLoop = circleLoop(profile.radius)
+      break
+
+    case 'IfcEllipseProfileDef':
+      outerLoop = ellipseLoop(profile.semiAxis1, profile.semiAxis2)
       break
 
     case 'IfcRectangleHollowProfileDef': {

@@ -111,6 +111,16 @@ export const routes: Route[] = [
     status: "available",
   },
   {
+    hash: "#/examples/extrusion-ellipse",
+    title: "Ellipse Profile (IfcEllipseProfileDef)",
+    description:
+      "Extrudes an elliptical cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcEllipseProfileDef).",
+    sampleId: "extrusion-ellipse",
+    category: "ExtrudedAreaSolid",
+    difficulty: "beginner",
+    status: "available",
+  },
+  {
     hash: "#/examples/extrusion-rect-hollow",
     title: "Rectangular Hollow Section (IfcRectangleHollowProfileDef)",
     description:
