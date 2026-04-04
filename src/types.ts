@@ -22,6 +22,7 @@ export type {
   IfcLShapeProfileDef,
   IfcTShapeProfileDef,
   IfcUShapeProfileDef,
+  IfcZShapeProfileDef,
 } from "./ifc/generated/schema.ts";
 
 // ── UI model coordinate types ──────────────────────────────────────────────
@@ -172,6 +173,7 @@ export type ProfileType =
   | "l-shape"
   | "t-shape"
   | "u-shape"
+  | "z-shape"
   | "arbitrary";
 
 export interface ProfileEditorConfig {

@@ -191,6 +191,16 @@ export const routes: Route[] = [
     status: "available",
   },
   {
+    hash: "#/examples/extrusion-z-shape",
+    title: "Z-Shape Profile (IfcZShapeProfileDef)",
+    description:
+      "Extrudes a Z-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcZShapeProfileDef).",
+    sampleId: "extrusion-z-shape",
+    category: "ExtrudedAreaSolid",
+    difficulty: "beginner",
+    status: "available",
+  },
+  {
     hash: "#/examples/tessellation",
     title: "Triangulated Face Set",
     description:

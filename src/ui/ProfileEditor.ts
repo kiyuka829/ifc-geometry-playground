@@ -10,6 +10,7 @@ import type {
   IfcLShapeProfileDef,
   IfcTShapeProfileDef,
   IfcUShapeProfileDef,
+  IfcZShapeProfileDef,
   IfcArbitraryClosedProfileDef,
   Vec2,
 } from "../types.ts";
@@ -78,6 +79,8 @@ export class ProfileEditor {
         return "t-shape";
       case "IfcUShapeProfileDef":
         return "u-shape";
+      case "IfcZShapeProfileDef":
+        return "z-shape";
       case "IfcArbitraryClosedProfileDef":
       case "IfcArbitraryProfileDefWithVoids":
         return "arbitrary";
@@ -184,6 +187,18 @@ export class ProfileEditor {
           filletRadius: 0.2,
           edgeRadius: 0.15,
         } satisfies IfcUShapeProfileDef);
+        break;
+      case "z-shape":
+        this.currentProfile = this._cloneProfile({
+          type: "IfcZShapeProfileDef",
+          profileType: "AREA",
+          depth: 5,
+          flangeWidth: 3.5,
+          webThickness: 0.6,
+          flangeThickness: 0.8,
+          filletRadius: 0.2,
+          edgeRadius: 0.15,
+        } satisfies IfcZShapeProfileDef);
         break;
       case "arbitrary":
         this.currentProfile = this._cloneProfile({
@@ -401,6 +416,42 @@ export class ProfileEditor {
       `;
     }
 
+    if (p.type === "IfcZShapeProfileDef") {
+      const zsWebMin = 0.05;
+      const zsWebRawMax = p.flangeWidth - zsWebMin;
+      const zsWebMax = Math.max(zsWebMin, zsWebRawMax);
+      const zsWeb = Math.min(Math.max(p.webThickness, zsWebMin), zsWebMax);
+
+      const zsFlangeMin = 0.05;
+      const zsFlangeRawMax = p.depth / 2 - zsFlangeMin;
+      const zsFlangeMax = Math.max(zsFlangeMin, zsFlangeRawMax);
+      const zsFlange = Math.min(
+        Math.max(p.flangeThickness, zsFlangeMin),
+        zsFlangeMax,
+      );
+
+      p.webThickness = zsWeb;
+      p.flangeThickness = zsFlange;
+
+      p.edgeRadius = this._normalizeZShapeEdgeRadius();
+      p.filletRadius = this._normalizeZShapeFilletRadius();
+      p.edgeRadius = this._normalizeZShapeEdgeRadius();
+
+      const zsFilletMax = this._maxZShapeFilletRadius();
+      const zsEdgeMax = this._maxZShapeEdgeRadius();
+      const zsFillet = p.filletRadius ?? 0;
+      const zsEdge = p.edgeRadius ?? 0;
+
+      return `
+        ${this._sliderHTML("zs-d", "Depth", p.depth, 0.5, 10, 0.1)}
+        ${this._sliderHTML("zs-fw", "Flange Width", p.flangeWidth, 0.5, 10, 0.1)}
+        ${this._sliderHTML("zs-wt", "Web Thickness", zsWeb, zsWebMin, zsWebMax, 0.05)}
+        ${this._sliderHTML("zs-ft", "Flange Thickness", zsFlange, zsFlangeMin, zsFlangeMax, 0.05)}
+        ${this._sliderHTML("zs-fr", "Fillet Radius", zsFillet, 0, zsFilletMax, 0.05)}
+        ${this._sliderHTML("zs-er", "Edge Radius", zsEdge, 0, zsEdgeMax, 0.05)}
+      `;
+    }
+
     if (
       p.type === "IfcArbitraryClosedProfileDef" ||
       p.type === "IfcArbitraryProfileDefWithVoids"
@@ -466,6 +517,7 @@ export class ProfileEditor {
       "l-shape": "L-Shape",
       "t-shape": "T-Shape",
       "u-shape": "U-Shape",
+      "z-shape": "Z-Shape",
       arbitrary: "Arbitrary",
     };
     return labels[t];
@@ -713,6 +765,40 @@ export class ProfileEditor {
         this._clampUShapeFilletRadius();
     });
 
+    // ── Z-Shape ──
+    this._bindSlider("zs-d", (v) => {
+      const prof = this.currentProfile as IfcZShapeProfileDef;
+      prof.depth = v;
+      const flangeMax = Math.max(0.05, prof.depth / 2 - 0.05);
+      prof.flangeThickness = this._clampDependentSlider("zs-ft", flangeMax);
+      this._syncZShapeRadii();
+    });
+    this._bindSlider("zs-fw", (v) => {
+      const prof = this.currentProfile as IfcZShapeProfileDef;
+      prof.flangeWidth = v;
+      const webMax = Math.max(0.05, prof.flangeWidth - 0.05);
+      prof.webThickness = this._clampDependentSlider("zs-wt", webMax);
+      this._syncZShapeRadii();
+    });
+    this._bindSlider("zs-wt", (v) => {
+      (this.currentProfile as IfcZShapeProfileDef).webThickness = v;
+      this._syncZShapeRadii();
+    });
+    this._bindSlider("zs-ft", (v) => {
+      (this.currentProfile as IfcZShapeProfileDef).flangeThickness = v;
+      this._syncZShapeRadii();
+    });
+    this._bindSlider("zs-fr", (v) => {
+      (this.currentProfile as IfcZShapeProfileDef).filletRadius = v;
+      (this.currentProfile as IfcZShapeProfileDef).edgeRadius =
+        this._clampZShapeEdgeRadius();
+    });
+    this._bindSlider("zs-er", (v) => {
+      (this.currentProfile as IfcZShapeProfileDef).edgeRadius = v;
+      (this.currentProfile as IfcZShapeProfileDef).filletRadius =
+        this._clampZShapeFilletRadius();
+    });
+
     // ── Arbitrary point inputs ──
     for (const input of this.container.querySelectorAll<HTMLInputElement>(
       ".point-x-input, .point-y-input",
@@ -930,5 +1016,68 @@ export class ProfileEditor {
 
   private _clampUShapeEdgeRadius(): number {
     return this._clampDependentSlider("us-er", this._maxUShapeEdgeRadius());
+  }
+
+  private _maxZShapeFilletRadius(): number {
+    if (this.currentProfile.type !== "IfcZShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    const edgeRadius = prof.edgeRadius ?? 0;
+    return Math.max(
+      0,
+      Math.min(
+        prof.flangeWidth - prof.webThickness - edgeRadius,
+        prof.depth - prof.flangeThickness,
+      ),
+    );
+  }
+
+  private _maxZShapeEdgeRadius(): number {
+    if (this.currentProfile.type !== "IfcZShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    const filletRadius = prof.filletRadius ?? 0;
+    return Math.max(
+      0,
+      Math.min(
+        prof.flangeThickness,
+        prof.flangeWidth - prof.webThickness - filletRadius,
+      ),
+    );
+  }
+
+  private _normalizeZShapeFilletRadius(): number {
+    if (this.currentProfile.type !== "IfcZShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    const next = Math.min(
+      Math.max(prof.filletRadius ?? 0, 0),
+      this._maxZShapeFilletRadius(),
+    );
+    prof.filletRadius = next;
+    return next;
+  }
+
+  private _normalizeZShapeEdgeRadius(): number {
+    if (this.currentProfile.type !== "IfcZShapeProfileDef") return 0;
+    const prof = this.currentProfile;
+    const next = Math.min(
+      Math.max(prof.edgeRadius ?? 0, 0),
+      this._maxZShapeEdgeRadius(),
+    );
+    prof.edgeRadius = next;
+    return next;
+  }
+
+  private _syncZShapeRadii(): void {
+    const prof = this.currentProfile as IfcZShapeProfileDef;
+    prof.edgeRadius = this._clampZShapeEdgeRadius();
+    prof.filletRadius = this._clampZShapeFilletRadius();
+    prof.edgeRadius = this._clampZShapeEdgeRadius();
+  }
+
+  private _clampZShapeFilletRadius(): number {
+    return this._clampDependentSlider("zs-fr", this._maxZShapeFilletRadius());
+  }
+
+  private _clampZShapeEdgeRadius(): number {
+    return this._clampDependentSlider("zs-er", this._maxZShapeEdgeRadius());
   }
 }
