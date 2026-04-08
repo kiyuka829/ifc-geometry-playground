@@ -1,5 +1,11 @@
 import { routes, HOME_SECTIONS } from "../app/routes.ts";
-import type { Difficulty, HomeSection, Route } from "../app/routes.ts";
+import type {
+  AvailableRoute,
+  Difficulty,
+  HomeSection,
+  PlannedRoute,
+  Route,
+} from "../app/routes.ts";
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   beginner: "Beginner",
@@ -86,12 +92,13 @@ function renderSection(section: HomeSection, sectionRoutes: Route[]): string {
   `;
 }
 
+function hasHomeSection(route: Route): route is AvailableRoute | PlannedRoute {
+  return Boolean(route.homeSection);
+}
+
 export class HomePage {
   render(container: HTMLElement) {
-    const sampleRoutes = routes.filter(
-      (route): route is Exclude<Route, { homeSection?: undefined }> =>
-        Boolean(route.homeSection),
-    );
+    const sampleRoutes = routes.filter(hasHomeSection);
 
     const bySection = new Map<HomeSection, Route[]>();
     for (const section of HOME_SECTIONS) {
@@ -99,12 +106,10 @@ export class HomePage {
     }
 
     for (const route of sampleRoutes) {
-      if (route.homeSection) {
-        bySection.get(route.homeSection)!.push(route);
-      }
+      bySection.get(route.homeSection)!.push(route);
     }
 
-    const categorySections = HOME_SECTIONS.map((section) =>
+    const sectionMarkup = HOME_SECTIONS.map((section) =>
       renderSection(section, bySection.get(section) ?? []),
     ).join("");
 
@@ -115,7 +120,7 @@ export class HomePage {
       <div class="home-page">
         <h1>IFC Geometry Playground</h1>
         <p class="home-desc">Learn IFC geometry from reusable inputs through solid generation and solid composition. Start with the featured concepts in each section, then use the coverage cards to inspect additional implemented variants.</p>
-        ${categorySections}
+        ${sectionMarkup}
       </div>
     `;
   }
