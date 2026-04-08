@@ -1,23 +1,16 @@
-export type GeometryCategory =
-  | "ExtrudedAreaSolid"
-  | "Swept Disk Solid"
-  | "Revolved Area Solid"
-  | "Boolean"
-  | "Tessellation"
-  | "BRep"
-  | "Alignment";
+export type HomeSection =
+  | "Foundations"
+  | "Build Solids"
+  | "Compose Solids";
 
-export const GEOMETRY_CATEGORIES: GeometryCategory[] = [
-  "ExtrudedAreaSolid",
-  "Swept Disk Solid",
-  "Revolved Area Solid",
-  "Boolean",
-  "Tessellation",
-  "BRep",
-  "Alignment",
+export const HOME_SECTIONS: HomeSection[] = [
+  "Foundations",
+  "Build Solids",
+  "Compose Solids",
 ];
 
 export type Difficulty = "beginner" | "intermediate" | "advanced";
+export type HomeKind = "featured" | "coverage";
 
 interface BaseRoute {
   hash: string;
@@ -27,24 +20,27 @@ interface BaseRoute {
 
 export interface StaticRoute extends BaseRoute {
   sampleId?: undefined;
-  category?: undefined;
+  homeSection?: undefined;
   difficulty?: undefined;
+  homeKind?: undefined;
   status?: undefined;
 }
 
 export interface AvailableRoute extends BaseRoute {
   description: string;
   sampleId: string;
-  category: GeometryCategory;
+  homeSection: HomeSection;
   difficulty: Difficulty;
+  homeKind: HomeKind;
   status: "available";
 }
 
 export interface PlannedRoute extends BaseRoute {
   description: string;
   sampleId?: undefined;
-  category: GeometryCategory;
+  homeSection: HomeSection;
   difficulty: Difficulty;
+  homeKind: "featured";
   status: "planned";
 }
 
@@ -53,199 +49,249 @@ export type Route = StaticRoute | AvailableRoute | PlannedRoute;
 export const routes: Route[] = [
   { hash: "#/", title: "Home" },
   {
+    hash: "#/examples/curves",
+    title: "Curves",
+    description:
+      "Explore curve primitives before using them as directrices for sweep-based geometry.",
+    homeSection: "Foundations",
+    difficulty: "beginner",
+    homeKind: "featured",
+    status: "planned",
+  },
+  {
+    hash: "#/examples/profiles",
+    title: "Profiles",
+    description:
+      "Inspect and compare reusable area profiles before they are turned into solids.",
+    homeSection: "Foundations",
+    difficulty: "beginner",
+    homeKind: "featured",
+    status: "planned",
+  },
+  {
+    hash: "#/examples/placement",
+    title: "Placement",
+    description:
+      "See how local axes and placements affect profile orientation and solid generation.",
+    homeSection: "Foundations",
+    difficulty: "beginner",
+    homeKind: "featured",
+    status: "planned",
+  },
+  {
     hash: "#/examples/extrusion-rectangle",
-    title: "Rectangle Profile (IfcRectangleProfileDef)",
+    title: "Extrusion",
     description:
-      "Extrudes a rectangular cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcRectangleProfileDef).",
+      "Build a swept solid from an area profile and an extrusion direction (IfcExtrudedAreaSolid).",
     sampleId: "extrusion-rectangle",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
-    status: "available",
-  },
-  {
-    hash: "#/examples/extrusion-rounded-rectangle",
-    title: "Rounded Rectangle Profile (IfcRoundedRectangleProfileDef)",
-    description:
-      "Extrudes a rounded rectangular cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcRoundedRectangleProfileDef).",
-    sampleId: "extrusion-rounded-rectangle",
-    category: "ExtrudedAreaSolid",
-    difficulty: "beginner",
-    status: "available",
-  },
-  {
-    hash: "#/examples/swept-disk",
-    title: "Swept Disk Solid",
-    description:
-      "Sweeps a circular disk along a 3-D polyline path to create a rod or hollow pipe (IfcSweptDiskSolid).",
-    sampleId: "swept-disk-basic",
-    category: "Swept Disk Solid",
-    difficulty: "intermediate",
+    homeKind: "featured",
     status: "available",
   },
   {
     hash: "#/examples/revolved",
-    title: "Revolved Area Solid",
+    title: "Revolution",
     description:
-      "Revolves a 2D profile around an axis to create a 3D solid (IfcRevolvedAreaSolid).",
+      "Rotate an area profile around a local axis to create a revolved solid (IfcRevolvedAreaSolid).",
     sampleId: "revolved-rectangle",
-    category: "Revolved Area Solid",
+    homeSection: "Build Solids",
     difficulty: "intermediate",
+    homeKind: "featured",
     status: "available",
   },
   {
-    hash: "#/examples/boolean",
-    title: "Boolean Operation",
+    hash: "#/examples/swept-disk",
+    title: "Swept Disk",
     description:
-      "Combines two solids using DIFFERENCE, UNION, or INTERSECTION (IfcBooleanResult).",
-    sampleId: "boolean-difference",
-    category: "Boolean",
-    difficulty: "beginner",
+      "Sweep a circular disk or pipe section along a curve-based path (IfcSweptDiskSolid).",
+    sampleId: "swept-disk-basic",
+    homeSection: "Build Solids",
+    difficulty: "intermediate",
+    homeKind: "featured",
     status: "available",
   },
   {
-    hash: "#/examples/boolean-clipping",
-    title: "Boolean Clipping",
+    hash: "#/examples/fixed-reference-sweep",
+    title: "Fixed-Reference Sweep",
     description:
-      "Clips a solid with a half-space to produce an angled cut (IfcBooleanClippingResult).",
-    category: "Boolean",
+      "Sweep a profile along a curve while controlling the reference orientation (IfcFixedReferenceSweptAreaSolid).",
+    homeSection: "Build Solids",
     difficulty: "intermediate",
+    homeKind: "featured",
     status: "planned",
   },
   {
-    hash: "#/examples/extrusion-circle",
-    title: "Circle Profile (IfcCircleProfileDef)",
+    hash: "#/examples/sectioned-solid",
+    title: "Sectioned Solid",
     description:
-      "Extrudes a circular cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcCircleProfileDef).",
-    sampleId: "extrusion-circle",
-    category: "ExtrudedAreaSolid",
+      "Interpolate multiple section profiles along a horizontal alignment (IfcSectionedSolidHorizontal).",
+    homeSection: "Build Solids",
+    difficulty: "advanced",
+    homeKind: "featured",
+    status: "planned",
+  },
+  {
+    hash: "#/examples/extrusion-rounded-rectangle",
+    title: "Rounded Rectangle",
+    description:
+      "Variation coverage for IfcRoundedRectangleProfileDef within the extrusion workflow.",
+    sampleId: "extrusion-rounded-rectangle",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
+    status: "available",
+  },
+  {
+    hash: "#/examples/extrusion-circle",
+    title: "Circle",
+    description:
+      "Variation coverage for IfcCircleProfileDef within the extrusion workflow.",
+    sampleId: "extrusion-circle",
+    homeSection: "Build Solids",
+    difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-ellipse",
-    title: "Ellipse Profile (IfcEllipseProfileDef)",
+    title: "Ellipse",
     description:
-      "Extrudes an elliptical cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcEllipseProfileDef).",
+      "Variation coverage for IfcEllipseProfileDef within the extrusion workflow.",
     sampleId: "extrusion-ellipse",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-rect-hollow",
-    title: "Rectangular Hollow Section (IfcRectangleHollowProfileDef)",
+    title: "Rectangular Hollow",
     description:
-      "Extrudes a rectangular hollow cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcRectangleHollowProfileDef).",
+      "Variation coverage for IfcRectangleHollowProfileDef within the extrusion workflow.",
     sampleId: "extrusion-rect-hollow",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-circle-hollow",
-    title: "Circular Hollow Section (IfcCircleHollowProfileDef)",
+    title: "Circular Hollow",
     description:
-      "Extrudes a circular hollow cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcCircleHollowProfileDef).",
+      "Variation coverage for IfcCircleHollowProfileDef within the extrusion workflow.",
     sampleId: "extrusion-circle-hollow",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-i-shape",
-    title: "I-Shape Profile (IfcIShapeProfileDef)",
+    title: "I-Shape",
     description:
-      "Extrudes an I-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcIShapeProfileDef).",
+      "Variation coverage for IfcIShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-i-shape",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-asymmetric-i-shape",
-    title: "Asymmetric I-Shape Profile (IfcAsymmetricIShapeProfileDef)",
+    title: "Asymmetric I-Shape",
     description:
-      "Extrudes an asymmetric I-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcAsymmetricIShapeProfileDef).",
+      "Variation coverage for IfcAsymmetricIShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-asymmetric-i-shape",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "intermediate",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-c-shape",
-    title: "C-Shape Profile (IfcCShapeProfileDef)",
+    title: "C-Shape",
     description:
-      "Extrudes a channel-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcCShapeProfileDef).",
+      "Variation coverage for IfcCShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-c-shape",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-l-shape",
-    title: "L-Shape Profile (IfcLShapeProfileDef)",
+    title: "L-Shape",
     description:
-      "Extrudes an L-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcLShapeProfileDef).",
+      "Variation coverage for IfcLShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-l-shape",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-t-shape",
-    title: "T-Shape Profile (IfcTShapeProfileDef)",
+    title: "T-Shape",
     description:
-      "Extrudes a T-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcTShapeProfileDef).",
+      "Variation coverage for IfcTShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-t-shape",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-u-shape",
-    title: "U-Shape Profile (IfcUShapeProfileDef)",
+    title: "U-Shape",
     description:
-      "Extrudes a U-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcUShapeProfileDef).",
+      "Variation coverage for IfcUShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-u-shape",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
     hash: "#/examples/extrusion-z-shape",
-    title: "Z-Shape Profile (IfcZShapeProfileDef)",
+    title: "Z-Shape",
     description:
-      "Extrudes a Z-shaped cross-section into a 3D solid (IfcExtrudedAreaSolid + IfcZShapeProfileDef).",
+      "Variation coverage for IfcZShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-z-shape",
-    category: "ExtrudedAreaSolid",
+    homeSection: "Build Solids",
     difficulty: "beginner",
+    homeKind: "coverage",
     status: "available",
   },
   {
-    hash: "#/examples/tessellation",
-    title: "Triangulated Face Set",
+    hash: "#/examples/boolean",
+    title: "Boolean",
     description:
-      "Mesh-based geometry using indexed triangles (IfcTriangulatedFaceSet).",
-    category: "Tessellation",
+      "Combine solids with boolean operations such as difference, union, and intersection (IfcBooleanResult).",
+    sampleId: "boolean-difference",
+    homeSection: "Compose Solids",
+    difficulty: "beginner",
+    homeKind: "featured",
+    status: "available",
+  },
+  {
+    hash: "#/examples/boolean-clipping",
+    title: "Half-Space Clipping",
+    description:
+      "Trim a solid with half-space operands such as IfcHalfSpaceSolid and IfcPolygonalBoundedHalfSpace.",
+    homeSection: "Compose Solids",
     difficulty: "intermediate",
+    homeKind: "featured",
     status: "planned",
   },
   {
-    hash: "#/examples/brep",
-    title: "Faceted BRep",
+    hash: "#/examples/csg-primitives",
+    title: "CSG Primitives",
     description:
-      "Boundary representation using explicit faces and loops (IfcFacetedBrep).",
-    category: "BRep",
-    difficulty: "advanced",
-    status: "planned",
-  },
-  {
-    hash: "#/examples/alignment",
-    title: "Linear Placement",
-    description:
-      "Places an element along a defined alignment curve (IfcLinearPlacement).",
-    category: "Alignment",
-    difficulty: "advanced",
+      "Construct solids from primitive volumes such as block, cylinder, cone, sphere, and rectangular pyramid.",
+    homeSection: "Compose Solids",
+    difficulty: "beginner",
+    homeKind: "featured",
     status: "planned",
   },
 ];
