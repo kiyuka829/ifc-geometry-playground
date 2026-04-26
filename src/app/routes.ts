@@ -136,12 +136,14 @@ export const routes: Route[] = [
     title: "Indexed PolyCurve",
     description:
       "Represent compact line and arc segments through indexed point lists.",
+    sampleId: "curve-indexed-polycurve",
     domain: "Curves",
     difficulty: "intermediate",
     exampleKind: "primary",
-    status: "planned",
+    status: "available",
     entity: "IfcIndexedPolyCurve",
     dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
   },
   {
     hash: "#/examples/curve-circle",
@@ -466,8 +468,9 @@ export const implementationMap: ImplementationMapItem[] = [
   {
     entity: "IfcIndexedPolyCurve",
     domain: "Curves",
-    status: "planned",
+    status: "available",
     description: "Indexed curve representation for compact polyline and arc paths.",
+    routeHash: "#/examples/curve-indexed-polycurve",
     dependsOn: ["IfcCurve"],
   },
   {

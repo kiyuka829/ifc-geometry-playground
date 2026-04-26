@@ -2,6 +2,7 @@ import type { Scene } from "@babylonjs/core";
 import type { Mesh } from "@babylonjs/core";
 import type {
   IfcAreaParameterizedProfileDef,
+  IfcIndexedPolyCurve,
   IfcProfileTypeEnum,
 } from "./ifc/generated/schema.ts";
 
@@ -197,6 +198,14 @@ export interface PathEditorConfig {
   label?: string;
 }
 
+/** Configuration for the indexed polycurve editor widget. */
+export interface IndexedPolyCurveEditorConfig {
+  /** Initial IFC indexed polycurve, including Points and Segments. */
+  defaultCurve: IfcIndexedPolyCurve;
+  /** Optional label shown above the editor. */
+  label?: string;
+}
+
 /** Extrusion parameters edited as a single reusable unit. */
 export interface ExtrusionParams {
   /** Positive distance to extrude along extrudedDirection. */
@@ -255,6 +264,12 @@ export interface SampleDef {
    */
   pathEditorConfig?: PathEditorConfig;
   /**
+   * When set, ExamplePage renders an IndexedPolyCurveEditor widget that edits
+   * Points and Segments together. The current IfcIndexedPolyCurve is forwarded
+   * to buildGeometry as the optional ninth argument.
+   */
+  indexedPolyCurveEditorConfig?: IndexedPolyCurveEditorConfig;
+  /**
    * When set, ExamplePage renders an ExtrusionEditor widget that lets the user
    * edit depth and extrudedDirection. The current ExtrusionParams is forwarded
    * to buildGeometry as the optional sixth argument.
@@ -281,6 +296,7 @@ export interface SampleDef {
     extrusion?: ExtrusionParams,
     placement?: IfcAxis2Placement3D,
     sweepView?: SweepViewState,
+    indexedPolyCurve?: IfcIndexedPolyCurve,
   ) => Mesh[];
   getIFCRepresentation: (params: ParamValues) => object;
 }
