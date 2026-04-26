@@ -260,17 +260,17 @@ export const curveTrimmedSample: SampleDef = {
   steps: [
     {
       id: "basis-curve",
-      label: "Step 1: Basis Curve + Trim Selects",
+      label: "Step 1: Basis Curve",
       description:
-        "IfcTrimmedCurve keeps a full IfcCircle or IfcEllipse as its basisCurve. " +
-        "The trim arrays then identify where the visible segment should start and end.",
+        "IfcTrimmedCurve starts from a full IfcCircle or IfcEllipse basisCurve. " +
+        "This step shows the reusable base geometry before any trim is applied.",
     },
     {
-      id: "trimmed-result",
-      label: "Step 2: Visible Arc",
+      id: "trimmed-curve",
+      label: "Step 2: Trim",
       description:
-        "senseAgreement chooses whether the curve follows the basis parameter direction " +
-        "or the reverse direction between the two trim positions.",
+        "The trim selectors choose the start and end positions on the basis curve, and " +
+        "senseAgreement controls whether the visible segment follows the basis direction or the reverse direction.",
     },
   ],
   placementEditorConfig: {
@@ -295,11 +295,11 @@ export const curveTrimmedSample: SampleDef = {
       ...buildSupportedCurve(scene, basisCurve, "trimmed_curve_basis", {
         curveColor: new Color3(0.55, 0.6, 0.7),
       }),
-      ...buildTrimPointMarkers(scene, trimPoints),
     ];
 
     if (stepIndex >= 1) {
       meshes.push(
+        ...buildTrimPointMarkers(scene, trimPoints),
         ...buildSupportedCurve(scene, trimmedCurve, "trimmed_curve_result", {
           curveColor: new Color3(1, 0.75, 0.2),
           arcColor: new Color3(1, 0.75, 0.2),
