@@ -38,7 +38,7 @@ function buildBasisCurve(
 ): IfcCircle | IfcEllipse {
   const basis = getSelect(
     params,
-    "basis",
+    "basisCurve",
     BASIS_CURVE_OPTIONS,
     BASIS_CURVE_OPTIONS[0],
   );
@@ -162,7 +162,7 @@ export const curveTrimmedSample: SampleDef = {
     "IfcTrimmedCurve wraps IfcCircle and IfcEllipse.",
   parameters: [
     {
-      key: "basis",
+      key: "basisCurve",
       label: "Basis Curve",
       type: "select",
       options: [
@@ -170,6 +170,49 @@ export const curveTrimmedSample: SampleDef = {
         { value: "CIRCLE", label: "Circle" },
       ],
       defaultValue: "ELLIPSE",
+      group: "Basis Curve",
+    },
+    {
+      key: "radius",
+      label: "Circle Radius",
+      type: "number",
+      min: 0.5,
+      max: 8,
+      step: 0.1,
+      defaultValue: 3,
+      group: "Basis Parameters",
+      visibleWhen: {
+        key: "basisCurve",
+        equals: "CIRCLE",
+      },
+    },
+    {
+      key: "semiAxis1",
+      label: "Ellipse Semi-Axis 1",
+      type: "number",
+      min: 0.5,
+      max: 8,
+      step: 0.1,
+      defaultValue: 4,
+      group: "Basis Parameters",
+      visibleWhen: {
+        key: "basisCurve",
+        equals: "ELLIPSE",
+      },
+    },
+    {
+      key: "semiAxis2",
+      label: "Ellipse Semi-Axis 2",
+      type: "number",
+      min: 0.5,
+      max: 8,
+      step: 0.1,
+      defaultValue: 2.5,
+      group: "Basis Parameters",
+      visibleWhen: {
+        key: "basisCurve",
+        equals: "ELLIPSE",
+      },
     },
     {
       key: "trimMode",
@@ -180,6 +223,7 @@ export const curveTrimmedSample: SampleDef = {
         { value: "CARTESIAN", label: "Cartesian" },
       ],
       defaultValue: "PARAMETER",
+      group: "Trim",
     },
     {
       key: "sense",
@@ -190,33 +234,7 @@ export const curveTrimmedSample: SampleDef = {
         { value: "REVERSE", label: "Reverse" },
       ],
       defaultValue: "SAME",
-    },
-    {
-      key: "radius",
-      label: "Circle Radius",
-      type: "number",
-      min: 0.5,
-      max: 8,
-      step: 0.1,
-      defaultValue: 3,
-    },
-    {
-      key: "semiAxis1",
-      label: "Ellipse Semi-Axis 1",
-      type: "number",
-      min: 0.5,
-      max: 8,
-      step: 0.1,
-      defaultValue: 4,
-    },
-    {
-      key: "semiAxis2",
-      label: "Ellipse Semi-Axis 2",
-      type: "number",
-      min: 0.5,
-      max: 8,
-      step: 0.1,
-      defaultValue: 2.5,
+      group: "Trim",
     },
     {
       key: "startAngleDeg",
@@ -226,6 +244,7 @@ export const curveTrimmedSample: SampleDef = {
       max: 360,
       step: 1,
       defaultValue: 25,
+      group: "Trim",
     },
     {
       key: "endAngleDeg",
@@ -235,6 +254,7 @@ export const curveTrimmedSample: SampleDef = {
       max: 360,
       step: 1,
       defaultValue: 305,
+      group: "Trim",
     },
   ],
   steps: [
