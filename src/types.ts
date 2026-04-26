@@ -115,6 +115,11 @@ export interface NumberParameterDef {
   max: number;
   step: number;
   defaultValue: number;
+  group?: string;
+  visibleWhen?: {
+    key: string;
+    equals: string;
+  };
 }
 
 export interface SelectOption {
@@ -128,6 +133,11 @@ export interface SelectParameterDef {
   type: "select";
   options: SelectOption[];
   defaultValue: string;
+  group?: string;
+  visibleWhen?: {
+    key: string;
+    equals: string;
+  };
 }
 
 export type ParameterDef = NumberParameterDef | SelectParameterDef;

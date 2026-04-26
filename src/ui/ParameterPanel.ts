@@ -21,7 +21,24 @@ export class ParameterPanel {
 
   private _render() {
     this.container.innerHTML = ''
+    let currentGroup: string | undefined
+
     for (const param of this.sample.parameters) {
+      if (
+        param.visibleWhen &&
+        this.values[param.visibleWhen.key] !== param.visibleWhen.equals
+      ) {
+        continue
+      }
+
+      if (param.group && param.group !== currentGroup) {
+        currentGroup = param.group
+        const heading = document.createElement('div')
+        heading.className = 'param-label'
+        heading.textContent = param.group
+        this.container.appendChild(heading)
+      }
+
       const group = document.createElement('div')
       group.className = 'param-group'
 
@@ -76,6 +93,7 @@ export class ParameterPanel {
 
         select.addEventListener('change', () => {
           this.values[param.key] = select.value
+          this._render()
           this._notifyChange()
         })
 
