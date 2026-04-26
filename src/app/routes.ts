@@ -157,6 +157,7 @@ export const routes: Route[] = [
     status: "available",
     entity: "IfcCircle",
     dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
   },
   {
     hash: "#/examples/curve-ellipse",
