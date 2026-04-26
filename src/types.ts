@@ -118,7 +118,7 @@ export interface NumberParameterDef {
   group?: string;
   visibleWhen?: {
     key: string;
-    equals: string | number;
+    equals: string;
   };
 }
 
@@ -136,7 +136,7 @@ export interface SelectParameterDef {
   group?: string;
   visibleWhen?: {
     key: string;
-    equals: string | number;
+    equals: string;
   };
 }
 

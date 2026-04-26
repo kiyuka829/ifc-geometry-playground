@@ -177,7 +177,7 @@ export const routes: Route[] = [
     hash: "#/examples/curve-trimmed",
     title: "Trimmed Curve",
     description:
-      "Trim a circle or ellipse into an arc using parameter or cartesian trim selectors.",
+      "Trim a circle or ellipse into an arc using parameter-based trim selectors.",
     sampleId: "curve-trimmed",
     domain: "Curves",
     difficulty: "intermediate",

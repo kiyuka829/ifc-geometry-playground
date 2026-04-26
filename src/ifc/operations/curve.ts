@@ -9,7 +9,6 @@ import type {
   IfcLine,
   IfcPolyline,
   IfcSegmentIndexSelect,
-  IfcSupportedCurve,
   IfcTrimmedCurve,
 } from "../generated/schema.ts";
 import {
@@ -429,7 +428,7 @@ export function resolveIndexedPolyCurveSegments(
 }
 
 export function resolveSupportedCurveSegments(
-  curve: RenderableCurve | IfcSupportedCurve,
+  curve: RenderableCurve,
 ): ResolvedCurveSegment[] {
   switch (curve.type) {
     case "IfcPolyline":
@@ -459,8 +458,10 @@ export function resolveSupportedCurveSegments(
       throw new Error(
         "IfcLine is infinite and cannot be rendered without a trimming strategy",
       );
-    default:
-      throw new Error(`Curve type ${curve.type} is not supported yet`);
+    default: {
+      const _exhaustive: never = curve;
+      throw new Error(`Curve type is not supported yet: ${String(_exhaustive)}`);
+    }
   }
 }
 
@@ -511,7 +512,7 @@ export function buildCurvePointMarkers(
 
 export function buildSupportedCurve(
   scene: Scene,
-  curve: RenderableCurve | IfcSupportedCurve,
+  curve: RenderableCurve,
   name: string,
   options: {
     maxSegments?: number;

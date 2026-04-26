@@ -1,4 +1,4 @@
-import { Color3, MeshBuilder } from "@babylonjs/core";
+import { Color3, MeshBuilder, Vector3 } from "@babylonjs/core";
 import type { Mesh, Scene } from "@babylonjs/core";
 import type {
   ExtrusionParams,
@@ -233,7 +233,7 @@ function buildDashedCurve(
       if (pointIndex === 0) return sum;
       return sum + distanceBetweenPoints(segment.points[pointIndex - 1], point);
     }, 0);
-    const lines = [];
+    const lines: Vector3[][] = [];
 
     for (
       let cursor = 0;
