@@ -17,9 +17,11 @@ import { extrusionUShapeSample } from "../ifc/samples/extrusion.u-shape.ts";
 import { extrusionZShapeSample } from "../ifc/samples/extrusion.z-shape.ts";
 import { sweptDiskBasicSample } from "../ifc/samples/swept-disk.basic.ts";
 import { revolvedRectangleSample } from "../ifc/samples/revolved.rectangle.ts";
+import { curvePolylineSample } from "../ifc/samples/curve.polyline.ts";
 import type { SampleDef } from "../types.ts";
 
 const samples: Record<string, SampleDef> = {
+  "curve-polyline": curvePolylineSample,
   "extrusion-rectangle": extrusionRectangleSample,
   "extrusion-rounded-rectangle": extrusionRoundedRectangleSample,
   "boolean-difference": booleanDifferenceSample,

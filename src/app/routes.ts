@@ -14,7 +14,11 @@ export const GEOMETRY_DOMAINS: GeometryDomain[] = [
 export type Difficulty = "beginner" | "intermediate" | "advanced";
 export type ExampleKind = "primary" | "variant";
 export type ImplementationStatus = "available" | "partial" | "planned";
-export type OperationGroupId = "extrusion" | "revolution" | "swept-disk";
+export type OperationGroupId =
+  | "curve-primitives"
+  | "extrusion"
+  | "revolution"
+  | "swept-disk";
 
 interface BaseRoute {
   hash: string;
@@ -78,6 +82,14 @@ export interface OperationGroup {
 
 export const OPERATION_GROUPS: OperationGroup[] = [
   {
+    id: "curve-primitives",
+    domain: "Curves",
+    title: "Curve Primitives",
+    entity: "IfcCurve",
+    description:
+      "Inspect curve entities before they are reused as directrices and profile boundaries.",
+  },
+  {
     id: "extrusion",
     domain: "Swept Solids",
     title: "Extrusion",
@@ -106,15 +118,54 @@ export const OPERATION_GROUPS: OperationGroup[] = [
 export const routes: Route[] = [
   { hash: "#/", title: "Home" },
   {
-    hash: "#/examples/curves",
-    title: "Curves",
+    hash: "#/examples/curve-polyline",
+    title: "Polyline",
     description:
-      "Explore curve primitives before using them as directrices for sweep-based geometry.",
+      "Inspect an IfcPolyline as ordered cartesian points joined by straight segments.",
+    sampleId: "curve-polyline",
+    domain: "Curves",
+    difficulty: "beginner",
+    exampleKind: "variant",
+    status: "available",
+    entity: "IfcPolyline",
+    dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
+  },
+  {
+    hash: "#/examples/curve-indexed-polycurve",
+    title: "Indexed PolyCurve",
+    description:
+      "Represent compact line and arc segments through indexed point lists.",
+    domain: "Curves",
+    difficulty: "intermediate",
+    exampleKind: "primary",
+    status: "planned",
+    entity: "IfcIndexedPolyCurve",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    hash: "#/examples/curve-circle",
+    title: "Circle",
+    description:
+      "Define a circular curve from an axis placement and radius.",
     domain: "Curves",
     difficulty: "beginner",
     exampleKind: "primary",
     status: "planned",
-    entity: "IfcCurve",
+    entity: "IfcCircle",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    hash: "#/examples/curve-ellipse",
+    title: "Ellipse",
+    description:
+      "Define an elliptical curve from an axis placement and two semi-axis lengths.",
+    domain: "Curves",
+    difficulty: "beginner",
+    exampleKind: "primary",
+    status: "planned",
+    entity: "IfcEllipse",
+    dependsOn: ["IfcCurve"],
   },
   {
     hash: "#/examples/profiles",
@@ -401,15 +452,15 @@ export const implementationMap: ImplementationMapItem[] = [
   {
     entity: "IfcCurve",
     domain: "Curves",
-    status: "planned",
+    status: "partial",
     description: "Abstract curve base for directrices and profile boundaries.",
   },
   {
     entity: "IfcPolyline",
     domain: "Curves",
     status: "available",
-    description: "Polyline directrix used by the swept disk sample.",
-    routeHash: "#/examples/swept-disk",
+    description: "Ordered cartesian points joined by straight segments.",
+    routeHash: "#/examples/curve-polyline",
     dependsOn: ["IfcCurve"],
   },
   {
