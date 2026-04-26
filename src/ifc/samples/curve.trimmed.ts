@@ -59,6 +59,7 @@ function buildTrimmedCurve(
 ): {
   basisCurve: IfcCircle | IfcEllipse;
   trimmedCurve: IfcTrimmedCurve;
+  remainderCurve: IfcTrimmedCurve;
   trimPoints: Vec3[];
 } {
   const basisCurve = buildBasisCurve(params, placement);
@@ -96,7 +97,13 @@ function buildTrimmedCurve(
     masterRepresentation: trimMode,
   };
 
-  return { basisCurve, trimmedCurve, trimPoints };
+  const remainderCurve: IfcTrimmedCurve = {
+    ...trimmedCurve,
+    trim1: trimmedCurve.trim2,
+    trim2: trimmedCurve.trim1,
+  };
+
+  return { basisCurve, trimmedCurve, remainderCurve, trimPoints };
 }
 
 function buildTrimPointMarkers(
@@ -150,6 +157,122 @@ function buildResultEndMarkers(
     marker.position = ifcToBabylonVector(point);
     marker.material = material;
     return marker;
+  });
+}
+
+function distanceBetweenPoints(a: Vec3, b: Vec3): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const dz = b.z - a.z;
+  return Math.hypot(dx, dy, dz);
+}
+
+function interpolatePoint(a: Vec3, b: Vec3, ratio: number): Vec3 {
+  return {
+    x: a.x + (b.x - a.x) * ratio,
+    y: a.y + (b.y - a.y) * ratio,
+    z: a.z + (b.z - a.z) * ratio,
+  };
+}
+
+function extractPolylineRange(
+  points: Vec3[],
+  startDistance: number,
+  endDistance: number,
+): Vec3[] {
+  if (points.length < 2 || endDistance <= startDistance) return [];
+
+  const extracted: Vec3[] = [];
+  let traversed = 0;
+
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const segmentStart = points[index];
+    const segmentEnd = points[index + 1];
+    const segmentLength = distanceBetweenPoints(segmentStart, segmentEnd);
+
+    if (segmentLength <= 1e-9) continue;
+
+    const localStart = Math.max(0, startDistance - traversed);
+    const localEnd = Math.min(segmentLength, endDistance - traversed);
+
+    if (localEnd > localStart) {
+      const startPoint = interpolatePoint(
+        segmentStart,
+        segmentEnd,
+        localStart / segmentLength,
+      );
+      const endPoint = interpolatePoint(
+        segmentStart,
+        segmentEnd,
+        localEnd / segmentLength,
+      );
+
+      if (extracted.length === 0) {
+        extracted.push(startPoint);
+      } else {
+        const previous = extracted[extracted.length - 1];
+        if (distanceBetweenPoints(previous, startPoint) > 1e-9) {
+          extracted.push(startPoint);
+        }
+      }
+
+      if (
+        extracted.length === 0 ||
+        distanceBetweenPoints(extracted[extracted.length - 1], endPoint) > 1e-9
+      ) {
+        extracted.push(endPoint);
+      }
+    }
+
+    traversed += segmentLength;
+    if (traversed >= endDistance) break;
+  }
+
+  return extracted;
+}
+
+function buildDashedCurve(
+  scene: Scene,
+  curve: IfcTrimmedCurve,
+  name: string,
+  color: Color3,
+): Mesh[] {
+  const segments = resolveSupportedCurveSegments(curve);
+
+  return segments.flatMap((segment, index) => {
+    if (segment.points.length < 2) return [];
+    const dashLength = 0.22;
+    const gapLength = 0.12;
+    const totalLength = segment.points.reduce((sum, point, pointIndex) => {
+      if (pointIndex === 0) return sum;
+      return sum + distanceBetweenPoints(segment.points[pointIndex - 1], point);
+    }, 0);
+    const lines = [];
+
+    for (
+      let cursor = 0;
+      cursor < totalLength;
+      cursor += dashLength + gapLength
+    ) {
+      const dashPoints = extractPolylineRange(
+        segment.points,
+        cursor,
+        Math.min(cursor + dashLength, totalLength),
+      );
+      if (dashPoints.length >= 2) {
+        lines.push(dashPoints.map(ifcToBabylonVector));
+      }
+    }
+
+    if (lines.length === 0) return [];
+
+    const dashed = MeshBuilder.CreateLineSystem(
+      `${name}_${index}`,
+      { lines },
+      scene,
+    );
+    dashed.color = color;
+    return [dashed];
   });
 }
 
@@ -287,19 +410,28 @@ export const curveTrimmedSample: SampleDef = {
     _sweepView?: SweepViewState,
   ): Mesh[] => {
     const activePlacement = placement ?? DEFAULT_CURVE_PLACEMENT;
-    const { basisCurve, trimmedCurve, trimPoints } = buildTrimmedCurve(
+    const { basisCurve, trimmedCurve, remainderCurve, trimPoints } = buildTrimmedCurve(
       params,
       activePlacement,
     );
-    const meshes: Mesh[] = [
-      ...buildSupportedCurve(scene, basisCurve, "trimmed_curve_basis", {
-        curveColor: new Color3(0.55, 0.6, 0.7),
-      }),
-    ];
+    const meshes: Mesh[] =
+      stepIndex === 0
+        ? [
+            ...buildSupportedCurve(scene, basisCurve, "trimmed_curve_basis", {
+              curveColor: new Color3(0.55, 0.6, 0.7),
+            }),
+          ]
+        : [];
 
     if (stepIndex >= 1) {
       meshes.push(
         ...buildTrimPointMarkers(scene, trimPoints),
+        ...buildDashedCurve(
+          scene,
+          remainderCurve,
+          "trimmed_curve_remainder",
+          new Color3(0.42, 0.46, 0.54),
+        ),
         ...buildSupportedCurve(scene, trimmedCurve, "trimmed_curve_result", {
           curveColor: new Color3(1, 0.75, 0.2),
           arcColor: new Color3(1, 0.75, 0.2),
