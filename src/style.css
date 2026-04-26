@@ -99,21 +99,49 @@ body {
   gap: 20px;
 }
 
-.variant-block {
-  margin-top: 18px;
+.examples-grid--variants {
+  gap: 16px;
 }
 
-.variant-title {
-  color: #6f8fb2;
-  font-size: 0.8em;
-  font-weight: bold;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.operation-group {
+  margin-bottom: 24px;
+}
+
+.operation-group:last-child {
+  margin-bottom: 18px;
+}
+
+.operation-header {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) 1fr;
+  gap: 16px;
+  align-items: start;
   margin-bottom: 12px;
 }
 
-.examples-grid--variants {
-  gap: 16px;
+.operation-header h3 {
+  color: #4fc3f7;
+  font-size: 1em;
+  margin-bottom: 4px;
+}
+
+.operation-header p {
+  color: #7fa6c9;
+  font-size: 0.86em;
+  line-height: 1.5;
+}
+
+.operation-entity {
+  color: #b7d6e8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.74em;
+}
+
+@media (max-width: 640px) {
+  .operation-header {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
 .example-card-link {

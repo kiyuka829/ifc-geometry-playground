@@ -2,11 +2,13 @@ import {
   routes,
   GEOMETRY_DOMAINS,
   implementationMap,
+  OPERATION_GROUPS,
 } from "../app/routes.ts";
 import type {
   AvailableRoute,
   Difficulty,
   GeometryDomain,
+  OperationGroup,
   ImplementationStatus,
   PlannedRoute,
   Route,
@@ -28,7 +30,7 @@ const DOMAIN_DESCRIPTIONS: Record<GeometryDomain, string> = {
   Curves:
     "Curve entities used as directrices, path segments, and profile boundaries.",
   Profiles:
-    "Shape-bearing area profiles that can be extruded, revolved, or swept.",
+    "Profile workbench for inspecting reusable area definitions before they are used by operations.",
   "Swept Solids":
     "Operations that turn profiles or curve paths into solids.",
   "Boolean / CSG":
@@ -72,35 +74,69 @@ function renderCard(route: AvailableRoute | PlannedRoute): string {
   `;
 }
 
+function renderOperationGroup(
+  group: OperationGroup,
+  groupRoutes: AvailableRoute[],
+): string {
+  if (groupRoutes.length === 0) return "";
+
+  const variantCards = groupRoutes.map(renderCard).join("");
+
+  return `
+    <div class="operation-group">
+      <div class="operation-header">
+        <div>
+          <h3>${group.title}</h3>
+          <span class="operation-entity">${group.entity}</span>
+        </div>
+        <p>${group.description}</p>
+      </div>
+      <div class="examples-grid examples-grid--variants">
+        ${variantCards}
+      </div>
+    </div>
+  `;
+}
+
 function renderDomain(domain: GeometryDomain, domainRoutes: Route[]): string {
   const routesWithDomain = domainRoutes.filter(hasHomeDomain);
   if (routesWithDomain.length === 0) return "";
 
-  const primaryRoutes = routesWithDomain.filter(
-    (route) => route.exampleKind === "primary",
+  const operationGroups = OPERATION_GROUPS.filter(
+    (group) => group.domain === domain,
   );
-  const variantRoutes = routesWithDomain.filter(
-    (route) => route.exampleKind === "variant",
+
+  const operationGroupMarkup = operationGroups
+    .map((group) =>
+      renderOperationGroup(
+        group,
+        routesWithDomain.filter(
+          (route): route is AvailableRoute =>
+            route.status === "available" && route.operationGroup === group.id,
+        ),
+      ),
+    )
+    .join("");
+
+  const standaloneRoutes = routesWithDomain.filter(
+    (route) => !route.operationGroup,
+  );
+  const primaryRoutes = standaloneRoutes.filter(
+    (route) => route.exampleKind === "primary",
   );
 
   const primaryCards = primaryRoutes.map(renderCard).join("");
-  const variantCards = variantRoutes.map(renderCard).join("");
 
   return `
     <section class="category-section">
       <h2 class="category-title">${domain}</h2>
       <p class="category-desc">${DOMAIN_DESCRIPTIONS[domain]}</p>
-      <div class="examples-grid">
-        ${primaryCards}
-      </div>
+      ${operationGroupMarkup}
       ${
-        variantRoutes.length > 0
+        primaryRoutes.length > 0
           ? `
-        <div class="variant-block">
-          <div class="variant-title">Implemented variants</div>
-          <div class="examples-grid examples-grid--variants">
-            ${variantCards}
-          </div>
+        <div class="examples-grid">
+          ${primaryCards}
         </div>
       `
           : ""
@@ -185,7 +221,7 @@ export class HomePage {
       </nav>
       <div class="home-page">
         <h1>IFC Geometry Playground</h1>
-        <p class="home-desc">Explore implemented IFC geometry samples by shape-bearing domain, then use the implementation map to decide what to build next.</p>
+        <p class="home-desc">Explore implemented IFC geometry samples by operation, then use the implementation map to track entity-level coverage.</p>
         ${domainMarkup}
         ${renderImplementationMap()}
       </div>

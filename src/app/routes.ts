@@ -14,6 +14,7 @@ export const GEOMETRY_DOMAINS: GeometryDomain[] = [
 export type Difficulty = "beginner" | "intermediate" | "advanced";
 export type ExampleKind = "primary" | "variant";
 export type ImplementationStatus = "available" | "partial" | "planned";
+export type OperationGroupId = "extrusion" | "revolution" | "swept-disk";
 
 interface BaseRoute {
   hash: string;
@@ -29,6 +30,7 @@ export interface StaticRoute extends BaseRoute {
   status?: undefined;
   entity?: undefined;
   dependsOn?: undefined;
+  operationGroup?: undefined;
 }
 
 export interface AvailableRoute extends BaseRoute {
@@ -40,6 +42,7 @@ export interface AvailableRoute extends BaseRoute {
   status: "available";
   entity: string;
   dependsOn?: string[];
+  operationGroup?: OperationGroupId;
 }
 
 export interface PlannedRoute extends BaseRoute {
@@ -51,6 +54,7 @@ export interface PlannedRoute extends BaseRoute {
   status: "planned";
   entity: string;
   dependsOn?: string[];
+  operationGroup?: undefined;
 }
 
 export type Route = StaticRoute | AvailableRoute | PlannedRoute;
@@ -63,6 +67,41 @@ export interface ImplementationMapItem {
   routeHash?: string;
   dependsOn?: string[];
 }
+
+export interface OperationGroup {
+  id: OperationGroupId;
+  domain: GeometryDomain;
+  title: string;
+  entity: string;
+  description: string;
+}
+
+export const OPERATION_GROUPS: OperationGroup[] = [
+  {
+    id: "extrusion",
+    domain: "Swept Solids",
+    title: "Extrusion",
+    entity: "IfcExtrudedAreaSolid",
+    description:
+      "Sweep area profiles along an extrusion direction and compare profile-specific variants.",
+  },
+  {
+    id: "revolution",
+    domain: "Swept Solids",
+    title: "Revolution",
+    entity: "IfcRevolvedAreaSolid",
+    description:
+      "Rotate an area profile around a local axis to create a revolved solid.",
+  },
+  {
+    id: "swept-disk",
+    domain: "Swept Solids",
+    title: "Swept Disk",
+    entity: "IfcSweptDiskSolid",
+    description:
+      "Sweep a disk or ring along a curve directrix.",
+  },
+];
 
 export const routes: Route[] = [
   { hash: "#/", title: "Home" },
@@ -90,42 +129,45 @@ export const routes: Route[] = [
   },
   {
     hash: "#/examples/extrusion-rectangle",
-    title: "Extrusion",
+    title: "Rectangle",
     description:
-      "Build a swept solid from an area profile and an extrusion direction (IfcExtrudedAreaSolid).",
+      "Extrude an IfcRectangleProfileDef along an extrusion direction.",
     sampleId: "extrusion-rectangle",
     domain: "Swept Solids",
     difficulty: "beginner",
-    exampleKind: "primary",
+    exampleKind: "variant",
     status: "available",
-    entity: "IfcExtrudedAreaSolid",
-    dependsOn: ["IfcProfileDef"],
+    entity: "IfcRectangleProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/revolved",
-    title: "Revolution",
+    title: "Rectangle",
     description:
-      "Rotate an area profile around a local axis to create a revolved solid (IfcRevolvedAreaSolid).",
+      "Revolve an IfcRectangleProfileDef around a local axis.",
     sampleId: "revolved-rectangle",
     domain: "Swept Solids",
     difficulty: "intermediate",
-    exampleKind: "primary",
+    exampleKind: "variant",
     status: "available",
-    entity: "IfcRevolvedAreaSolid",
-    dependsOn: ["IfcProfileDef"],
+    entity: "IfcRectangleProfileDef",
+    dependsOn: ["IfcRevolvedAreaSolid"],
+    operationGroup: "revolution",
   },
   {
     hash: "#/examples/swept-disk",
-    title: "Swept Disk",
+    title: "Polyline Directrix",
     description:
-      "Sweep a circular disk or pipe section along a curve-based path (IfcSweptDiskSolid).",
+      "Sweep a circular disk or pipe section along an IfcPolyline directrix.",
     sampleId: "swept-disk-basic",
     domain: "Swept Solids",
     difficulty: "intermediate",
-    exampleKind: "primary",
+    exampleKind: "variant",
     status: "available",
-    entity: "IfcSweptDiskSolid",
-    dependsOn: ["IfcCurve"],
+    entity: "IfcPolyline",
+    dependsOn: ["IfcSweptDiskSolid"],
+    operationGroup: "swept-disk",
   },
   {
     hash: "#/examples/fixed-reference-sweep",
@@ -157,12 +199,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcRoundedRectangleProfileDef within the extrusion workflow.",
     sampleId: "extrusion-rounded-rectangle",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcRoundedRectangleProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-circle",
@@ -170,12 +213,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcCircleProfileDef within the extrusion workflow.",
     sampleId: "extrusion-circle",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcCircleProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-ellipse",
@@ -183,12 +227,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcEllipseProfileDef within the extrusion workflow.",
     sampleId: "extrusion-ellipse",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcEllipseProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-rect-hollow",
@@ -196,12 +241,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcRectangleHollowProfileDef within the extrusion workflow.",
     sampleId: "extrusion-rect-hollow",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcRectangleHollowProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-circle-hollow",
@@ -209,12 +255,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcCircleHollowProfileDef within the extrusion workflow.",
     sampleId: "extrusion-circle-hollow",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcCircleHollowProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-i-shape",
@@ -222,12 +269,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcIShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-i-shape",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcIShapeProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-asymmetric-i-shape",
@@ -235,12 +283,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcAsymmetricIShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-asymmetric-i-shape",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "intermediate",
     exampleKind: "variant",
     status: "available",
     entity: "IfcAsymmetricIShapeProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-c-shape",
@@ -248,12 +297,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcCShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-c-shape",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcCShapeProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-l-shape",
@@ -261,12 +311,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcLShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-l-shape",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcLShapeProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-t-shape",
@@ -274,12 +325,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcTShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-t-shape",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcTShapeProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-u-shape",
@@ -287,12 +339,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcUShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-u-shape",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcUShapeProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/extrusion-z-shape",
@@ -300,12 +353,13 @@ export const routes: Route[] = [
     description:
       "Implemented variant for IfcZShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-z-shape",
-    domain: "Profiles",
+    domain: "Swept Solids",
     difficulty: "beginner",
     exampleKind: "variant",
     status: "available",
     entity: "IfcZShapeProfileDef",
     dependsOn: ["IfcExtrudedAreaSolid"],
+    operationGroup: "extrusion",
   },
   {
     hash: "#/examples/boolean",
