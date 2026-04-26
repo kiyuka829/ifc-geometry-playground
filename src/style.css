@@ -807,16 +807,41 @@ a.map-entity:hover {
 
 .indexed-segment-row {
   display: grid;
-  grid-template-columns: 24px 64px minmax(0, 1fr) 22px 22px;
+  grid-template-columns: 32px 64px minmax(0, 1fr) 22px 22px;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 0.78em;
+  background: #0a1424;
+  border: 1px solid #1a2a4a;
+  border-left: 3px solid #4fc3f7;
+  border-radius: 5px;
+  padding: 6px;
+}
+
+.indexed-segment-row-line {
+  border-left-color: #4fc3f7;
+}
+
+.indexed-segment-row-arc {
+  border-left-color: #ffb74d;
 }
 
 .indexed-segment-label {
-  color: #4fc3f7;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #10243a;
+  border-radius: 3px;
+  color: #90caf9;
   font-family: monospace;
-  font-size: 0.85em;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.indexed-segment-row-arc .indexed-segment-label {
+  background: #2b2114;
+  color: #ffcc80;
 }
 
 .indexed-segment-type {

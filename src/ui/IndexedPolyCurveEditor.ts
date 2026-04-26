@@ -268,7 +268,8 @@ export class IndexedPolyCurveEditor {
     segmentIndex: number,
   ): HTMLElement {
     const row = document.createElement("div");
-    row.className = "indexed-segment-row";
+    row.className =
+      `indexed-segment-row indexed-segment-row-${segment.type === "IfcArcIndex" ? "arc" : "line"}`;
 
     const label = document.createElement("span");
     label.className = "indexed-segment-label";
