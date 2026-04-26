@@ -26,10 +26,8 @@ import {
   buildIfcEllipse,
   DEFAULT_CURVE_PLACEMENT,
   pointOnConic,
-  toIfcCartesianPoint,
 } from "./curve.conic.shared.ts";
 const BASIS_CURVE_OPTIONS = ["ELLIPSE", "CIRCLE"] as const;
-const TRIM_MODE_OPTIONS = ["PARAMETER", "CARTESIAN"] as const;
 const SENSE_OPTIONS = ["SAME", "REVERSE"] as const;
 
 function buildBasisCurve(
@@ -65,12 +63,6 @@ function buildTrimmedCurve(
   const basisCurve = buildBasisCurve(params, placement);
   const startAngle = (getNumber(params, "startAngleDeg") * Math.PI) / 180;
   const endAngle = (getNumber(params, "endAngleDeg") * Math.PI) / 180;
-  const trimMode = getSelect(
-    params,
-    "trimMode",
-    TRIM_MODE_OPTIONS,
-    TRIM_MODE_OPTIONS[0],
-  ) as IfcTrimmedCurve["masterRepresentation"];
   const senseAgreement =
     getSelect(params, "sense", SENSE_OPTIONS, SENSE_OPTIONS[0]) === "SAME";
   const semiAxis1 =
@@ -85,16 +77,10 @@ function buildTrimmedCurve(
   const trimmedCurve: IfcTrimmedCurve = {
     type: "IfcTrimmedCurve",
     basisCurve,
-    trim1:
-      trimMode === "CARTESIAN"
-        ? [toIfcCartesianPoint(trimPoints[0])]
-        : [startAngle],
-    trim2:
-      trimMode === "CARTESIAN"
-        ? [toIfcCartesianPoint(trimPoints[1])]
-        : [endAngle],
+    trim1: [startAngle],
+    trim2: [endAngle],
     senseAgreement,
-    masterRepresentation: trimMode,
+    masterRepresentation: "PARAMETER",
   };
 
   const remainderCurve: IfcTrimmedCurve = {
@@ -281,8 +267,7 @@ export const curveTrimmedSample: SampleDef = {
   title: "Trimmed Curve (IfcTrimmedCurve)",
   description:
     "Build circular or elliptical arcs by trimming a reusable basis curve. " +
-    "Switch between parameter-based and cartesian trimming to inspect how " +
-    "IfcTrimmedCurve wraps IfcCircle and IfcEllipse.",
+    "Inspect how IfcTrimmedCurve wraps IfcCircle and IfcEllipse using parameter-based trims.",
   parameters: [
     {
       key: "basisCurve",
@@ -336,17 +321,6 @@ export const curveTrimmedSample: SampleDef = {
         key: "basisCurve",
         equals: "ELLIPSE",
       },
-    },
-    {
-      key: "trimMode",
-      label: "Trim Mode",
-      type: "select",
-      options: [
-        { value: "PARAMETER", label: "Parameter" },
-        { value: "CARTESIAN", label: "Cartesian" },
-      ],
-      defaultValue: "PARAMETER",
-      group: "Trim",
     },
     {
       key: "sense",
