@@ -97,6 +97,17 @@ OPAQUE_TS_ALIASES = {
     "IfcSurface": "unknown",
 }
 
+# IFC named type/select wrappers whose names carry runtime semantics. These
+# must not collapse to their primitive representation in TypeScript.
+TS_NAMED_ARRAY_TYPE_OVERRIDES = {
+    "IfcArcIndex": "IfcArcIndex",
+    "IfcLineIndex": "IfcLineIndex",
+}
+
+TS_SELECT_TYPE_OVERRIDES = {
+    "IfcSegmentIndexSelect": "IfcSegmentIndexSelect",
+}
+
 # ---------------------------------------------------------------------------
 # Schema resolution helpers
 # ---------------------------------------------------------------------------
@@ -312,9 +323,15 @@ def type_info_to_ts(type_info: dict) -> str:
         entity_name = type_info.get("name", "unknown")
         return TS_ENTITY_TYPE_OVERRIDES.get(entity_name, entity_name)
     if kind == "array":
+        ifc_type = type_info.get("ifcType")
+        if ifc_type in TS_NAMED_ARRAY_TYPE_OVERRIDES:
+            return TS_NAMED_ARRAY_TYPE_OVERRIDES[ifc_type]
         element_ts = type_info_to_ts(type_info.get("element", {"kind": "unknown"}))
         return f"{parenthesize_union(element_ts)}[]"
     if kind == "select":
+        ifc_type = type_info.get("ifcType")
+        if ifc_type in TS_SELECT_TYPE_OVERRIDES:
+            return TS_SELECT_TYPE_OVERRIDES[ifc_type]
         option_types: list[str] = []
         for option in type_info.get("options", []):
             if isinstance(option, dict):
@@ -398,6 +415,21 @@ def generate_ts_file(schema, profile_entities: list[str], curve_entities: list[s
     )
     for name, ts_type in OPAQUE_TS_ALIASES.items():
         blocks.append(f"export type {name} = {ts_type};")
+
+    blocks.append("// ── Indexed curve select wrappers ────────────────────────────────")
+    blocks.append(
+        "export interface IfcArcIndex {\n"
+        "  type: 'IfcArcIndex';\n"
+        "  indices: [number, number, number];\n"
+        "}"
+    )
+    blocks.append(
+        "export interface IfcLineIndex {\n"
+        "  type: 'IfcLineIndex';\n"
+        "  indices: [number, number, ...number[]];\n"
+        "}"
+    )
+    blocks.append(generate_ts_union("IfcSegmentIndexSelect", ["IfcArcIndex", "IfcLineIndex"]))
 
     # --- Curve entities --------------------------------------------------
     blocks.append("// ── Curve segment entities ────────────────────────────────────────")

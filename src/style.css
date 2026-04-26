@@ -779,6 +779,108 @@ a.map-entity:hover {
   border-color: #4fc3f7;
 }
 
+/* Indexed PolyCurve Editor */
+.indexed-polycurve-editor {
+  margin-bottom: 4px;
+}
+
+.indexed-polycurve-section + .indexed-polycurve-section {
+  margin-top: 10px;
+}
+
+.indexed-polycurve-section-title {
+  color: #90caf9;
+  font-size: 0.82em;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.indexed-polycurve-points-list,
+.indexed-polycurve-segments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.indexed-segment-row {
+  display: grid;
+  grid-template-columns: 24px 64px minmax(0, 1fr) 22px 22px;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78em;
+}
+
+.indexed-segment-label {
+  color: #4fc3f7;
+  font-family: monospace;
+  font-size: 0.85em;
+}
+
+.indexed-segment-type {
+  width: 64px;
+  background: #0d1b2e;
+  border: 1px solid #1a2a4a;
+  border-radius: 3px;
+  color: #c0cce0;
+  padding: 2px 4px;
+  font-size: 0.82em;
+}
+
+.indexed-segment-type:focus {
+  outline: none;
+  border-color: #4fc3f7;
+}
+
+.indexed-segment-indices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.indexed-segment-index-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.indexed-segment-index-input {
+  width: 42px;
+  background: #0d1b2e;
+  border: 1px solid #1a2a4a;
+  border-radius: 3px;
+  color: #c0cce0;
+  padding: 2px 4px;
+  font-size: 0.82em;
+  font-family: monospace;
+}
+
+.indexed-segment-index-input:focus {
+  outline: none;
+  border-color: #4fc3f7;
+}
+
+.indexed-segment-mini-btn,
+.indexed-segment-index-remove {
+  background: none;
+  border: 1px solid #2a4a6a;
+  border-radius: 3px;
+  color: #4fc3f7;
+  padding: 1px 5px;
+  font-size: 0.9em;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.indexed-segment-mini-btn:hover,
+.indexed-segment-index-remove:hover {
+  background: #0d2040;
+  border-color: #4fc3f7;
+}
+
 /* Extrusion Editor */
 .extrusion-editor {
   margin-bottom: 4px;

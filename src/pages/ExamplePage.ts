@@ -8,6 +8,7 @@ import type {
   Vec3,
   SweepViewState,
 } from "../types.ts";
+import type { IfcIndexedPolyCurve } from "../ifc/generated/schema.ts";
 import { SceneManager } from "../engine/scene.ts";
 import { ViewportCamera } from "../engine/viewport-camera.ts";
 import { ViewportControls } from "../ui/ViewportControls.ts";
@@ -15,6 +16,7 @@ import { ParameterPanel } from "../ui/ParameterPanel.ts";
 import { Stepper } from "../ui/Stepper.ts";
 import { ProfileEditor } from "../ui/ProfileEditor.ts";
 import { PathEditor } from "../ui/PathEditor.ts";
+import { IndexedPolyCurveEditor } from "../ui/IndexedPolyCurveEditor.ts";
 import { ExtrusionEditor } from "../ui/ExtrusionEditor.ts";
 import { PlacementEditor } from "../ui/PlacementEditor.ts";
 import { SweepViewToggles } from "../ui/SweepViewToggles.ts";
@@ -31,6 +33,7 @@ export class ExamplePage {
   private currentStep = 0;
   private currentProfile: IfcProfileDef | undefined = undefined;
   private currentPath: Vec3[] | undefined = undefined;
+  private currentIndexedPolyCurve: IfcIndexedPolyCurve | undefined = undefined;
   private currentExtrusion: ExtrusionParams | undefined = undefined;
   private currentPlacement: IfcAxis2Placement3D | undefined = undefined;
   private currentSweepView: SweepViewState | undefined = undefined;
@@ -58,6 +61,12 @@ export class ExamplePage {
         ) as Vec3[])
       : undefined;
 
+    this.currentIndexedPolyCurve = sample.indexedPolyCurveEditorConfig
+      ? (JSON.parse(
+          JSON.stringify(sample.indexedPolyCurveEditorConfig.defaultCurve),
+        ) as IfcIndexedPolyCurve)
+      : undefined;
+
     // Seed extrusion from config default (if any)
     this.currentExtrusion = sample.extrusionEditorConfig
       ? (JSON.parse(
@@ -83,6 +92,7 @@ export class ExamplePage {
 
     const hasProfileEditor = Boolean(sample.profileEditorConfig);
     const hasPathEditor = Boolean(sample.pathEditorConfig);
+    const hasIndexedPolyCurveEditor = Boolean(sample.indexedPolyCurveEditorConfig);
     const hasExtrusionEditor = Boolean(sample.extrusionEditorConfig);
     const hasPlacementEditor = Boolean(sample.placementEditorConfig);
     const hasSweepToggles = Boolean(sample.sweepViewConfig);
@@ -119,9 +129,19 @@ export class ExamplePage {
                 : ""
             }
             ${
-              hasExtrusionEditor
+              hasIndexedPolyCurveEditor
                 ? `
               <details class="left-collapsible${hasProfileEditor || hasPathEditor ? " left-panel-section-mt" : ""}" open>
+                <summary class="params-title">${sample.indexedPolyCurveEditorConfig!.label ?? "Indexed PolyCurve"}</summary>
+                <div class="left-collapsible-content" id="indexed-polycurve-editor-panel"></div>
+              </details>
+            `
+                : ""
+            }
+            ${
+              hasExtrusionEditor
+                ? `
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor ? " left-panel-section-mt" : ""}" open>
                 <summary class="params-title">${sample.extrusionEditorConfig!.label ?? "Extrusion"}</summary>
                 <div class="left-collapsible-content" id="extrusion-editor-panel"></div>
               </details>
@@ -141,7 +161,7 @@ export class ExamplePage {
             ${
               sample.parameters.length > 0
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasSweepToggles ? " left-panel-section-mt" : ""}" open>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasSweepToggles ? " left-panel-section-mt" : ""}" open>
                 <summary class="params-title">Parameters</summary>
                 <div class="left-collapsible-content" id="param-panel"></div>
               </details>
@@ -151,7 +171,7 @@ export class ExamplePage {
             ${
               hasPlacementEditor
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasExtrusionEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}">
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}">
                 <summary class="params-title">${sample.placementEditorConfig!.label ?? "Placement"}</summary>
                 <div class="left-collapsible-content" id="placement-editor-panel"></div>
               </details>
@@ -208,6 +228,23 @@ export class ExamplePage {
       );
       pathEditor.onChange((path) => {
         this.currentPath = path;
+        this._scheduleRebuild(sample.debounceMs ?? 0);
+      });
+    }
+
+    const indexedPolyCurveEditorContainer = document.getElementById(
+      "indexed-polycurve-editor-panel",
+    );
+    if (
+      indexedPolyCurveEditorContainer &&
+      sample.indexedPolyCurveEditorConfig
+    ) {
+      const indexedPolyCurveEditor = new IndexedPolyCurveEditor(
+        indexedPolyCurveEditorContainer,
+        sample.indexedPolyCurveEditorConfig,
+      );
+      indexedPolyCurveEditor.onChange((curve) => {
+        this.currentIndexedPolyCurve = curve;
         this._scheduleRebuild(sample.debounceMs ?? 0);
       });
     }
@@ -308,6 +345,7 @@ export class ExamplePage {
       this.currentExtrusion,
       this.currentPlacement,
       this.currentSweepView,
+      this.currentIndexedPolyCurve,
     );
 
     // Show local coordinate axes when a placement editor is active

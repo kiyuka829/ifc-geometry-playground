@@ -102,6 +102,22 @@ export type IfcPlacement =
 
 export type IfcSurface = unknown;
 
+// ── Indexed curve select wrappers ────────────────────────────────
+
+export interface IfcArcIndex {
+  type: 'IfcArcIndex';
+  indices: [number, number, number];
+}
+
+export interface IfcLineIndex {
+  type: 'IfcLineIndex';
+  indices: [number, number, ...number[]];
+}
+
+export type IfcSegmentIndexSelect =
+    IfcArcIndex
+  | IfcLineIndex;
+
 // ── Curve segment entities ────────────────────────────────────────
 
 export interface IfcCompositeCurveSegment {
@@ -203,7 +219,7 @@ export interface IfcSegmentedReferenceCurve {
 export interface IfcIndexedPolyCurve {
   type: 'IfcIndexedPolyCurve';
   points: IfcCartesianPointList;
-  segments?: number[][];
+  segments?: IfcSegmentIndexSelect[];
   selfIntersect?: boolean;
 }
 
