@@ -820,6 +820,16 @@ a.map-entity:hover {
   display: none;
 }
 
+.indexed-segment-empty {
+  background: #0a1424;
+  border: 1px dashed #2a4a6a;
+  border-radius: 4px;
+  color: #8fa3bd;
+  font-size: 0.76em;
+  line-height: 1.35;
+  padding: 6px 8px;
+}
+
 .indexed-segment-row {
   display: grid;
   grid-template-columns: 32px 64px minmax(0, 1fr) 22px 22px;

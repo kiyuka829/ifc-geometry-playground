@@ -120,8 +120,10 @@ export class IndexedPolyCurveEditor {
 
   private _normalizeSegments(): void {
     const pointCount = this.curve.points.coordList.length;
-    this.curve.segments = (this.curve.segments ?? [makeDefaultSegment(pointCount)])
-      .map((segment) => normalizeSegment(segment, pointCount));
+    if (!this.curve.segments) return;
+    this.curve.segments = this.curve.segments.map((segment) =>
+      normalizeSegment(segment, pointCount),
+    );
   }
 
   private _notify(): void {
@@ -266,7 +268,18 @@ export class IndexedPolyCurveEditor {
   private _buildSegmentsList(): HTMLElement {
     const list = document.createElement("div");
     list.className = "indexed-polycurve-segments-list";
-    (this.curve.segments ?? []).forEach((segment, index) => {
+    const segments = this.curve.segments ?? [];
+
+    if (segments.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "indexed-segment-empty";
+      empty.textContent =
+        "Segments omitted. Points are interpreted as one line in list order.";
+      list.appendChild(empty);
+      return list;
+    }
+
+    segments.forEach((segment, index) => {
       list.appendChild(this._buildSegmentRow(segment, index));
     });
     return list;
@@ -338,21 +351,18 @@ export class IndexedPolyCurveEditor {
       row.appendChild(placeholder);
     }
 
-    if ((this.curve.segments ?? []).length > 1) {
-      const del = document.createElement("button");
-      del.className = "point-delete-btn";
-      del.title = "Remove segment";
-      del.textContent = "x";
-      del.addEventListener("click", () => {
-        this.curve.segments?.splice(segmentIndex, 1);
-        this._refreshAndNotify();
-      });
-      row.appendChild(del);
-    } else {
-      const placeholder = document.createElement("span");
-      placeholder.className = "point-delete-placeholder";
-      row.appendChild(placeholder);
-    }
+    const del = document.createElement("button");
+    del.className = "point-delete-btn";
+    del.title = "Remove segment";
+    del.textContent = "x";
+    del.addEventListener("click", () => {
+      this.curve.segments?.splice(segmentIndex, 1);
+      if (this.curve.segments?.length === 0) {
+        this.curve.segments = undefined;
+      }
+      this._refreshAndNotify();
+    });
+    row.appendChild(del);
 
     return row;
   }
@@ -409,7 +419,7 @@ export class IndexedPolyCurveEditor {
     addBtn.className = "path-add-point-btn";
     addBtn.textContent = "+ Add segment";
     addBtn.addEventListener("click", () => {
-      const segments = this.curve.segments ?? [];
+      const segments = this.curve.segments ? [...this.curve.segments] : [];
       segments.push(makeDefaultSegment(this.curve.points.coordList.length));
       this.curve.segments = segments;
       this._refreshAndNotify();
