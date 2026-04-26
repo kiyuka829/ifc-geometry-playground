@@ -183,6 +183,7 @@ export const routes: Route[] = [
     status: "available",
     entity: "IfcTrimmedCurve",
     dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
   },
   {
     hash: "#/examples/profiles",
