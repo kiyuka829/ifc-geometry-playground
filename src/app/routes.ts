@@ -171,6 +171,7 @@ export const routes: Route[] = [
     status: "available",
     entity: "IfcEllipse",
     dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
   },
   {
     hash: "#/examples/curve-trimmed",
