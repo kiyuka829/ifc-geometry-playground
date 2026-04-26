@@ -277,7 +277,6 @@ export class IndexedPolyCurveEditor {
 
     const typeSelect = document.createElement("select");
     typeSelect.className = "indexed-segment-type";
-    typeSelect.value = segment.type;
     for (const option of [
       { value: "IfcLineIndex", label: "Line" },
       { value: "IfcArcIndex", label: "Arc" },
@@ -287,6 +286,7 @@ export class IndexedPolyCurveEditor {
       optionElement.textContent = option.label;
       typeSelect.appendChild(optionElement);
     }
+    typeSelect.value = segment.type;
     typeSelect.addEventListener("change", () => {
       this._setSegmentType(
         segmentIndex,
