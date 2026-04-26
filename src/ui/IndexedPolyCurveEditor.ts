@@ -8,6 +8,13 @@ import type {
 
 const DEFAULT_COORD_STEP = 0.5;
 
+interface SegmentContinuityIssue {
+  previousSegmentIndex: number;
+  nextSegmentIndex: number;
+  expectedIndex: number;
+  actualIndex: number;
+}
+
 function cloneSegment(segment: IfcSegmentIndexSelect): IfcSegmentIndexSelect {
   return segment.type === "IfcArcIndex"
     ? { type: "IfcArcIndex", indices: [...segment.indices] }
@@ -77,6 +84,7 @@ export class IndexedPolyCurveEditor {
   private container: HTMLElement;
   private curve: IfcIndexedPolyCurve;
   private changeCallbacks: Array<(curve: IfcIndexedPolyCurve) => void> = [];
+  private segmentWarning: HTMLElement | undefined = undefined;
 
   constructor(container: HTMLElement, config: IndexedPolyCurveEditorConfig) {
     this.container = container;
@@ -137,6 +145,7 @@ export class IndexedPolyCurveEditor {
     const segmentsSection = document.createElement("div");
     segmentsSection.className = "indexed-polycurve-section";
     segmentsSection.appendChild(this._buildSectionTitle("Segments"));
+    segmentsSection.appendChild(this._buildSegmentWarning());
     segmentsSection.appendChild(this._buildSegmentsList());
     segmentsSection.appendChild(this._buildAddSegmentButton());
     wrapper.appendChild(segmentsSection);
@@ -268,8 +277,13 @@ export class IndexedPolyCurveEditor {
     segmentIndex: number,
   ): HTMLElement {
     const row = document.createElement("div");
-    row.className =
-      `indexed-segment-row indexed-segment-row-${segment.type === "IfcArcIndex" ? "arc" : "line"}`;
+    const hasContinuityIssue = this._hasContinuityIssue(segmentIndex);
+    row.className = "indexed-segment-row";
+    row.dataset.segmentIndex = String(segmentIndex);
+    row.classList.add(
+      `indexed-segment-row-${segment.type === "IfcArcIndex" ? "arc" : "line"}`,
+    );
+    row.classList.toggle("indexed-segment-row-warning", hasContinuityIssue);
 
     const label = document.createElement("span");
     label.className = "indexed-segment-label";
@@ -369,6 +383,7 @@ export class IndexedPolyCurveEditor {
         this.curve.points.coordList.length,
       );
       this._normalizeSegments();
+      this._syncSegmentWarning();
       this._notify();
     });
     wrap.appendChild(input);
@@ -423,6 +438,78 @@ export class IndexedPolyCurveEditor {
     }
 
     this._refreshAndNotify();
+  }
+
+  private _buildSegmentWarning(): HTMLElement {
+    this.segmentWarning = document.createElement("div");
+    this.segmentWarning.className = "indexed-segment-warning";
+    this._syncSegmentWarning();
+    return this.segmentWarning;
+  }
+
+  private _getSegmentContinuityIssues(): SegmentContinuityIssue[] {
+    const segments = this.curve.segments ?? [];
+    const issues: SegmentContinuityIssue[] = [];
+
+    for (let index = 0; index < segments.length - 1; index += 1) {
+      const current = segments[index];
+      const next = segments[index + 1];
+      const expectedIndex = current.indices.at(-1);
+      const actualIndex = next.indices[0];
+
+      if (
+        typeof expectedIndex === "number" &&
+        typeof actualIndex === "number" &&
+        expectedIndex !== actualIndex
+      ) {
+        issues.push({
+          previousSegmentIndex: index,
+          nextSegmentIndex: index + 1,
+          expectedIndex,
+          actualIndex,
+        });
+      }
+    }
+
+    return issues;
+  }
+
+  private _hasContinuityIssue(segmentIndex: number): boolean {
+    return this._getSegmentContinuityIssues().some(
+      (issue) =>
+        issue.previousSegmentIndex === segmentIndex ||
+        issue.nextSegmentIndex === segmentIndex,
+    );
+  }
+
+  private _syncSegmentWarning(): void {
+    if (!this.segmentWarning) return;
+
+    const issues = this._getSegmentContinuityIssues();
+    const issueSegmentIndices = new Set(
+      issues.flatMap((issue) => [
+        issue.previousSegmentIndex,
+        issue.nextSegmentIndex,
+      ]),
+    );
+
+    this.segmentWarning.hidden = issues.length === 0;
+    this.segmentWarning.textContent = issues
+      .map(
+        (issue) =>
+          `S${issue.previousSegmentIndex + 1} ends at P${issue.expectedIndex}, but S${issue.nextSegmentIndex + 1} starts at P${issue.actualIndex}.`,
+      )
+      .join(" ");
+
+    this.container
+      .querySelectorAll<HTMLElement>(".indexed-segment-row")
+      .forEach((row) => {
+        const segmentIndex = Number(row.dataset.segmentIndex);
+        row.classList.toggle(
+          "indexed-segment-row-warning",
+          issueSegmentIndices.has(segmentIndex),
+        );
+      });
   }
 
   private _refreshAndNotify(): void {

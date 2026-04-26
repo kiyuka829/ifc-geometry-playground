@@ -805,6 +805,21 @@ a.map-entity:hover {
   overflow-y: auto;
 }
 
+.indexed-segment-warning {
+  background: #2b2114;
+  border: 1px solid #805c20;
+  border-radius: 4px;
+  color: #ffcc80;
+  font-size: 0.76em;
+  line-height: 1.35;
+  margin-bottom: 6px;
+  padding: 6px 8px;
+}
+
+.indexed-segment-warning[hidden] {
+  display: none;
+}
+
 .indexed-segment-row {
   display: grid;
   grid-template-columns: 32px 64px minmax(0, 1fr) 22px 22px;
@@ -816,6 +831,11 @@ a.map-entity:hover {
   border-left: 3px solid #4fc3f7;
   border-radius: 5px;
   padding: 6px;
+}
+
+.indexed-segment-row-warning {
+  border-color: #805c20;
+  box-shadow: inset 0 0 0 1px rgba(255, 183, 77, 0.25);
 }
 
 .indexed-segment-row-line {
