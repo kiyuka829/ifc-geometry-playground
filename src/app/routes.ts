@@ -150,10 +150,11 @@ export const routes: Route[] = [
     title: "Circle",
     description:
       "Define a circular curve from an axis placement and radius.",
+    sampleId: "curve-circle",
     domain: "Curves",
     difficulty: "beginner",
     exampleKind: "primary",
-    status: "planned",
+    status: "available",
     entity: "IfcCircle",
     dependsOn: ["IfcCurve"],
   },
@@ -162,10 +163,11 @@ export const routes: Route[] = [
     title: "Ellipse",
     description:
       "Define an elliptical curve from an axis placement and two semi-axis lengths.",
+    sampleId: "curve-ellipse",
     domain: "Curves",
     difficulty: "beginner",
     exampleKind: "primary",
-    status: "planned",
+    status: "available",
     entity: "IfcEllipse",
     dependsOn: ["IfcCurve"],
   },
@@ -489,17 +491,18 @@ export const implementationMap: ImplementationMapItem[] = [
   {
     entity: "IfcCircle",
     domain: "Curves",
-    status: "partial",
-    description:
-      "Circle primitive resolved as a basis curve for trimmed-curve workflows.",
+    status: "available",
+    description: "Circle primitive positioned from an axis placement and radius.",
+    routeHash: "#/examples/curve-circle",
     dependsOn: ["IfcCurve"],
   },
   {
     entity: "IfcEllipse",
     domain: "Curves",
-    status: "partial",
+    status: "available",
     description:
-      "Ellipse primitive resolved as a basis curve for trimmed-curve workflows.",
+      "Ellipse primitive positioned from an axis placement and two semi-axis lengths.",
+    routeHash: "#/examples/curve-ellipse",
     dependsOn: ["IfcCurve"],
   },
   {
