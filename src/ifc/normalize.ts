@@ -14,6 +14,7 @@ import type {
   IfcAreaParameterizedProfileDef,
   IfcAsymmetricIShapeProfileDef,
   IfcExtrudedAreaSolid,
+  IfcPoint,
   IfcRevolvedAreaSolid,
 } from './generated/schema.ts'
 
@@ -162,6 +163,13 @@ export function normalizePoint3(pt: IfcCartesianPoint): NormalizedVec3 {
   }
 }
 
+function requireCartesianPoint(pt: IfcPoint, context: string): IfcCartesianPoint {
+  if (pt.type !== 'IfcCartesianPoint') {
+    throw new Error(`${context} must use IfcCartesianPoint, got ${pt.type}`)
+  }
+  return pt
+}
+
 // ── Direction converters ──────────────────────────────────────────────────
 
 /** Normalize an IfcDirection to a unit 2D vector (uses directionRatios[0..1]). */
@@ -189,7 +197,7 @@ export function normalizeDirection3(
 /** Convert an IfcAxis2Placement2D to a NormalizedPlacement2D. */
 export function normalizePlacement2D(p: IfcAxis2Placement2D): NormalizedPlacement2D {
   return {
-    origin: normalizePoint2(p.location),
+    origin: normalizePoint2(requireCartesianPoint(p.location, 'IfcAxis2Placement2D.Location')),
     xAxis: p.refDirection ? normalizeDirection2(p.refDirection) : { x: 1, y: 0 },
   }
 }
@@ -204,7 +212,7 @@ export function normalizePlacement3D(p: IfcAxis2Placement3D): NormalizedPlacemen
     : { x: 1, y: 0, z: 0 }
 
   return {
-    origin: normalizePoint3(p.location),
+    origin: normalizePoint3(requireCartesianPoint(p.location, 'IfcAxis2Placement3D.Location')),
     zAxis,
     xAxis: orthogonalizeXAxis(zAxis, refDirection),
   }
@@ -237,7 +245,7 @@ export function normalizeAxis1Placement(
   const normalizedFallbackAxis = normalizeFallbackAxis3(fallbackAxis)
 
   return {
-    origin: normalizePoint3(p.location),
+    origin: normalizePoint3(requireCartesianPoint(p.location, 'IfcAxis1Placement.Location')),
     axis: p.axis
       ? normalizeDirection3(p.axis, normalizedFallbackAxis)
       : normalizedFallbackAxis,

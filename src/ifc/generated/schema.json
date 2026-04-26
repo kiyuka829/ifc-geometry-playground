@@ -37,6 +37,28 @@
         }
       ]
     },
+    "IfcVector": {
+      "name": "IfcVector",
+      "supertype": "IfcGeometricRepresentationItem",
+      "attributes": [
+        {
+          "name": "Orientation",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        },
+        {
+          "name": "Magnitude",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        }
+      ]
+    },
     "IfcAxis1Placement": {
       "name": "IfcAxis1Placement",
       "supertype": "IfcPlacement",
@@ -107,6 +129,1660 @@
           "type": {
             "kind": "entity",
             "name": "IfcDirection"
+          }
+        }
+      ]
+    },
+    "IfcAxis2PlacementLinear": {
+      "name": "IfcAxis2PlacementLinear",
+      "supertype": "IfcPlacement",
+      "attributes": [
+        {
+          "name": "Location",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPoint"
+          }
+        },
+        {
+          "name": "Axis",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        },
+        {
+          "name": "RefDirection",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        }
+      ]
+    },
+    "IfcCartesianPointList2D": {
+      "name": "IfcCartesianPointList2D",
+      "supertype": "IfcCartesianPointList",
+      "attributes": [
+        {
+          "name": "CoordList",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "array",
+              "aggregation": "list",
+              "element": {
+                "kind": "number",
+                "ifcType": "IfcLengthMeasure"
+              }
+            }
+          }
+        },
+        {
+          "name": "TagList",
+          "optional": true,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "string",
+              "ifcType": "IfcLabel"
+            }
+          }
+        }
+      ]
+    },
+    "IfcCartesianPointList3D": {
+      "name": "IfcCartesianPointList3D",
+      "supertype": "IfcCartesianPointList",
+      "attributes": [
+        {
+          "name": "CoordList",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "array",
+              "aggregation": "list",
+              "element": {
+                "kind": "number",
+                "ifcType": "IfcLengthMeasure"
+              }
+            }
+          }
+        },
+        {
+          "name": "TagList",
+          "optional": true,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "string",
+              "ifcType": "IfcLabel"
+            }
+          }
+        }
+      ]
+    },
+    "IfcPointByDistanceExpression": {
+      "name": "IfcPointByDistanceExpression",
+      "supertype": "IfcPoint",
+      "attributes": [
+        {
+          "name": "DistanceAlong",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcCurveMeasureSelect",
+            "options": [
+              {
+                "kind": "number",
+                "ifcType": "IfcLengthMeasure"
+              },
+              {
+                "kind": "number",
+                "ifcType": "IfcParameterValue"
+              }
+            ],
+            "optionNames": [
+              "IfcLengthMeasure",
+              "IfcParameterValue"
+            ]
+          }
+        },
+        {
+          "name": "OffsetLateral",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "OffsetVertical",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "OffsetLongitudinal",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "BasisCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        }
+      ]
+    },
+    "IfcPointOnCurve": {
+      "name": "IfcPointOnCurve",
+      "supertype": "IfcPoint",
+      "attributes": [
+        {
+          "name": "BasisCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "PointParameter",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcParameterValue"
+          }
+        }
+      ]
+    },
+    "IfcPointOnSurface": {
+      "name": "IfcPointOnSurface",
+      "supertype": "IfcPoint",
+      "attributes": [
+        {
+          "name": "BasisSurface",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcSurface"
+          }
+        },
+        {
+          "name": "PointParameterU",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcParameterValue"
+          }
+        },
+        {
+          "name": "PointParameterV",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcParameterValue"
+          }
+        }
+      ]
+    },
+    "IfcCompositeCurveSegment": {
+      "name": "IfcCompositeCurveSegment",
+      "supertype": "IfcSegment",
+      "attributes": [
+        {
+          "name": "Transition",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcTransitionCode",
+            "values": [
+              "CONTINUOUS",
+              "CONTSAMEGRADIENT",
+              "CONTSAMEGRADIENTSAMECURVATURE",
+              "DISCONTINUOUS"
+            ]
+          }
+        },
+        {
+          "name": "SameSense",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcBoolean"
+          }
+        },
+        {
+          "name": "ParentCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        }
+      ]
+    },
+    "IfcReparametrisedCompositeCurveSegment": {
+      "name": "IfcReparametrisedCompositeCurveSegment",
+      "supertype": "IfcCompositeCurveSegment",
+      "attributes": [
+        {
+          "name": "Transition",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcTransitionCode",
+            "values": [
+              "CONTINUOUS",
+              "CONTSAMEGRADIENT",
+              "CONTSAMEGRADIENTSAMECURVATURE",
+              "DISCONTINUOUS"
+            ]
+          }
+        },
+        {
+          "name": "SameSense",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcBoolean"
+          }
+        },
+        {
+          "name": "ParentCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "ParamLength",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcParameterValue"
+          }
+        }
+      ]
+    },
+    "IfcCurveSegment": {
+      "name": "IfcCurveSegment",
+      "supertype": "IfcSegment",
+      "attributes": [
+        {
+          "name": "Transition",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcTransitionCode",
+            "values": [
+              "CONTINUOUS",
+              "CONTSAMEGRADIENT",
+              "CONTSAMEGRADIENTSAMECURVATURE",
+              "DISCONTINUOUS"
+            ]
+          }
+        },
+        {
+          "name": "Placement",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPlacement"
+          }
+        },
+        {
+          "name": "SegmentStart",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcCurveMeasureSelect",
+            "options": [
+              {
+                "kind": "number",
+                "ifcType": "IfcLengthMeasure"
+              },
+              {
+                "kind": "number",
+                "ifcType": "IfcParameterValue"
+              }
+            ],
+            "optionNames": [
+              "IfcLengthMeasure",
+              "IfcParameterValue"
+            ]
+          }
+        },
+        {
+          "name": "SegmentLength",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcCurveMeasureSelect",
+            "options": [
+              {
+                "kind": "number",
+                "ifcType": "IfcLengthMeasure"
+              },
+              {
+                "kind": "number",
+                "ifcType": "IfcParameterValue"
+              }
+            ],
+            "optionNames": [
+              "IfcLengthMeasure",
+              "IfcParameterValue"
+            ]
+          }
+        },
+        {
+          "name": "ParentCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        }
+      ]
+    },
+    "IfcBSplineCurveWithKnots": {
+      "name": "IfcBSplineCurveWithKnots",
+      "supertype": "IfcBSplineCurve",
+      "attributes": [
+        {
+          "name": "Degree",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcInteger"
+          }
+        },
+        {
+          "name": "ControlPointsList",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcCartesianPoint"
+            }
+          }
+        },
+        {
+          "name": "CurveForm",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcBSplineCurveForm",
+            "values": [
+              "CIRCULAR_ARC",
+              "ELLIPTIC_ARC",
+              "HYPERBOLIC_ARC",
+              "PARABOLIC_ARC",
+              "POLYLINE_FORM",
+              "UNSPECIFIED"
+            ]
+          }
+        },
+        {
+          "name": "ClosedCurve",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        },
+        {
+          "name": "KnotMultiplicities",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcInteger"
+            }
+          }
+        },
+        {
+          "name": "Knots",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcParameterValue"
+            }
+          }
+        },
+        {
+          "name": "KnotSpec",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcKnotType",
+            "values": [
+              "PIECEWISE_BEZIER_KNOTS",
+              "QUASI_UNIFORM_KNOTS",
+              "UNIFORM_KNOTS",
+              "UNSPECIFIED"
+            ]
+          }
+        }
+      ]
+    },
+    "IfcRationalBSplineCurveWithKnots": {
+      "name": "IfcRationalBSplineCurveWithKnots",
+      "supertype": "IfcBSplineCurveWithKnots",
+      "attributes": [
+        {
+          "name": "Degree",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcInteger"
+          }
+        },
+        {
+          "name": "ControlPointsList",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcCartesianPoint"
+            }
+          }
+        },
+        {
+          "name": "CurveForm",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcBSplineCurveForm",
+            "values": [
+              "CIRCULAR_ARC",
+              "ELLIPTIC_ARC",
+              "HYPERBOLIC_ARC",
+              "PARABOLIC_ARC",
+              "POLYLINE_FORM",
+              "UNSPECIFIED"
+            ]
+          }
+        },
+        {
+          "name": "ClosedCurve",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        },
+        {
+          "name": "KnotMultiplicities",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcInteger"
+            }
+          }
+        },
+        {
+          "name": "Knots",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcParameterValue"
+            }
+          }
+        },
+        {
+          "name": "KnotSpec",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcKnotType",
+            "values": [
+              "PIECEWISE_BEZIER_KNOTS",
+              "QUASI_UNIFORM_KNOTS",
+              "UNIFORM_KNOTS",
+              "UNSPECIFIED"
+            ]
+          }
+        },
+        {
+          "name": "WeightsData",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcReal"
+            }
+          }
+        }
+      ]
+    },
+    "IfcCompositeCurve": {
+      "name": "IfcCompositeCurve",
+      "supertype": "IfcBoundedCurve",
+      "attributes": [
+        {
+          "name": "Segments",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcSegment"
+            }
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        }
+      ]
+    },
+    "IfcCompositeCurveOnSurface": {
+      "name": "IfcCompositeCurveOnSurface",
+      "supertype": "IfcCompositeCurve",
+      "attributes": [
+        {
+          "name": "Segments",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcSegment"
+            }
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        }
+      ]
+    },
+    "IfcBoundaryCurve": {
+      "name": "IfcBoundaryCurve",
+      "supertype": "IfcCompositeCurveOnSurface",
+      "attributes": [
+        {
+          "name": "Segments",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcSegment"
+            }
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        }
+      ]
+    },
+    "IfcOuterBoundaryCurve": {
+      "name": "IfcOuterBoundaryCurve",
+      "supertype": "IfcBoundaryCurve",
+      "attributes": [
+        {
+          "name": "Segments",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcSegment"
+            }
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        }
+      ]
+    },
+    "IfcGradientCurve": {
+      "name": "IfcGradientCurve",
+      "supertype": "IfcCompositeCurve",
+      "attributes": [
+        {
+          "name": "Segments",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcSegment"
+            }
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        },
+        {
+          "name": "BaseCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcBoundedCurve"
+          }
+        },
+        {
+          "name": "EndPoint",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPlacement"
+          }
+        }
+      ]
+    },
+    "IfcSegmentedReferenceCurve": {
+      "name": "IfcSegmentedReferenceCurve",
+      "supertype": "IfcCompositeCurve",
+      "attributes": [
+        {
+          "name": "Segments",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcSegment"
+            }
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        },
+        {
+          "name": "BaseCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcBoundedCurve"
+          }
+        },
+        {
+          "name": "EndPoint",
+          "optional": true,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPlacement"
+          }
+        }
+      ]
+    },
+    "IfcIndexedPolyCurve": {
+      "name": "IfcIndexedPolyCurve",
+      "supertype": "IfcBoundedCurve",
+      "attributes": [
+        {
+          "name": "Points",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCartesianPointList"
+          }
+        },
+        {
+          "name": "Segments",
+          "optional": true,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "select",
+              "ifcType": "IfcSegmentIndexSelect",
+              "options": [
+                {
+                  "kind": "array",
+                  "aggregation": "list",
+                  "element": {
+                    "kind": "number",
+                    "ifcType": "IfcPositiveInteger"
+                  },
+                  "ifcType": "IfcArcIndex"
+                },
+                {
+                  "kind": "array",
+                  "aggregation": "list",
+                  "element": {
+                    "kind": "number",
+                    "ifcType": "IfcPositiveInteger"
+                  },
+                  "ifcType": "IfcLineIndex"
+                }
+              ],
+              "optionNames": [
+                "IfcArcIndex",
+                "IfcLineIndex"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": true,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcBoolean"
+          }
+        }
+      ]
+    },
+    "IfcPolyline": {
+      "name": "IfcPolyline",
+      "supertype": "IfcBoundedCurve",
+      "attributes": [
+        {
+          "name": "Points",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcCartesianPoint"
+            }
+          }
+        }
+      ]
+    },
+    "IfcTrimmedCurve": {
+      "name": "IfcTrimmedCurve",
+      "supertype": "IfcBoundedCurve",
+      "attributes": [
+        {
+          "name": "BasisCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "Trim1",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "set",
+            "element": {
+              "kind": "select",
+              "ifcType": "IfcTrimmingSelect",
+              "options": [
+                {
+                  "kind": "entity",
+                  "name": "IfcCartesianPoint"
+                },
+                {
+                  "kind": "number",
+                  "ifcType": "IfcParameterValue"
+                }
+              ],
+              "optionNames": [
+                "IfcCartesianPoint",
+                "IfcParameterValue"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Trim2",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "set",
+            "element": {
+              "kind": "select",
+              "ifcType": "IfcTrimmingSelect",
+              "options": [
+                {
+                  "kind": "entity",
+                  "name": "IfcCartesianPoint"
+                },
+                {
+                  "kind": "number",
+                  "ifcType": "IfcParameterValue"
+                }
+              ],
+              "optionNames": [
+                "IfcCartesianPoint",
+                "IfcParameterValue"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SenseAgreement",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcBoolean"
+          }
+        },
+        {
+          "name": "MasterRepresentation",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcTrimmingPreference",
+            "values": [
+              "CARTESIAN",
+              "PARAMETER",
+              "UNSPECIFIED"
+            ]
+          }
+        }
+      ]
+    },
+    "IfcCircle": {
+      "name": "IfcCircle",
+      "supertype": "IfcConic",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "Radius",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcEllipse": {
+      "name": "IfcEllipse",
+      "supertype": "IfcConic",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "SemiAxis1",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        },
+        {
+          "name": "SemiAxis2",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcPositiveLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcLine": {
+      "name": "IfcLine",
+      "supertype": "IfcCurve",
+      "attributes": [
+        {
+          "name": "Pnt",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCartesianPoint"
+          }
+        },
+        {
+          "name": "Dir",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcVector"
+          }
+        }
+      ]
+    },
+    "IfcOffsetCurve2D": {
+      "name": "IfcOffsetCurve2D",
+      "supertype": "IfcOffsetCurve",
+      "attributes": [
+        {
+          "name": "BasisCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "Distance",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        }
+      ]
+    },
+    "IfcOffsetCurve3D": {
+      "name": "IfcOffsetCurve3D",
+      "supertype": "IfcOffsetCurve",
+      "attributes": [
+        {
+          "name": "BasisCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "Distance",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "SelfIntersect",
+          "optional": false,
+          "type": {
+            "kind": "boolean",
+            "ifcType": "IfcLogical"
+          }
+        },
+        {
+          "name": "RefDirection",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcDirection"
+          }
+        }
+      ]
+    },
+    "IfcOffsetCurveByDistances": {
+      "name": "IfcOffsetCurveByDistances",
+      "supertype": "IfcOffsetCurve",
+      "attributes": [
+        {
+          "name": "BasisCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "OffsetValues",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcPointByDistanceExpression"
+            }
+          }
+        },
+        {
+          "name": "Tag",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "ifcType": "IfcLabel"
+          }
+        }
+      ]
+    },
+    "IfcPcurve": {
+      "name": "IfcPcurve",
+      "supertype": "IfcCurve",
+      "attributes": [
+        {
+          "name": "BasisSurface",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcSurface"
+          }
+        },
+        {
+          "name": "ReferenceCurve",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        }
+      ]
+    },
+    "IfcPolynomialCurve": {
+      "name": "IfcPolynomialCurve",
+      "supertype": "IfcCurve",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcPlacement"
+          }
+        },
+        {
+          "name": "CoefficientsX",
+          "optional": true,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcReal"
+            }
+          }
+        },
+        {
+          "name": "CoefficientsY",
+          "optional": true,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcReal"
+            }
+          }
+        },
+        {
+          "name": "CoefficientsZ",
+          "optional": true,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "number",
+              "ifcType": "IfcReal"
+            }
+          }
+        }
+      ]
+    },
+    "IfcClothoid": {
+      "name": "IfcClothoid",
+      "supertype": "IfcSpiral",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "ClothoidConstant",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcCosineSpiral": {
+      "name": "IfcCosineSpiral",
+      "supertype": "IfcSpiral",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "CosineTerm",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "ConstantTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcSecondOrderPolynomialSpiral": {
+      "name": "IfcSecondOrderPolynomialSpiral",
+      "supertype": "IfcSpiral",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "QuadraticTerm",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "LinearTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "ConstantTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcSeventhOrderPolynomialSpiral": {
+      "name": "IfcSeventhOrderPolynomialSpiral",
+      "supertype": "IfcSpiral",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "SepticTerm",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "SexticTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "QuinticTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "QuarticTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "CubicTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "QuadraticTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "LinearTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "ConstantTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcSineSpiral": {
+      "name": "IfcSineSpiral",
+      "supertype": "IfcSpiral",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "SineTerm",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "LinearTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "ConstantTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcThirdOrderPolynomialSpiral": {
+      "name": "IfcThirdOrderPolynomialSpiral",
+      "supertype": "IfcSpiral",
+      "attributes": [
+        {
+          "name": "Position",
+          "optional": false,
+          "type": {
+            "kind": "select",
+            "ifcType": "IfcAxis2Placement",
+            "options": [
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement2D"
+              },
+              {
+                "kind": "entity",
+                "name": "IfcAxis2Placement3D"
+              }
+            ],
+            "optionNames": [
+              "IfcAxis2Placement2D",
+              "IfcAxis2Placement3D"
+            ]
+          }
+        },
+        {
+          "name": "CubicTerm",
+          "optional": false,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "QuadraticTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "LinearTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        },
+        {
+          "name": "ConstantTerm",
+          "optional": true,
+          "type": {
+            "kind": "number",
+            "ifcType": "IfcLengthMeasure"
+          }
+        }
+      ]
+    },
+    "IfcSurfaceCurve": {
+      "name": "IfcSurfaceCurve",
+      "supertype": "IfcCurve",
+      "attributes": [
+        {
+          "name": "Curve3D",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "AssociatedGeometry",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcPcurve"
+            }
+          }
+        },
+        {
+          "name": "MasterRepresentation",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcPreferredSurfaceCurveRepresentation",
+            "values": [
+              "CURVE3D",
+              "PCURVE_S1",
+              "PCURVE_S2"
+            ]
+          }
+        }
+      ]
+    },
+    "IfcIntersectionCurve": {
+      "name": "IfcIntersectionCurve",
+      "supertype": "IfcSurfaceCurve",
+      "attributes": [
+        {
+          "name": "Curve3D",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "AssociatedGeometry",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcPcurve"
+            }
+          }
+        },
+        {
+          "name": "MasterRepresentation",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcPreferredSurfaceCurveRepresentation",
+            "values": [
+              "CURVE3D",
+              "PCURVE_S1",
+              "PCURVE_S2"
+            ]
+          }
+        }
+      ]
+    },
+    "IfcSeamCurve": {
+      "name": "IfcSeamCurve",
+      "supertype": "IfcSurfaceCurve",
+      "attributes": [
+        {
+          "name": "Curve3D",
+          "optional": false,
+          "type": {
+            "kind": "entity",
+            "name": "IfcCurve"
+          }
+        },
+        {
+          "name": "AssociatedGeometry",
+          "optional": false,
+          "type": {
+            "kind": "array",
+            "aggregation": "list",
+            "element": {
+              "kind": "entity",
+              "name": "IfcPcurve"
+            }
+          }
+        },
+        {
+          "name": "MasterRepresentation",
+          "optional": false,
+          "type": {
+            "kind": "enumeration",
+            "ifcType": "IfcPreferredSurfaceCurveRepresentation",
+            "values": [
+              "CURVE3D",
+              "PCURVE_S1",
+              "PCURVE_S2"
+            ]
           }
         }
       ]

@@ -18,24 +18,390 @@ export interface IfcDirection {
   directionRatios: number[];
 }
 
+export interface IfcVector {
+  type: 'IfcVector';
+  orientation: IfcDirection;
+  magnitude: number;
+}
+
 export interface IfcAxis1Placement {
   type: 'IfcAxis1Placement';
-  location: IfcCartesianPoint;
+  location: IfcPoint;
   axis?: IfcDirection;
 }
 
 export interface IfcAxis2Placement2D {
   type: 'IfcAxis2Placement2D';
-  location: IfcCartesianPoint;
+  location: IfcPoint;
   refDirection?: IfcDirection;
 }
 
 export interface IfcAxis2Placement3D {
   type: 'IfcAxis2Placement3D';
-  location: IfcCartesianPoint;
+  location: IfcPoint;
   axis?: IfcDirection;
   refDirection?: IfcDirection;
 }
+
+export interface IfcAxis2PlacementLinear {
+  type: 'IfcAxis2PlacementLinear';
+  location: IfcPoint;
+  axis?: IfcDirection;
+  refDirection?: IfcDirection;
+}
+
+export interface IfcCartesianPointList2D {
+  type: 'IfcCartesianPointList2D';
+  coordList: number[][];
+  tagList?: string[];
+}
+
+export interface IfcCartesianPointList3D {
+  type: 'IfcCartesianPointList3D';
+  coordList: number[][];
+  tagList?: string[];
+}
+
+export interface IfcPointByDistanceExpression {
+  type: 'IfcPointByDistanceExpression';
+  distanceAlong: number;
+  offsetLateral?: number;
+  offsetVertical?: number;
+  offsetLongitudinal?: number;
+  basisCurve: IfcCurve;
+}
+
+export interface IfcPointOnCurve {
+  type: 'IfcPointOnCurve';
+  basisCurve: IfcCurve;
+  pointParameter: number;
+}
+
+export interface IfcPointOnSurface {
+  type: 'IfcPointOnSurface';
+  basisSurface: IfcSurface;
+  pointParameterU: number;
+  pointParameterV: number;
+}
+
+export type IfcCartesianPointList =
+    IfcCartesianPointList2D
+  | IfcCartesianPointList3D;
+
+export type IfcPoint =
+    IfcCartesianPoint
+  | IfcPointByDistanceExpression
+  | IfcPointOnCurve
+  | IfcPointOnSurface;
+
+export type IfcPlacement =
+    IfcAxis1Placement
+  | IfcAxis2Placement2D
+  | IfcAxis2Placement3D
+  | IfcAxis2PlacementLinear;
+
+export type IfcSurface = unknown;
+
+// ── Curve segment entities ────────────────────────────────────────
+
+export interface IfcCompositeCurveSegment {
+  type: 'IfcCompositeCurveSegment';
+  transition: 'CONTINUOUS' | 'CONTSAMEGRADIENT' | 'CONTSAMEGRADIENTSAMECURVATURE' | 'DISCONTINUOUS';
+  sameSense: boolean;
+  parentCurve: IfcCurve;
+}
+
+export interface IfcReparametrisedCompositeCurveSegment {
+  type: 'IfcReparametrisedCompositeCurveSegment';
+  transition: 'CONTINUOUS' | 'CONTSAMEGRADIENT' | 'CONTSAMEGRADIENTSAMECURVATURE' | 'DISCONTINUOUS';
+  sameSense: boolean;
+  parentCurve: IfcCurve;
+  paramLength: number;
+}
+
+export interface IfcCurveSegment {
+  type: 'IfcCurveSegment';
+  transition: 'CONTINUOUS' | 'CONTSAMEGRADIENT' | 'CONTSAMEGRADIENTSAMECURVATURE' | 'DISCONTINUOUS';
+  placement: IfcPlacement;
+  segmentStart: number;
+  segmentLength: number;
+  parentCurve: IfcCurve;
+}
+
+export type IfcSegment =
+    IfcCompositeCurveSegment
+  | IfcReparametrisedCompositeCurveSegment
+  | IfcCurveSegment;
+
+// ── Curve entities ────────────────────────────────────────────────
+
+export interface IfcBSplineCurveWithKnots {
+  type: 'IfcBSplineCurveWithKnots';
+  degree: number;
+  controlPointsList: IfcCartesianPoint[];
+  curveForm: 'CIRCULAR_ARC' | 'ELLIPTIC_ARC' | 'HYPERBOLIC_ARC' | 'PARABOLIC_ARC' | 'POLYLINE_FORM' | 'UNSPECIFIED';
+  closedCurve: boolean;
+  selfIntersect: boolean;
+  knotMultiplicities: number[];
+  knots: number[];
+  knotSpec: 'PIECEWISE_BEZIER_KNOTS' | 'QUASI_UNIFORM_KNOTS' | 'UNIFORM_KNOTS' | 'UNSPECIFIED';
+}
+
+export interface IfcRationalBSplineCurveWithKnots {
+  type: 'IfcRationalBSplineCurveWithKnots';
+  degree: number;
+  controlPointsList: IfcCartesianPoint[];
+  curveForm: 'CIRCULAR_ARC' | 'ELLIPTIC_ARC' | 'HYPERBOLIC_ARC' | 'PARABOLIC_ARC' | 'POLYLINE_FORM' | 'UNSPECIFIED';
+  closedCurve: boolean;
+  selfIntersect: boolean;
+  knotMultiplicities: number[];
+  knots: number[];
+  knotSpec: 'PIECEWISE_BEZIER_KNOTS' | 'QUASI_UNIFORM_KNOTS' | 'UNIFORM_KNOTS' | 'UNSPECIFIED';
+  weightsData: number[];
+}
+
+export interface IfcCompositeCurve {
+  type: 'IfcCompositeCurve';
+  segments: IfcSegment[];
+  selfIntersect: boolean;
+}
+
+export interface IfcCompositeCurveOnSurface {
+  type: 'IfcCompositeCurveOnSurface';
+  segments: IfcSegment[];
+  selfIntersect: boolean;
+}
+
+export interface IfcBoundaryCurve {
+  type: 'IfcBoundaryCurve';
+  segments: IfcSegment[];
+  selfIntersect: boolean;
+}
+
+export interface IfcOuterBoundaryCurve {
+  type: 'IfcOuterBoundaryCurve';
+  segments: IfcSegment[];
+  selfIntersect: boolean;
+}
+
+export interface IfcGradientCurve {
+  type: 'IfcGradientCurve';
+  segments: IfcSegment[];
+  selfIntersect: boolean;
+  baseCurve: IfcBoundedCurve;
+  endPoint?: IfcPlacement;
+}
+
+export interface IfcSegmentedReferenceCurve {
+  type: 'IfcSegmentedReferenceCurve';
+  segments: IfcSegment[];
+  selfIntersect: boolean;
+  baseCurve: IfcBoundedCurve;
+  endPoint?: IfcPlacement;
+}
+
+export interface IfcIndexedPolyCurve {
+  type: 'IfcIndexedPolyCurve';
+  points: IfcCartesianPointList;
+  segments?: number[][];
+  selfIntersect?: boolean;
+}
+
+export interface IfcPolyline {
+  type: 'IfcPolyline';
+  points: IfcCartesianPoint[];
+}
+
+export interface IfcTrimmedCurve {
+  type: 'IfcTrimmedCurve';
+  basisCurve: IfcCurve;
+  trim1: (IfcCartesianPoint | number)[];
+  trim2: (IfcCartesianPoint | number)[];
+  senseAgreement: boolean;
+  masterRepresentation: 'CARTESIAN' | 'PARAMETER' | 'UNSPECIFIED';
+}
+
+export interface IfcCircle {
+  type: 'IfcCircle';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  radius: number;
+}
+
+export interface IfcEllipse {
+  type: 'IfcEllipse';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  semiAxis1: number;
+  semiAxis2: number;
+}
+
+export interface IfcLine {
+  type: 'IfcLine';
+  pnt: IfcCartesianPoint;
+  dir: IfcVector;
+}
+
+export interface IfcOffsetCurve2D {
+  type: 'IfcOffsetCurve2D';
+  basisCurve: IfcCurve;
+  distance: number;
+  selfIntersect: boolean;
+}
+
+export interface IfcOffsetCurve3D {
+  type: 'IfcOffsetCurve3D';
+  basisCurve: IfcCurve;
+  distance: number;
+  selfIntersect: boolean;
+  refDirection: IfcDirection;
+}
+
+export interface IfcOffsetCurveByDistances {
+  type: 'IfcOffsetCurveByDistances';
+  basisCurve: IfcCurve;
+  offsetValues: IfcPointByDistanceExpression[];
+  tag?: string;
+}
+
+export interface IfcPcurve {
+  type: 'IfcPcurve';
+  basisSurface: IfcSurface;
+  referenceCurve: IfcCurve;
+}
+
+export interface IfcPolynomialCurve {
+  type: 'IfcPolynomialCurve';
+  position: IfcPlacement;
+  coefficientsX?: number[];
+  coefficientsY?: number[];
+  coefficientsZ?: number[];
+}
+
+export interface IfcClothoid {
+  type: 'IfcClothoid';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  clothoidConstant: number;
+}
+
+export interface IfcCosineSpiral {
+  type: 'IfcCosineSpiral';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  cosineTerm: number;
+  constantTerm?: number;
+}
+
+export interface IfcSecondOrderPolynomialSpiral {
+  type: 'IfcSecondOrderPolynomialSpiral';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  quadraticTerm: number;
+  linearTerm?: number;
+  constantTerm?: number;
+}
+
+export interface IfcSeventhOrderPolynomialSpiral {
+  type: 'IfcSeventhOrderPolynomialSpiral';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  septicTerm: number;
+  sexticTerm?: number;
+  quinticTerm?: number;
+  quarticTerm?: number;
+  cubicTerm?: number;
+  quadraticTerm?: number;
+  linearTerm?: number;
+  constantTerm?: number;
+}
+
+export interface IfcSineSpiral {
+  type: 'IfcSineSpiral';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  sineTerm: number;
+  linearTerm?: number;
+  constantTerm?: number;
+}
+
+export interface IfcThirdOrderPolynomialSpiral {
+  type: 'IfcThirdOrderPolynomialSpiral';
+  position: IfcAxis2Placement2D | IfcAxis2Placement3D;
+  cubicTerm: number;
+  quadraticTerm?: number;
+  linearTerm?: number;
+  constantTerm?: number;
+}
+
+export interface IfcSurfaceCurve {
+  type: 'IfcSurfaceCurve';
+  curve3D: IfcCurve;
+  associatedGeometry: IfcPcurve[];
+  masterRepresentation: 'CURVE3D' | 'PCURVE_S1' | 'PCURVE_S2';
+}
+
+export interface IfcIntersectionCurve {
+  type: 'IfcIntersectionCurve';
+  curve3D: IfcCurve;
+  associatedGeometry: IfcPcurve[];
+  masterRepresentation: 'CURVE3D' | 'PCURVE_S1' | 'PCURVE_S2';
+}
+
+export interface IfcSeamCurve {
+  type: 'IfcSeamCurve';
+  curve3D: IfcCurve;
+  associatedGeometry: IfcPcurve[];
+  masterRepresentation: 'CURVE3D' | 'PCURVE_S1' | 'PCURVE_S2';
+}
+
+export type IfcBoundedCurve =
+    IfcBSplineCurveWithKnots
+  | IfcRationalBSplineCurveWithKnots
+  | IfcCompositeCurve
+  | IfcCompositeCurveOnSurface
+  | IfcBoundaryCurve
+  | IfcOuterBoundaryCurve
+  | IfcGradientCurve
+  | IfcSegmentedReferenceCurve
+  | IfcIndexedPolyCurve
+  | IfcPolyline
+  | IfcTrimmedCurve;
+
+export type IfcCurve =
+    IfcBSplineCurveWithKnots
+  | IfcRationalBSplineCurveWithKnots
+  | IfcCompositeCurve
+  | IfcCompositeCurveOnSurface
+  | IfcBoundaryCurve
+  | IfcOuterBoundaryCurve
+  | IfcGradientCurve
+  | IfcSegmentedReferenceCurve
+  | IfcIndexedPolyCurve
+  | IfcPolyline
+  | IfcTrimmedCurve
+  | IfcCircle
+  | IfcEllipse
+  | IfcLine
+  | IfcOffsetCurve2D
+  | IfcOffsetCurve3D
+  | IfcOffsetCurveByDistances
+  | IfcPcurve
+  | IfcPolynomialCurve
+  | IfcClothoid
+  | IfcCosineSpiral
+  | IfcSecondOrderPolynomialSpiral
+  | IfcSeventhOrderPolynomialSpiral
+  | IfcSineSpiral
+  | IfcThirdOrderPolynomialSpiral
+  | IfcSurfaceCurve
+  | IfcIntersectionCurve
+  | IfcSeamCurve;
+
+/** Runtime-facing curve subset. This is intentionally narrower than
+ *  schema-complete IfcCurve until operations support every family. */
+
+export type IfcSupportedCurve =
+    IfcPolyline
+  | IfcIndexedPolyCurve
+  | IfcLine
+  | IfcCircle
+  | IfcEllipse
+  | IfcTrimmedCurve
+  | IfcCompositeCurve;
 
 // ── Parameterized profile definitions ────────────────────────────
 
