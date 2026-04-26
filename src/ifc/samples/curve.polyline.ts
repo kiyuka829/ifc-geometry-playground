@@ -10,7 +10,7 @@ import type {
   Vec3,
 } from "../../types.ts";
 import type { IfcCartesianPoint, IfcPolyline } from "../generated/schema.ts";
-import { createSolidMaterial } from "../../engine/materials.ts";
+import { getOrCreateSolidMaterial } from "../../engine/materials.ts";
 import { buildCurvePointMarkers, buildPolylineCurve } from "../operations/curve.ts";
 
 const DEFAULT_POLYLINE_PATH: Vec3[] = [
@@ -75,7 +75,7 @@ export const curvePolylineSample: SampleDef = {
   ): Mesh[] => {
     const pts = path && path.length >= 2 ? path : DEFAULT_POLYLINE_PATH;
     const curve = toIfcPolyline(pts);
-    const markerMaterial = createSolidMaterial(scene, new Color3(1, 0.55, 0.15));
+    const markerMaterial = getOrCreateSolidMaterial(scene, "polyline_marker", new Color3(1, 0.55, 0.15));
 
     const meshes: Mesh[] = [
       ...buildCurvePointMarkers(scene, curve, markerMaterial, "polyline_point"),

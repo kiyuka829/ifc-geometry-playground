@@ -11,6 +11,14 @@ export function createSolidMaterial(scene: Scene, color: Color3, alpha = 1): Sta
   return mat
 }
 
+export function getOrCreateSolidMaterial(scene: Scene, name: string, color: Color3, alpha = 1): StandardMaterial {
+  const existing = scene.getMaterialByName(name)
+  const mat = existing instanceof StandardMaterial ? existing : new StandardMaterial(name, scene)
+  mat.diffuseColor = color
+  mat.alpha = alpha
+  return mat
+}
+
 export function createWireframeMaterial(scene: Scene, color: Color3): StandardMaterial {
   const mat = new StandardMaterial(`wire_${nextId()}`, scene)
   mat.diffuseColor = color
