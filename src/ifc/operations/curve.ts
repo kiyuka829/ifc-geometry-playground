@@ -10,7 +10,7 @@ import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
 import type { Vec3 } from "../../types.ts";
 
 const DEFAULT_ARC_SEGMENTS = 32;
-const EPS_MINISCULE = 1e-9;
+const EPSILON = 1e-9;
 
 export type IndexedPolyCurveSegmentKind = "line" | "arc";
 
@@ -57,13 +57,13 @@ function length(v: Vec3): number {
 
 function normalize(v: Vec3): Vec3 {
   const len = length(v);
-  if (len < EPS_MINISCULE) return { x: 0, y: 0, z: 0 };
+  if (len < EPSILON) return { x: 0, y: 0, z: 0 };
   return scale(v, 1 / len);
 }
 
 function addCurvePoint(points: Vec3[], point: Vec3, removeCoincident = true) {
   const previous = points.at(-1);
-  if (!previous || !removeCoincident || distance(previous, point) > EPS_MINISCULE) {
+  if (!previous || !removeCoincident || distance(previous, point) > EPSILON) {
     points.push(point);
   }
 }
@@ -87,7 +87,7 @@ function buildArc3Point(
   const crossV = cross(v1, v2);
   const crossLen = length(crossV);
 
-  if (crossLen < EPS_MINISCULE) {
+  if (crossLen < EPSILON) {
     return [p1, p2, p3];
   }
 

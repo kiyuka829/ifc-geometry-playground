@@ -215,7 +215,7 @@ export class IndexedPolyCurveEditor {
       const del = document.createElement("button");
       del.className = "point-delete-btn";
       del.title = "Remove point";
-      del.textContent = "x";
+      del.textContent = "×";
       del.addEventListener("click", () => {
         this._deletePoint(index);
       });
@@ -279,8 +279,18 @@ export class IndexedPolyCurveEditor {
       return list;
     }
 
+    const issues = this._getSegmentContinuityIssues();
+    const issueSegmentIndices = new Set(
+      issues.flatMap((issue) => [
+        issue.previousSegmentIndex,
+        issue.nextSegmentIndex,
+      ]),
+    );
+
     segments.forEach((segment, index) => {
-      list.appendChild(this._buildSegmentRow(segment, index));
+      list.appendChild(
+        this._buildSegmentRow(segment, index, issueSegmentIndices),
+      );
     });
     return list;
   }
@@ -288,9 +298,10 @@ export class IndexedPolyCurveEditor {
   private _buildSegmentRow(
     segment: IfcSegmentIndexSelect,
     segmentIndex: number,
+    issueSegmentIndices: Set<number>,
   ): HTMLElement {
     const row = document.createElement("div");
-    const hasContinuityIssue = this._hasContinuityIssue(segmentIndex);
+    const hasContinuityIssue = issueSegmentIndices.has(segmentIndex);
     row.className = "indexed-segment-row";
     row.dataset.segmentIndex = String(segmentIndex);
     row.classList.add(
@@ -354,7 +365,7 @@ export class IndexedPolyCurveEditor {
     const del = document.createElement("button");
     del.className = "point-delete-btn";
     del.title = "Remove segment";
-    del.textContent = "x";
+    del.textContent = "×";
     del.addEventListener("click", () => {
       this.curve.segments?.splice(segmentIndex, 1);
       if (this.curve.segments?.length === 0) {
@@ -388,11 +399,13 @@ export class IndexedPolyCurveEditor {
 
       const segment = this.curve.segments?.[segmentIndex];
       if (!segment) return;
-      segment.indices[indexIndex] = clampIndex(
+      const normalizedIndex = clampIndex(
         parsed,
         this.curve.points.coordList.length,
       );
+      segment.indices[indexIndex] = normalizedIndex;
       this._normalizeSegments();
+      input.value = String(segment.indices[indexIndex] ?? normalizedIndex);
       this._syncSegmentWarning();
       this._notify();
     });
@@ -403,7 +416,7 @@ export class IndexedPolyCurveEditor {
       const remove = document.createElement("button");
       remove.className = "indexed-segment-index-remove";
       remove.title = "Remove line index";
-      remove.textContent = "x";
+      remove.textContent = "×";
       remove.addEventListener("click", () => {
         segment.indices.splice(indexIndex, 1);
         this._refreshAndNotify();
@@ -482,14 +495,6 @@ export class IndexedPolyCurveEditor {
     }
 
     return issues;
-  }
-
-  private _hasContinuityIssue(segmentIndex: number): boolean {
-    return this._getSegmentContinuityIssues().some(
-      (issue) =>
-        issue.previousSegmentIndex === segmentIndex ||
-        issue.nextSegmentIndex === segmentIndex,
-    );
   }
 
   private _syncSegmentWarning(): void {
