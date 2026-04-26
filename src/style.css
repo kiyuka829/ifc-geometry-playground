@@ -745,21 +745,6 @@ a.map-entity:hover {
   margin-bottom: 4px;
 }
 
-.path-preview {
-  background: #0d1b2e;
-  border: 1px solid #1a2a4a;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  overflow: hidden;
-  line-height: 0;
-}
-
-.path-preview svg {
-  width: 100%;
-  height: 140px;
-  display: block;
-}
-
 .path-points-list {
   display: flex;
   flex-direction: column;
