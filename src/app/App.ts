@@ -19,11 +19,13 @@ import { sweptDiskBasicSample } from "../ifc/samples/swept-disk.basic.ts";
 import { revolvedRectangleSample } from "../ifc/samples/revolved.rectangle.ts";
 import { curvePolylineSample } from "../ifc/samples/curve.polyline.ts";
 import { curveIndexedPolyCurveSample } from "../ifc/samples/curve.indexed-polycurve.ts";
+import { curveTrimmedSample } from "../ifc/samples/curve.trimmed.ts";
 import type { SampleDef } from "../types.ts";
 
 const samples: Record<string, SampleDef> = {
   "curve-polyline": curvePolylineSample,
   "curve-indexed-polycurve": curveIndexedPolyCurveSample,
+  "curve-trimmed": curveTrimmedSample,
   "extrusion-rectangle": extrusionRectangleSample,
   "extrusion-rounded-rectangle": extrusionRoundedRectangleSample,
   "boolean-difference": booleanDifferenceSample,
