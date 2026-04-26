@@ -52,7 +52,7 @@ body {
 /* Home Page */
 .home-page {
   padding: 40px;
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
   overflow-y: auto;
   height: 100%;
@@ -99,11 +99,11 @@ body {
   gap: 20px;
 }
 
-.coverage-block {
+.variant-block {
   margin-top: 18px;
 }
 
-.coverage-title {
+.variant-title {
   color: #6f8fb2;
   font-size: 0.8em;
   font-weight: bold;
@@ -112,7 +112,7 @@ body {
   margin-bottom: 12px;
 }
 
-.examples-grid--coverage {
+.examples-grid--variants {
   gap: 16px;
 }
 
@@ -167,6 +167,14 @@ body {
   line-height: 1.5;
 }
 
+.example-card-entity {
+  display: inline-block;
+  color: #b7d6e8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.76em;
+  margin-bottom: 10px;
+}
+
 .example-card-badge {
   font-size: 0.68em;
   font-weight: bold;
@@ -202,6 +210,105 @@ body {
   font-size: 0.75em;
   color: #4a6080;
   font-style: italic;
+}
+
+.implementation-map-section {
+  padding-bottom: 24px;
+}
+
+.implementation-map {
+  overflow-x: auto;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  background: #121b34;
+}
+
+.implementation-map table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.implementation-map th,
+.implementation-map td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #0f3460;
+  text-align: left;
+  vertical-align: top;
+}
+
+.implementation-map th {
+  color: #81d4fa;
+  font-size: 0.76em;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background: #16213e;
+}
+
+.implementation-map td {
+  color: #9fc4dd;
+  font-size: 0.86em;
+  line-height: 1.45;
+}
+
+.implementation-map tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.map-entity {
+  color: #4fc3f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.map-entity:hover {
+  color: #81d4fa;
+}
+
+.status-pill,
+.map-dependency {
+  display: inline-block;
+  border-radius: 999px;
+  font-size: 0.72em;
+  font-weight: bold;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.status-pill {
+  padding: 5px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-pill--available {
+  background: #0d3b24;
+  color: #66bb6a;
+  border: 1px solid #2e7d32;
+}
+
+.status-pill--partial {
+  background: #26324d;
+  color: #9bbcff;
+  border: 1px solid #4b6599;
+}
+
+.status-pill--planned {
+  background: #2a2f3d;
+  color: #aab4c6;
+  border: 1px solid #485166;
+}
+
+.map-dependencies {
+  min-width: 150px;
+}
+
+.map-dependency {
+  color: #b7d6e8;
+  border: 1px solid #28466b;
+  padding: 4px 7px;
+  margin: 0 5px 5px 0;
 }
 
 /* Example Page Layout */

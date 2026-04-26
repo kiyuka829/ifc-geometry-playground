@@ -1,16 +1,19 @@
-export type HomeSection =
-  | "Foundations"
-  | "Build Solids"
-  | "Compose Solids";
+export type GeometryDomain =
+  | "Curves"
+  | "Profiles"
+  | "Swept Solids"
+  | "Boolean / CSG";
 
-export const HOME_SECTIONS: HomeSection[] = [
-  "Foundations",
-  "Build Solids",
-  "Compose Solids",
+export const GEOMETRY_DOMAINS: GeometryDomain[] = [
+  "Curves",
+  "Profiles",
+  "Swept Solids",
+  "Boolean / CSG",
 ];
 
 export type Difficulty = "beginner" | "intermediate" | "advanced";
-export type HomeKind = "featured" | "coverage";
+export type ExampleKind = "primary" | "variant";
+export type ImplementationStatus = "available" | "partial" | "planned";
 
 interface BaseRoute {
   hash: string;
@@ -20,31 +23,46 @@ interface BaseRoute {
 
 export interface StaticRoute extends BaseRoute {
   sampleId?: undefined;
-  homeSection?: undefined;
+  domain?: undefined;
   difficulty?: undefined;
-  homeKind?: undefined;
+  exampleKind?: undefined;
   status?: undefined;
+  entity?: undefined;
+  dependsOn?: undefined;
 }
 
 export interface AvailableRoute extends BaseRoute {
   description: string;
   sampleId: string;
-  homeSection: HomeSection;
+  domain: GeometryDomain;
   difficulty: Difficulty;
-  homeKind: HomeKind;
+  exampleKind: ExampleKind;
   status: "available";
+  entity: string;
+  dependsOn?: string[];
 }
 
 export interface PlannedRoute extends BaseRoute {
   description: string;
   sampleId?: undefined;
-  homeSection: HomeSection;
+  domain: GeometryDomain;
   difficulty: Difficulty;
-  homeKind: "featured";
+  exampleKind: "primary";
   status: "planned";
+  entity: string;
+  dependsOn?: string[];
 }
 
 export type Route = StaticRoute | AvailableRoute | PlannedRoute;
+
+export interface ImplementationMapItem {
+  entity: string;
+  domain: GeometryDomain;
+  status: ImplementationStatus;
+  description: string;
+  routeHash?: string;
+  dependsOn?: string[];
+}
 
 export const routes: Route[] = [
   { hash: "#/", title: "Home" },
@@ -53,30 +71,22 @@ export const routes: Route[] = [
     title: "Curves",
     description:
       "Explore curve primitives before using them as directrices for sweep-based geometry.",
-    homeSection: "Foundations",
+    domain: "Curves",
     difficulty: "beginner",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "planned",
+    entity: "IfcCurve",
   },
   {
     hash: "#/examples/profiles",
     title: "Profiles",
     description:
       "Inspect and compare reusable area profiles before they are turned into solids.",
-    homeSection: "Foundations",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "planned",
-  },
-  {
-    hash: "#/examples/placement",
-    title: "Placement",
-    description:
-      "See how local axes and placements affect profile orientation and solid generation.",
-    homeSection: "Foundations",
-    difficulty: "beginner",
-    homeKind: "featured",
-    status: "planned",
+    entity: "IfcProfileDef",
   },
   {
     hash: "#/examples/extrusion-rectangle",
@@ -84,10 +94,12 @@ export const routes: Route[] = [
     description:
       "Build a swept solid from an area profile and an extrusion direction (IfcExtrudedAreaSolid).",
     sampleId: "extrusion-rectangle",
-    homeSection: "Build Solids",
+    domain: "Swept Solids",
     difficulty: "beginner",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "available",
+    entity: "IfcExtrudedAreaSolid",
+    dependsOn: ["IfcProfileDef"],
   },
   {
     hash: "#/examples/revolved",
@@ -95,10 +107,12 @@ export const routes: Route[] = [
     description:
       "Rotate an area profile around a local axis to create a revolved solid (IfcRevolvedAreaSolid).",
     sampleId: "revolved-rectangle",
-    homeSection: "Build Solids",
+    domain: "Swept Solids",
     difficulty: "intermediate",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "available",
+    entity: "IfcRevolvedAreaSolid",
+    dependsOn: ["IfcProfileDef"],
   },
   {
     hash: "#/examples/swept-disk",
@@ -106,162 +120,192 @@ export const routes: Route[] = [
     description:
       "Sweep a circular disk or pipe section along a curve-based path (IfcSweptDiskSolid).",
     sampleId: "swept-disk-basic",
-    homeSection: "Build Solids",
+    domain: "Swept Solids",
     difficulty: "intermediate",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "available",
+    entity: "IfcSweptDiskSolid",
+    dependsOn: ["IfcCurve"],
   },
   {
     hash: "#/examples/fixed-reference-sweep",
     title: "Fixed-Reference Sweep",
     description:
       "Sweep a profile along a curve while controlling the reference orientation (IfcFixedReferenceSweptAreaSolid).",
-    homeSection: "Build Solids",
+    domain: "Swept Solids",
     difficulty: "intermediate",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "planned",
+    entity: "IfcFixedReferenceSweptAreaSolid",
+    dependsOn: ["IfcCurve", "IfcProfileDef"],
   },
   {
     hash: "#/examples/sectioned-solid",
     title: "Sectioned Solid",
     description:
       "Interpolate multiple section profiles along a horizontal alignment (IfcSectionedSolidHorizontal).",
-    homeSection: "Build Solids",
+    domain: "Swept Solids",
     difficulty: "advanced",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "planned",
+    entity: "IfcSectionedSolidHorizontal",
+    dependsOn: ["IfcCurve", "IfcProfileDef"],
   },
   {
     hash: "#/examples/extrusion-rounded-rectangle",
     title: "Rounded Rectangle",
     description:
-      "Variation coverage for IfcRoundedRectangleProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcRoundedRectangleProfileDef within the extrusion workflow.",
     sampleId: "extrusion-rounded-rectangle",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcRoundedRectangleProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-circle",
     title: "Circle",
     description:
-      "Variation coverage for IfcCircleProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcCircleProfileDef within the extrusion workflow.",
     sampleId: "extrusion-circle",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcCircleProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-ellipse",
     title: "Ellipse",
     description:
-      "Variation coverage for IfcEllipseProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcEllipseProfileDef within the extrusion workflow.",
     sampleId: "extrusion-ellipse",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcEllipseProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-rect-hollow",
     title: "Rectangular Hollow",
     description:
-      "Variation coverage for IfcRectangleHollowProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcRectangleHollowProfileDef within the extrusion workflow.",
     sampleId: "extrusion-rect-hollow",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcRectangleHollowProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-circle-hollow",
     title: "Circular Hollow",
     description:
-      "Variation coverage for IfcCircleHollowProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcCircleHollowProfileDef within the extrusion workflow.",
     sampleId: "extrusion-circle-hollow",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcCircleHollowProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-i-shape",
     title: "I-Shape",
     description:
-      "Variation coverage for IfcIShapeProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcIShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-i-shape",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcIShapeProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-asymmetric-i-shape",
     title: "Asymmetric I-Shape",
     description:
-      "Variation coverage for IfcAsymmetricIShapeProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcAsymmetricIShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-asymmetric-i-shape",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "intermediate",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcAsymmetricIShapeProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-c-shape",
     title: "C-Shape",
     description:
-      "Variation coverage for IfcCShapeProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcCShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-c-shape",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcCShapeProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-l-shape",
     title: "L-Shape",
     description:
-      "Variation coverage for IfcLShapeProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcLShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-l-shape",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcLShapeProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-t-shape",
     title: "T-Shape",
     description:
-      "Variation coverage for IfcTShapeProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcTShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-t-shape",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcTShapeProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-u-shape",
     title: "U-Shape",
     description:
-      "Variation coverage for IfcUShapeProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcUShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-u-shape",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcUShapeProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/extrusion-z-shape",
     title: "Z-Shape",
     description:
-      "Variation coverage for IfcZShapeProfileDef within the extrusion workflow.",
+      "Implemented variant for IfcZShapeProfileDef within the extrusion workflow.",
     sampleId: "extrusion-z-shape",
-    homeSection: "Build Solids",
+    domain: "Profiles",
     difficulty: "beginner",
-    homeKind: "coverage",
+    exampleKind: "variant",
     status: "available",
+    entity: "IfcZShapeProfileDef",
+    dependsOn: ["IfcExtrudedAreaSolid"],
   },
   {
     hash: "#/examples/boolean",
@@ -269,29 +313,133 @@ export const routes: Route[] = [
     description:
       "Combine solids with boolean operations such as difference, union, and intersection (IfcBooleanResult).",
     sampleId: "boolean-difference",
-    homeSection: "Compose Solids",
+    domain: "Boolean / CSG",
     difficulty: "beginner",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "available",
+    entity: "IfcBooleanResult",
   },
   {
     hash: "#/examples/boolean-clipping",
     title: "Half-Space Clipping",
     description:
       "Trim a solid with half-space operands such as IfcHalfSpaceSolid and IfcPolygonalBoundedHalfSpace.",
-    homeSection: "Compose Solids",
+    domain: "Boolean / CSG",
     difficulty: "intermediate",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "planned",
+    entity: "IfcHalfSpaceSolid",
   },
   {
     hash: "#/examples/csg-primitives",
     title: "CSG Primitives",
     description:
       "Construct solids from primitive volumes such as block, cylinder, cone, sphere, and rectangular pyramid.",
-    homeSection: "Compose Solids",
+    domain: "Boolean / CSG",
     difficulty: "beginner",
-    homeKind: "featured",
+    exampleKind: "primary",
     status: "planned",
+    entity: "IfcCsgPrimitive3D",
+  },
+];
+
+export const implementationMap: ImplementationMapItem[] = [
+  {
+    entity: "IfcCurve",
+    domain: "Curves",
+    status: "planned",
+    description: "Abstract curve base for directrices and profile boundaries.",
+  },
+  {
+    entity: "IfcPolyline",
+    domain: "Curves",
+    status: "available",
+    description: "Polyline directrix used by the swept disk sample.",
+    routeHash: "#/examples/swept-disk",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    entity: "IfcIndexedPolyCurve",
+    domain: "Curves",
+    status: "planned",
+    description: "Indexed curve representation for compact polyline and arc paths.",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    entity: "IfcCircle",
+    domain: "Curves",
+    status: "planned",
+    description: "Circle curve primitive for boundaries and path-based operations.",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    entity: "IfcEllipse",
+    domain: "Curves",
+    status: "planned",
+    description: "Ellipse curve primitive for boundaries and path-based operations.",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    entity: "IfcProfileDef",
+    domain: "Profiles",
+    status: "partial",
+    description: "Area profile family used by extrusion and revolution samples.",
+  },
+  {
+    entity: "IfcExtrudedAreaSolid",
+    domain: "Swept Solids",
+    status: "available",
+    description: "Sweeps an area profile along an extrusion direction.",
+    routeHash: "#/examples/extrusion-rectangle",
+    dependsOn: ["IfcProfileDef"],
+  },
+  {
+    entity: "IfcRevolvedAreaSolid",
+    domain: "Swept Solids",
+    status: "available",
+    description: "Rotates an area profile around a local axis.",
+    routeHash: "#/examples/revolved",
+    dependsOn: ["IfcProfileDef"],
+  },
+  {
+    entity: "IfcSweptDiskSolid",
+    domain: "Swept Solids",
+    status: "available",
+    description: "Sweeps a disk or ring along a curve directrix.",
+    routeHash: "#/examples/swept-disk",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    entity: "IfcFixedReferenceSweptAreaSolid",
+    domain: "Swept Solids",
+    status: "planned",
+    description: "Sweeps an area profile along a curve with fixed orientation reference.",
+    dependsOn: ["IfcCurve", "IfcProfileDef"],
+  },
+  {
+    entity: "IfcSectionedSolidHorizontal",
+    domain: "Swept Solids",
+    status: "planned",
+    description: "Interpolates changing section profiles along an alignment.",
+    dependsOn: ["IfcCurve", "IfcProfileDef"],
+  },
+  {
+    entity: "IfcBooleanResult",
+    domain: "Boolean / CSG",
+    status: "available",
+    description: "Combines two operands with boolean set operations.",
+    routeHash: "#/examples/boolean",
+  },
+  {
+    entity: "IfcHalfSpaceSolid",
+    domain: "Boolean / CSG",
+    status: "planned",
+    description: "Trims solids against half-space operands.",
+  },
+  {
+    entity: "IfcCsgPrimitive3D",
+    domain: "Boolean / CSG",
+    status: "planned",
+    description: "Primitive volume family for CSG workflows.",
   },
 ];
