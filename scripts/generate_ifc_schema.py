@@ -2,9 +2,9 @@
 """Generate IFC schema JSON and TypeScript type definitions from IfcOpenShell.
 
 Extracts attribute metadata for IfcExtrudedAreaSolid, IfcRevolvedAreaSolid,
-and all supported subclasses of IfcParameterizedProfileDef (excluding
-explicitly unsupported entities such as IfcTrapeziumProfileDef), plus the
-supporting geometry entities.
+all supported subclasses of IfcParameterizedProfileDef (excluding explicitly
+unsupported entities such as IfcTrapeziumProfileDef), schema-complete IfcCurve
+interfaces, and the supporting geometry entities.
 
 Outputs:
   src/ifc/generated/schema.json  — raw IFC4 attribute schema (PascalCase)
@@ -35,14 +35,40 @@ OUTPUT_DIR = REPO_ROOT / "src" / "ifc" / "generated"
 GEOMETRY_ENTITIES = [
     "IfcCartesianPoint",
     "IfcDirection",
+    "IfcVector",
     "IfcAxis1Placement",
     "IfcAxis2Placement2D",
     "IfcAxis2Placement3D",
+    "IfcAxis2PlacementLinear",
+    "IfcCartesianPointList2D",
+    "IfcCartesianPointList3D",
+    "IfcPointByDistanceExpression",
+    "IfcPointOnCurve",
+    "IfcPointOnSurface",
+]
+
+CURVE_SEGMENT_ENTITIES = [
+    "IfcCompositeCurveSegment",
+    "IfcReparametrisedCompositeCurveSegment",
+    "IfcCurveSegment",
 ]
 
 # Parameterized profile entities that exist in IFC4 but are not yet implemented
 # in the playground runtime, so they remain excluded from generated TS unions.
 UNSUPPORTED_PROFILE_ENTITIES = frozenset({"IfcTrapeziumProfileDef"})
+
+# Curve entities that the generated runtime-facing union may accept. The schema
+# interfaces below are broader than this list, but unsupported curve families
+# stay out of IfcSupportedCurve until operations can interpret them.
+SUPPORTED_CURVE_ENTITIES = [
+    "IfcPolyline",
+    "IfcIndexedPolyCurve",
+    "IfcLine",
+    "IfcCircle",
+    "IfcEllipse",
+    "IfcTrimmedCurve",
+    "IfcCompositeCurve",
+]
 
 SOLID_ENTITIES = [
     "IfcExtrudedAreaSolid",
@@ -58,10 +84,17 @@ AREA_PROFILE_SOLID_ENTITIES = frozenset({"IfcExtrudedAreaSolid", "IfcRevolvedAre
 # the generated TypeScript (e.g. human-readable labels).
 ATTRS_TO_SKIP = frozenset({"ProfileName"})
 
-# TS-side narrowing for abstract IFC geometry base types that this playground
-# always materializes as concrete Cartesian points.
+# TS-side aliases for schema entities that are intentionally outside this
+# generator's current concrete entity set.
 TS_ENTITY_TYPE_OVERRIDES = {
-    "IfcPoint": "IfcCartesianPoint",
+    "IfcSurface": "IfcSurface",
+}
+
+# Abstract schema entities and selects that need named TS aliases because
+# concrete curve definitions refer to them. Opaque aliases intentionally mark
+# dependencies outside the curve/profile scope of this generator.
+OPAQUE_TS_ALIASES = {
+    "IfcSurface": "unknown",
 }
 
 # ---------------------------------------------------------------------------
@@ -121,7 +154,8 @@ def resolve_attribute_type(t) -> dict:
         return {
             "kind": "select",
             "ifcType": t.name(),
-            "options": [s.name() for s in t.select_list()],
+            "options": [resolve_attribute_type(s) for s in t.select_list()],
+            "optionNames": [s.name() for s in t.select_list()],
         }
 
     if isinstance(t, w.enumeration_type):
@@ -177,18 +211,46 @@ def get_supported_profile_entities(schema) -> list[str]:
     return entities
 
 
+def get_concrete_subtypes(schema, name: str) -> list[str]:
+    """Return all non-abstract descendants of an entity in schema order."""
+    root = schema.declaration_by_name(name)
+    entities: list[str] = []
+
+    def visit(decl) -> None:
+        if not decl.is_abstract():
+            entities.append(decl.name())
+        for child in decl.subtypes():
+            visit(child)
+
+    for child in root.subtypes():
+        visit(child)
+
+    return entities
+
+
 # ---------------------------------------------------------------------------
 # JSON schema generation
 # ---------------------------------------------------------------------------
 
 
-def generate_schema_json(schema, profile_entities: list[str], errors: list[str]) -> dict:
+def generate_schema_json(
+    schema,
+    profile_entities: list[str],
+    curve_entities: list[str],
+    errors: list[str],
+) -> dict:
     """Build the full schema dict for all target entities.
 
     Any per-entity errors are appended to *errors* so the caller can decide
     whether to exit with a non-zero status.
     """
-    all_target_entities = GEOMETRY_ENTITIES + profile_entities + SOLID_ENTITIES
+    all_target_entities = (
+        GEOMETRY_ENTITIES
+        + CURVE_SEGMENT_ENTITIES
+        + curve_entities
+        + profile_entities
+        + SOLID_ENTITIES
+    )
     entities: dict[str, dict] = {}
     for name in all_target_entities:
         try:
@@ -217,6 +279,22 @@ def pascal_to_camel(name: str) -> str:
     return name[0].lower() + name[1:]
 
 
+def unique_preserve_order(values: list[str]) -> list[str]:
+    """Return values with duplicates removed while preserving first occurrence."""
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            result.append(value)
+    return result
+
+
+def parenthesize_union(ts_type: str) -> str:
+    """Wrap a TS union before composing it into array syntax."""
+    return f"({ts_type})" if " | " in ts_type else ts_type
+
+
 def type_info_to_ts(type_info: dict) -> str:
     """Convert a resolved type_info dict to a TypeScript type expression."""
     kind = type_info.get("kind")
@@ -235,10 +313,15 @@ def type_info_to_ts(type_info: dict) -> str:
         return TS_ENTITY_TYPE_OVERRIDES.get(entity_name, entity_name)
     if kind == "array":
         element_ts = type_info_to_ts(type_info.get("element", {"kind": "unknown"}))
-        return f"{element_ts}[]"
+        return f"{parenthesize_union(element_ts)}[]"
     if kind == "select":
-        options = type_info.get("options", [])
-        return " | ".join(options)
+        option_types: list[str] = []
+        for option in type_info.get("options", []):
+            if isinstance(option, dict):
+                option_types.append(type_info_to_ts(option))
+            else:
+                option_types.append(str(option))
+        return " | ".join(unique_preserve_order(option_types)) or "unknown"
     return "unknown"
 
 
@@ -262,7 +345,17 @@ def generate_ts_interface(entity_info: dict) -> str:
     return "\n".join(lines)
 
 
-def generate_ts_file(schema, profile_entities: list[str]) -> str:
+def generate_ts_union(name: str, members: list[str]) -> str:
+    """Render an exported TypeScript union alias."""
+    union_lines = [f"export type {name} ="]
+    for i, member in enumerate(members):
+        sep = "  | " if i > 0 else "    "
+        union_lines.append(f"{sep}{member}")
+    union_lines[-1] += ";"
+    return "\n".join(union_lines)
+
+
+def generate_ts_file(schema, profile_entities: list[str], curve_entities: list[str]) -> str:
     """Generate the full TypeScript source file content."""
     blocks: list[str] = []
 
@@ -284,6 +377,48 @@ def generate_ts_file(schema, profile_entities: list[str]) -> str:
     for name in GEOMETRY_ENTITIES:
         entity_info = get_entity_info(schema, name)
         blocks.append(generate_ts_interface(entity_info))
+
+    blocks.append(
+        generate_ts_union(
+            "IfcCartesianPointList",
+            ["IfcCartesianPointList2D", "IfcCartesianPointList3D"],
+        )
+    )
+    blocks.append(
+        generate_ts_union(
+            "IfcPoint",
+            ["IfcCartesianPoint", "IfcPointByDistanceExpression", "IfcPointOnCurve", "IfcPointOnSurface"],
+        )
+    )
+    blocks.append(
+        generate_ts_union(
+            "IfcPlacement",
+            ["IfcAxis1Placement", "IfcAxis2Placement2D", "IfcAxis2Placement3D", "IfcAxis2PlacementLinear"],
+        )
+    )
+    for name, ts_type in OPAQUE_TS_ALIASES.items():
+        blocks.append(f"export type {name} = {ts_type};")
+
+    # --- Curve entities --------------------------------------------------
+    blocks.append("// ── Curve segment entities ────────────────────────────────────────")
+    for name in CURVE_SEGMENT_ENTITIES:
+        entity_info = get_entity_info(schema, name)
+        blocks.append(generate_ts_interface(entity_info))
+
+    blocks.append(generate_ts_union("IfcSegment", CURVE_SEGMENT_ENTITIES))
+
+    blocks.append("// ── Curve entities ────────────────────────────────────────────────")
+    for name in curve_entities:
+        entity_info = get_entity_info(schema, name)
+        blocks.append(generate_ts_interface(entity_info))
+
+    blocks.append(generate_ts_union("IfcBoundedCurve", get_concrete_subtypes(schema, "IfcBoundedCurve")))
+    blocks.append(generate_ts_union("IfcCurve", curve_entities))
+    blocks.append(
+        "/** Runtime-facing curve subset. This is intentionally narrower than\n"
+        " *  schema-complete IfcCurve until operations support every family. */"
+    )
+    blocks.append(generate_ts_union("IfcSupportedCurve", SUPPORTED_CURVE_ENTITIES))
 
     # --- Profile entities -----------------------------------------------
     blocks.append("// ── Parameterized profile definitions ────────────────────────────")
@@ -379,18 +514,19 @@ def main() -> None:
     print(f"Loading {SCHEMA_NAME} schema …")
     schema = ifcopenshell.schema_by_name(SCHEMA_NAME)
     profile_entities = get_supported_profile_entities(schema)
+    curve_entities = get_concrete_subtypes(schema, "IfcCurve")
 
     errors: list[str] = []
 
     # -- JSON output -------------------------------------------------------
     json_path = OUTPUT_DIR / "schema.json"
-    schema_data = generate_schema_json(schema, profile_entities, errors)
+    schema_data = generate_schema_json(schema, profile_entities, curve_entities, errors)
     json_path.write_text(json.dumps(schema_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Wrote {json_path.relative_to(REPO_ROOT)}")
 
     # -- TypeScript output -------------------------------------------------
     ts_path = OUTPUT_DIR / "schema.ts"
-    ts_content = generate_ts_file(schema, profile_entities)
+    ts_content = generate_ts_file(schema, profile_entities, curve_entities)
     ts_path.write_text(ts_content, encoding="utf-8")
     print(f"Wrote {ts_path.relative_to(REPO_ROOT)}")
 
