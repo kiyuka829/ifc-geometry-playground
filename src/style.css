@@ -806,10 +806,10 @@ a.map-entity:hover {
 }
 
 .indexed-segment-warning {
-  background: #2b2114;
-  border: 1px solid #805c20;
+  background: #2a1218;
+  border: 1px solid #8a2a3a;
   border-radius: 4px;
-  color: #ffcc80;
+  color: #ff9aa8;
   font-size: 0.76em;
   line-height: 1.35;
   margin-bottom: 6px;
@@ -834,8 +834,8 @@ a.map-entity:hover {
 }
 
 .indexed-segment-row-warning {
-  border-color: #805c20;
-  box-shadow: inset 0 0 0 1px rgba(255, 183, 77, 0.25);
+  border-color: #8a2a3a;
+  box-shadow: inset 0 0 0 1px rgba(255, 112, 136, 0.25);
 }
 
 .indexed-segment-row-line {
@@ -843,7 +843,7 @@ a.map-entity:hover {
 }
 
 .indexed-segment-row-arc {
-  border-left-color: #ffb74d;
+  border-left-color: #4fc3f7;
 }
 
 .indexed-segment-label {
@@ -857,11 +857,6 @@ a.map-entity:hover {
   font-family: monospace;
   font-size: 0.9em;
   font-weight: 600;
-}
-
-.indexed-segment-row-arc .indexed-segment-label {
-  background: #2b2114;
-  color: #ffcc80;
 }
 
 .indexed-segment-type {
