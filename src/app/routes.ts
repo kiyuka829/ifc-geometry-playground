@@ -174,17 +174,31 @@ export const routes: Route[] = [
     operationGroup: "curve-primitives",
   },
   {
-    hash: "#/examples/curve-trimmed",
-    title: "Trimmed Curve",
+    hash: "#/examples/curve-trimmed-circle",
+    title: "Trimmed Circle",
     description:
-      "Trim a circle or ellipse into an arc using parameter-based trim selectors.",
-    sampleId: "curve-trimmed",
+      "Trim an IfcCircle basis curve into a circular arc using parameter-based selectors.",
+    sampleId: "curve-trimmed-circle",
     domain: "Curves",
     difficulty: "intermediate",
-    exampleKind: "primary",
+    exampleKind: "variant",
     status: "available",
     entity: "IfcTrimmedCurve",
-    dependsOn: ["IfcCurve"],
+    dependsOn: ["IfcCurve", "IfcCircle"],
+    operationGroup: "curve-primitives",
+  },
+  {
+    hash: "#/examples/curve-trimmed-ellipse",
+    title: "Trimmed Ellipse",
+    description:
+      "Trim an IfcEllipse basis curve into an elliptical arc using parameter-based selectors.",
+    sampleId: "curve-trimmed-ellipse",
+    domain: "Curves",
+    difficulty: "intermediate",
+    exampleKind: "variant",
+    status: "available",
+    entity: "IfcTrimmedCurve",
+    dependsOn: ["IfcCurve", "IfcEllipse"],
     operationGroup: "curve-primitives",
   },
   {
@@ -513,8 +527,8 @@ export const implementationMap: ImplementationMapItem[] = [
     domain: "Curves",
     status: "available",
     description:
-      "Builds visible circle and ellipse segments from basis curves plus trim selectors.",
-    routeHash: "#/examples/curve-trimmed",
+      "Builds visible curve segments from basis curves plus trim selectors, with basis-specific examples.",
+    routeHash: "#/examples/curve-trimmed-circle",
     dependsOn: ["IfcCurve"],
   },
   {

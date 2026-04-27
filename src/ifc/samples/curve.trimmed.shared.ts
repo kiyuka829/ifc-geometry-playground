@@ -5,6 +5,7 @@ import type {
   IfcAxis2Placement3D,
   IfcProfileDef,
   ParamValues,
+  ParameterDef,
   SampleDef,
   SweepViewState,
   Vec3,
@@ -27,40 +28,86 @@ import {
   DEFAULT_CURVE_PLACEMENT,
   pointOnConic,
 } from "./curve.conic.shared.ts";
-const BASIS_CURVE_OPTIONS = ["ELLIPSE", "CIRCLE"] as const;
+
 const SENSE_OPTIONS = ["SAME", "REVERSE"] as const;
 
-function buildBasisCurve(
-  params: ParamValues,
-  placement: IfcAxis2Placement3D,
-): IfcCircle | IfcEllipse {
-  const basis = getSelect(
-    params,
-    "basisCurve",
-    BASIS_CURVE_OPTIONS,
-    BASIS_CURVE_OPTIONS[0],
-  );
-  const radius = getNumber(params, "radius");
-  const semiAxis1 = getNumber(params, "semiAxis1");
-  const semiAxis2 = getNumber(params, "semiAxis2");
+type TrimmedConicBasis = "circle" | "ellipse";
+type TrimmedConicCurve = IfcCircle | IfcEllipse;
 
-  if (basis === "CIRCLE") {
-    return buildIfcCircle(radius, placement);
+interface TrimmedConicSampleConfig {
+  id: string;
+  title: string;
+  description: string;
+  basis: TrimmedConicBasis;
+}
+
+function basisParameters(basis: TrimmedConicBasis): ParameterDef[] {
+  if (basis === "circle") {
+    return [
+      {
+        key: "radius",
+        label: "Radius",
+        type: "number",
+        min: 0.5,
+        max: 8,
+        step: 0.1,
+        defaultValue: 3,
+        group: "Basis Parameters",
+      },
+    ];
   }
 
-  return buildIfcEllipse(semiAxis1, semiAxis2, placement);
+  return [
+    {
+      key: "semiAxis1",
+      label: "Semi-Axis 1",
+      type: "number",
+      min: 0.5,
+      max: 8,
+      step: 0.1,
+      defaultValue: 4,
+      group: "Basis Parameters",
+    },
+    {
+      key: "semiAxis2",
+      label: "Semi-Axis 2",
+      type: "number",
+      min: 0.5,
+      max: 8,
+      step: 0.1,
+      defaultValue: 2.5,
+      group: "Basis Parameters",
+    },
+  ];
+}
+
+function buildBasisCurve(
+  basis: TrimmedConicBasis,
+  params: ParamValues,
+  placement: IfcAxis2Placement3D,
+): TrimmedConicCurve {
+  if (basis === "circle") {
+    return buildIfcCircle(getNumber(params, "radius"), placement);
+  }
+
+  return buildIfcEllipse(
+    getNumber(params, "semiAxis1"),
+    getNumber(params, "semiAxis2"),
+    placement,
+  );
 }
 
 function buildTrimmedCurve(
+  basis: TrimmedConicBasis,
   params: ParamValues,
   placement: IfcAxis2Placement3D,
 ): {
-  basisCurve: IfcCircle | IfcEllipse;
+  basisCurve: TrimmedConicCurve;
   trimmedCurve: IfcTrimmedCurve;
   remainderCurve: IfcTrimmedCurve;
   trimPoints: Vec3[];
 } {
-  const basisCurve = buildBasisCurve(params, placement);
+  const basisCurve = buildBasisCurve(basis, params, placement);
   const startAngle = (getNumber(params, "startAngleDeg") * Math.PI) / 180;
   const endAngle = (getNumber(params, "endAngleDeg") * Math.PI) / 180;
   const senseAgreement =
@@ -92,10 +139,7 @@ function buildTrimmedCurve(
   return { basisCurve, trimmedCurve, remainderCurve, trimPoints };
 }
 
-function buildTrimPointMarkers(
-  scene: Scene,
-  trimPoints: Vec3[],
-): Mesh[] {
+function buildTrimPointMarkers(scene: Scene, trimPoints: Vec3[]): Mesh[] {
   const startMaterial = getOrCreateSolidMaterial(
     scene,
     "trimmed_curve_start_marker",
@@ -262,160 +306,114 @@ function buildDashedCurve(
   });
 }
 
-export const curveTrimmedSample: SampleDef = {
-  id: "curve-trimmed",
-  title: "Trimmed Curve (IfcTrimmedCurve)",
-  description:
-    "Build circular or elliptical arcs by trimming a reusable basis curve. " +
-    "Inspect how IfcTrimmedCurve wraps IfcCircle and IfcEllipse using parameter-based trims.",
-  parameters: [
-    {
-      key: "basisCurve",
-      label: "Basis Curve",
-      type: "select",
-      options: [
-        { value: "ELLIPSE", label: "Ellipse" },
-        { value: "CIRCLE", label: "Circle" },
-      ],
-      defaultValue: "ELLIPSE",
-      group: "Basis Curve",
-    },
-    {
-      key: "radius",
-      label: "Circle Radius",
-      type: "number",
-      min: 0.5,
-      max: 8,
-      step: 0.1,
-      defaultValue: 3,
-      group: "Basis Parameters",
-      visibleWhen: {
-        key: "basisCurve",
-        equals: "CIRCLE",
-      },
-    },
-    {
-      key: "semiAxis1",
-      label: "Ellipse Semi-Axis 1",
-      type: "number",
-      min: 0.5,
-      max: 8,
-      step: 0.1,
-      defaultValue: 4,
-      group: "Basis Parameters",
-      visibleWhen: {
-        key: "basisCurve",
-        equals: "ELLIPSE",
-      },
-    },
-    {
-      key: "semiAxis2",
-      label: "Ellipse Semi-Axis 2",
-      type: "number",
-      min: 0.5,
-      max: 8,
-      step: 0.1,
-      defaultValue: 2.5,
-      group: "Basis Parameters",
-      visibleWhen: {
-        key: "basisCurve",
-        equals: "ELLIPSE",
-      },
-    },
-    {
-      key: "sense",
-      label: "Sense",
-      type: "select",
-      options: [
-        { value: "SAME", label: "Same" },
-        { value: "REVERSE", label: "Reverse" },
-      ],
-      defaultValue: "SAME",
-      group: "Trim",
-    },
-    {
-      key: "startAngleDeg",
-      label: "Start Angle",
-      type: "number",
-      min: 0,
-      max: 360,
-      step: 1,
-      defaultValue: 25,
-      group: "Trim",
-    },
-    {
-      key: "endAngleDeg",
-      label: "End Angle",
-      type: "number",
-      min: 0,
-      max: 360,
-      step: 1,
-      defaultValue: 305,
-      group: "Trim",
-    },
-  ],
-  steps: [
-    {
-      id: "basis-curve",
-      label: "Step 1: Basis Curve",
-      description:
-        "IfcTrimmedCurve starts from a full IfcCircle or IfcEllipse basisCurve. " +
-        "This step shows the reusable base geometry before any trim is applied.",
-    },
-    {
-      id: "trimmed-curve",
-      label: "Step 2: Trim",
-      description:
-        "The trim selectors choose the start and end positions on the basis curve, and " +
-        "senseAgreement controls whether the visible segment follows the basis direction or the reverse direction.",
-    },
-  ],
-  placementEditorConfig: {
-    defaultPlacement: DEFAULT_CURVE_PLACEMENT,
-  },
-  buildGeometry: (
-    scene: Scene,
-    params: ParamValues,
-    stepIndex: number,
-    _profile?: IfcProfileDef,
-    _path?: Vec3[],
-    _extrusion?: ExtrusionParams,
-    placement?: IfcAxis2Placement3D,
-    _sweepView?: SweepViewState,
-  ): Mesh[] => {
-    const activePlacement = placement ?? DEFAULT_CURVE_PLACEMENT;
-    const { basisCurve, trimmedCurve, remainderCurve, trimPoints } = buildTrimmedCurve(
-      params,
-      activePlacement,
-    );
-    const meshes: Mesh[] =
-      stepIndex === 0
-        ? [
-            ...buildSupportedCurve(scene, basisCurve, "trimmed_curve_basis", {
-              curveColor: new Color3(0.55, 0.6, 0.7),
-            }),
-          ]
-        : [];
+export function createTrimmedConicSample(
+  config: TrimmedConicSampleConfig,
+): SampleDef {
+  const basisLabel = config.basis === "circle" ? "IfcCircle" : "IfcEllipse";
 
-    if (stepIndex >= 1) {
-      meshes.push(
-        ...buildTrimPointMarkers(scene, trimPoints),
-        ...buildDashedCurve(
-          scene,
-          remainderCurve,
-          "trimmed_curve_remainder",
-          new Color3(0.42, 0.46, 0.54),
-        ),
-        ...buildSupportedCurve(scene, trimmedCurve, "trimmed_curve_result", {
-          curveColor: new Color3(1, 0.75, 0.2),
-          arcColor: new Color3(1, 0.75, 0.2),
-        }),
-        ...buildResultEndMarkers(scene, trimmedCurve),
-      );
-    }
+  return {
+    id: config.id,
+    title: config.title,
+    description: config.description,
+    parameters: [
+      ...basisParameters(config.basis),
+      {
+        key: "sense",
+        label: "Sense",
+        type: "select",
+        options: [
+          { value: "SAME", label: "Same" },
+          { value: "REVERSE", label: "Reverse" },
+        ],
+        defaultValue: "SAME",
+        group: "Trim",
+      },
+      {
+        key: "startAngleDeg",
+        label: "Start Angle",
+        type: "number",
+        min: 0,
+        max: 360,
+        step: 1,
+        defaultValue: 25,
+        group: "Trim",
+      },
+      {
+        key: "endAngleDeg",
+        label: "End Angle",
+        type: "number",
+        min: 0,
+        max: 360,
+        step: 1,
+        defaultValue: 305,
+        group: "Trim",
+      },
+    ],
+    steps: [
+      {
+        id: "basis-curve",
+        label: "Step 1: Basis Curve",
+        description:
+          `IfcTrimmedCurve starts from a full ${basisLabel} basisCurve. ` +
+          "This step shows the reusable base geometry before any trim is applied.",
+      },
+      {
+        id: "trimmed-curve",
+        label: "Step 2: Trim",
+        description:
+          "The trim selectors choose the start and end positions on the basis curve, and " +
+          "senseAgreement controls whether the visible segment follows the basis direction or the reverse direction.",
+      },
+    ],
+    placementEditorConfig: {
+      defaultPlacement: DEFAULT_CURVE_PLACEMENT,
+    },
+    buildGeometry: (
+      scene: Scene,
+      params: ParamValues,
+      stepIndex: number,
+      _profile?: IfcProfileDef,
+      _path?: Vec3[],
+      _extrusion?: ExtrusionParams,
+      placement?: IfcAxis2Placement3D,
+      _sweepView?: SweepViewState,
+    ): Mesh[] => {
+      const activePlacement = placement ?? DEFAULT_CURVE_PLACEMENT;
+      const { basisCurve, trimmedCurve, remainderCurve, trimPoints } =
+        buildTrimmedCurve(config.basis, params, activePlacement);
+      const meshes: Mesh[] =
+        stepIndex === 0
+          ? [
+              ...buildSupportedCurve(scene, basisCurve, "trimmed_curve_basis", {
+                curveColor: new Color3(0.55, 0.6, 0.7),
+              }),
+            ]
+          : [];
 
-    return meshes;
-  },
-  getIFCRepresentation: (params: ParamValues) =>
-    buildTrimmedCurve(params, DEFAULT_CURVE_PLACEMENT).trimmedCurve,
-};
+      if (stepIndex >= 1) {
+        meshes.push(
+          ...buildTrimPointMarkers(scene, trimPoints),
+          ...buildDashedCurve(
+            scene,
+            remainderCurve,
+            "trimmed_curve_remainder",
+            new Color3(0.42, 0.46, 0.54),
+          ),
+          ...buildSupportedCurve(scene, trimmedCurve, "trimmed_curve_result", {
+            curveColor: new Color3(1, 0.75, 0.2),
+            arcColor: new Color3(1, 0.75, 0.2),
+          }),
+          ...buildResultEndMarkers(scene, trimmedCurve),
+        );
+      }
+
+      return meshes;
+    },
+    getIFCRepresentation: (params: ParamValues) =>
+      buildTrimmedCurve(
+        config.basis,
+        params,
+        DEFAULT_CURVE_PLACEMENT,
+      ).trimmedCurve,
+  };
+}

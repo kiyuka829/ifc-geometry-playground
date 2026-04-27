@@ -21,7 +21,8 @@ import { curvePolylineSample } from "../ifc/samples/curve.polyline.ts";
 import { curveIndexedPolyCurveSample } from "../ifc/samples/curve.indexed-polycurve.ts";
 import { curveCircleSample } from "../ifc/samples/curve.circle.ts";
 import { curveEllipseSample } from "../ifc/samples/curve.ellipse.ts";
-import { curveTrimmedSample } from "../ifc/samples/curve.trimmed.ts";
+import { curveTrimmedCircleSample } from "../ifc/samples/curve.trimmed-circle.ts";
+import { curveTrimmedEllipseSample } from "../ifc/samples/curve.trimmed-ellipse.ts";
 import type { SampleDef } from "../types.ts";
 
 const samples: Record<string, SampleDef> = {
@@ -29,7 +30,8 @@ const samples: Record<string, SampleDef> = {
   "curve-indexed-polycurve": curveIndexedPolyCurveSample,
   "curve-circle": curveCircleSample,
   "curve-ellipse": curveEllipseSample,
-  "curve-trimmed": curveTrimmedSample,
+  "curve-trimmed-circle": curveTrimmedCircleSample,
+  "curve-trimmed-ellipse": curveTrimmedEllipseSample,
   "extrusion-rectangle": extrusionRectangleSample,
   "extrusion-rounded-rectangle": extrusionRoundedRectangleSample,
   "boolean-difference": booleanDifferenceSample,
