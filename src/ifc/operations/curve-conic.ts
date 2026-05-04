@@ -14,6 +14,7 @@ import {
 } from "../normalize.ts";
 import type { Vec3 } from "../../types.ts";
 import type { CurveSegmentKind, ResolvedCurveSegment } from "./curve-types.ts";
+import { cartesianPointToVec3 } from "./curve-line.ts";
 
 const DEFAULT_CONIC_SEGMENTS = 64;
 const EPSILON = 1e-9;
@@ -37,14 +38,6 @@ function normalizeAngle(angle: number): number {
   let result = angle % turn;
   if (result < 0) result += turn;
   return result;
-}
-
-function cartesianPointToVec3(point: IfcCartesianPoint): Vec3 {
-  return {
-    x: point.coordinates[0] ?? 0,
-    y: point.coordinates[1] ?? 0,
-    z: point.coordinates[2] ?? 0,
-  };
 }
 
 function addCurvePoint(points: Vec3[], point: Vec3, removeCoincident = true) {

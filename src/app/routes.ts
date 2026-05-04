@@ -146,6 +146,20 @@ export const routes: Route[] = [
     operationGroup: "curve-primitives",
   },
   {
+    hash: "#/examples/curve-line",
+    title: "Line",
+    description:
+      "Define an infinite IfcLine from Pnt and Dir, displayed as a finite magnitude segment.",
+    sampleId: "curve-line",
+    domain: "Curves",
+    difficulty: "beginner",
+    exampleKind: "primary",
+    status: "available",
+    entity: "IfcLine",
+    dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
+  },
+  {
     hash: "#/examples/curve-circle",
     title: "Circle",
     description:
@@ -199,6 +213,20 @@ export const routes: Route[] = [
     status: "available",
     entity: "IfcTrimmedCurve",
     dependsOn: ["IfcCurve", "IfcEllipse"],
+    operationGroup: "curve-primitives",
+  },
+  {
+    hash: "#/examples/curve-trimmed-line",
+    title: "Trimmed Line",
+    description:
+      "Trim an IfcLine basis curve with parameter selectors that may extend outside the displayed magnitude segment.",
+    sampleId: "curve-trimmed-line",
+    domain: "Curves",
+    difficulty: "intermediate",
+    exampleKind: "variant",
+    status: "available",
+    entity: "IfcTrimmedCurve",
+    dependsOn: ["IfcCurve", "IfcLine"],
     operationGroup: "curve-primitives",
   },
   {
@@ -503,6 +531,15 @@ export const implementationMap: ImplementationMapItem[] = [
     status: "available",
     description: "Indexed curve representation for compact polyline and arc paths.",
     routeHash: "#/examples/curve-indexed-polycurve",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    entity: "IfcLine",
+    domain: "Curves",
+    status: "available",
+    description:
+      "Infinite line represented from Pnt and Dir, with Magnitude used as the standalone display segment.",
+    routeHash: "#/examples/curve-line",
     dependsOn: ["IfcCurve"],
   },
   {

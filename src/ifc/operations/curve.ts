@@ -1,7 +1,6 @@
 import { Color3, Mesh, MeshBuilder } from "@babylonjs/core";
 import type { Scene, StandardMaterial } from "@babylonjs/core";
 import type {
-  IfcCartesianPoint,
   IfcCartesianPointList,
   IfcCircle,
   IfcEllipse,
@@ -14,6 +13,7 @@ import type {
 import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
 import type { Vec3 } from "../../types.ts";
 import { resolveConicCurveSegment } from "./curve-conic.ts";
+import { cartesianPointToVec3, resolveLineCurveSegment } from "./curve-line.ts";
 import { resolveTrimmedCurveSegments } from "./curve-trimmed.ts";
 import type {
   IndexedPolyCurveResolvedSegment,
@@ -77,14 +77,6 @@ function normalize(v: Vec3): Vec3 {
   const len = length(v);
   if (len < EPSILON) return { x: 0, y: 0, z: 0 };
   return scale(v, 1 / len);
-}
-
-function cartesianPointToVec3(point: IfcCartesianPoint): Vec3 {
-  return {
-    x: point.coordinates[0] ?? 0,
-    y: point.coordinates[1] ?? 0,
-    z: point.coordinates[2] ?? 0,
-  };
 }
 
 function addCurvePoint(points: Vec3[], point: Vec3, removeCoincident = true) {
@@ -217,9 +209,7 @@ export function resolveSupportedCurveSegments(
     case "IfcTrimmedCurve":
       return resolveTrimmedCurveSegments(curve);
     case "IfcLine":
-      throw new Error(
-        "IfcLine is infinite and cannot be rendered without a trimming strategy",
-      );
+      return [resolveLineCurveSegment(curve)];
     default: {
       const _exhaustive: never = curve;
       throw new Error(`Curve type is not supported yet: ${String(_exhaustive)}`);
