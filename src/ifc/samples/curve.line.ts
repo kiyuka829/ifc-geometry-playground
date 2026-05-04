@@ -143,23 +143,17 @@ export const curveLineSample: SampleDef = {
   ],
   steps: [
     {
-      id: "attributes",
-      label: "Step 1: Pnt + Dir",
+      id: "line",
+      label: "IfcLine",
       description:
         "IfcLine stores one point on the infinite line and an IfcVector. " +
-        "The vector is split into DirectionRatios and Magnitude.",
-    },
-    {
-      id: "display-segment",
-      label: "Step 2: Magnitude Segment",
-      description:
         "For display, the infinite line is represented as Pnt plus the normalized Dir.Orientation scaled by Dir.Magnitude.",
     },
   ],
   buildGeometry: (
     scene: Scene,
     params: ParamValues,
-    stepIndex: number,
+    _stepIndex: number,
     _profile?: IfcProfileDef,
     _path?: Vec3[],
     _extrusion?: ExtrusionParams,
@@ -169,26 +163,19 @@ export const curveLineSample: SampleDef = {
     const line = buildIfcLine(params);
     const start = getLineStartPoint(line);
     const end = pointOnLine(line, 1);
-    const meshes: Mesh[] = [
+    return [
       buildPointMarker(scene, start, "curve_line_pnt", new Color3(0.25, 0.55, 1)),
+      ...buildSupportedCurve(scene, line, "curve_line_result", {
+        lineColor: new Color3(1, 0.75, 0.2),
+      }),
+      buildPointMarker(
+        scene,
+        end,
+        "curve_line_magnitude_end",
+        new Color3(1, 0.55, 0.15),
+        0.18,
+      ),
     ];
-
-    if (stepIndex >= 1) {
-      meshes.push(
-        ...buildSupportedCurve(scene, line, "curve_line_result", {
-          lineColor: new Color3(1, 0.75, 0.2),
-        }),
-        buildPointMarker(
-          scene,
-          end,
-          "curve_line_magnitude_end",
-          new Color3(1, 0.55, 0.15),
-          0.18,
-        ),
-      );
-    }
-
-    return meshes;
   },
   getIFCRepresentation: (params: ParamValues) => buildIfcLine(params),
 };
