@@ -13,7 +13,7 @@ interface LineParameterRange {
   senseAgreement?: boolean;
 }
 
-function cartesianPointToVec3(point: IfcCartesianPoint): Vec3 {
+export function cartesianPointToVec3(point: IfcCartesianPoint): Vec3 {
   return {
     x: point.coordinates[0] ?? 0,
     y: point.coordinates[1] ?? 0,

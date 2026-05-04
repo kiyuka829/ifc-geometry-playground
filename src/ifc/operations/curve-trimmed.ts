@@ -1,7 +1,7 @@
 import type { IfcCartesianPoint, IfcTrimmedCurve } from "../generated/schema.ts";
 import type { ResolvedCurveSegment } from "./curve-types.ts";
 import { resolveConicCurveSegment } from "./curve-conic.ts";
-import { resolveLineCurveSegment } from "./curve-line.ts";
+import { cartesianPointToVec3, resolveLineCurveSegment } from "./curve-line.ts";
 
 function isCartesianPoint(value: unknown): value is IfcCartesianPoint {
   return Boolean(
@@ -10,14 +10,6 @@ function isCartesianPoint(value: unknown): value is IfcCartesianPoint {
       "type" in value &&
       value.type === "IfcCartesianPoint",
   );
-}
-
-function cartesianPointToVec3(point: IfcCartesianPoint) {
-  return {
-    x: point.coordinates[0] ?? 0,
-    y: point.coordinates[1] ?? 0,
-    z: point.coordinates[2] ?? 0,
-  };
 }
 
 function getTrimParameter(trim: IfcTrimmedCurve["trim1"]): number | undefined {
@@ -30,6 +22,18 @@ function getTrimPoint(
   return trim.find(isCartesianPoint);
 }
 
+function getPreferredTrimValue(
+  trim: IfcTrimmedCurve["trim1"],
+  masterRepresentation: IfcTrimmedCurve["masterRepresentation"],
+): number | IfcCartesianPoint | undefined {
+  const parameterValue = getTrimParameter(trim);
+  const cartesianValue = getTrimPoint(trim);
+  if (masterRepresentation === "CARTESIAN") {
+    return cartesianValue ?? parameterValue;
+  }
+  return parameterValue ?? cartesianValue;
+}
+
 function resolveLineTrimmedCurveSegment(
   curve: IfcTrimmedCurve,
 ): ResolvedCurveSegment {
@@ -37,29 +41,26 @@ function resolveLineTrimmedCurveSegment(
     throw new Error(`Expected IfcLine basis, got ${curve.basisCurve.type}`);
   }
 
-  const startParameter = getTrimParameter(curve.trim1);
-  const endParameter = getTrimParameter(curve.trim2);
+  const { trim1, trim2, senseAgreement, masterRepresentation } = curve;
+  const startValue = getPreferredTrimValue(trim1, masterRepresentation);
+  const endValue = getPreferredTrimValue(trim2, masterRepresentation);
 
-  if (startParameter !== undefined && endParameter !== undefined) {
+  if (typeof startValue === "number" && typeof endValue === "number") {
     return resolveLineCurveSegment(curve.basisCurve, {
-      startParameter,
-      endParameter,
-      senseAgreement: curve.senseAgreement,
+      startParameter: startValue,
+      endParameter: endValue,
+      senseAgreement,
     });
   }
 
-  const startPoint = getTrimPoint(curve.trim1);
-  const endPoint = getTrimPoint(curve.trim2);
-
-  if (startPoint && endPoint) {
+  if (isCartesianPoint(startValue) && isCartesianPoint(endValue)) {
     const points = [
-      cartesianPointToVec3(startPoint),
-      cartesianPointToVec3(endPoint),
+      cartesianPointToVec3(startValue),
+      cartesianPointToVec3(endValue),
     ];
-
     return {
       kind: "line",
-      points: curve.senseAgreement ? points : points.reverse(),
+      points: senseAgreement ? points : points.reverse(),
     };
   }
 
