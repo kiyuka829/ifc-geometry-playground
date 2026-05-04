@@ -216,6 +216,20 @@ export const routes: Route[] = [
     operationGroup: "curve-primitives",
   },
   {
+    hash: "#/examples/curve-trimmed-line",
+    title: "Trimmed Line",
+    description:
+      "Trim an IfcLine basis curve with parameter selectors that may extend outside the displayed magnitude segment.",
+    sampleId: "curve-trimmed-line",
+    domain: "Curves",
+    difficulty: "intermediate",
+    exampleKind: "variant",
+    status: "available",
+    entity: "IfcTrimmedCurve",
+    dependsOn: ["IfcCurve", "IfcLine"],
+    operationGroup: "curve-primitives",
+  },
+  {
     hash: "#/examples/profiles",
     title: "Profiles",
     description:

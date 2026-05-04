@@ -24,6 +24,7 @@ import { curveCircleSample } from "../ifc/samples/curve.circle.ts";
 import { curveEllipseSample } from "../ifc/samples/curve.ellipse.ts";
 import { curveTrimmedCircleSample } from "../ifc/samples/curve.trimmed-circle.ts";
 import { curveTrimmedEllipseSample } from "../ifc/samples/curve.trimmed-ellipse.ts";
+import { curveTrimmedLineSample } from "../ifc/samples/curve.trimmed-line.ts";
 import type { SampleDef } from "../types.ts";
 
 const samples: Record<string, SampleDef> = {
@@ -34,6 +35,7 @@ const samples: Record<string, SampleDef> = {
   "curve-ellipse": curveEllipseSample,
   "curve-trimmed-circle": curveTrimmedCircleSample,
   "curve-trimmed-ellipse": curveTrimmedEllipseSample,
+  "curve-trimmed-line": curveTrimmedLineSample,
   "extrusion-rectangle": extrusionRectangleSample,
   "extrusion-rounded-rectangle": extrusionRoundedRectangleSample,
   "boolean-difference": booleanDifferenceSample,
