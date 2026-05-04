@@ -14,6 +14,7 @@ import type {
 import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
 import type { Vec3 } from "../../types.ts";
 import { resolveConicCurveSegment } from "./curve-conic.ts";
+import { resolveLineCurveSegment } from "./curve-line.ts";
 import { resolveTrimmedCurveSegments } from "./curve-trimmed.ts";
 import type {
   IndexedPolyCurveResolvedSegment,
@@ -217,9 +218,7 @@ export function resolveSupportedCurveSegments(
     case "IfcTrimmedCurve":
       return resolveTrimmedCurveSegments(curve);
     case "IfcLine":
-      throw new Error(
-        "IfcLine is infinite and cannot be rendered without a trimming strategy",
-      );
+      return [resolveLineCurveSegment(curve)];
     default: {
       const _exhaustive: never = curve;
       throw new Error(`Curve type is not supported yet: ${String(_exhaustive)}`);
