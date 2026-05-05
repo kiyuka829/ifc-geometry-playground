@@ -3,6 +3,7 @@ import type { Scene, StandardMaterial } from "@babylonjs/core";
 import type {
   IfcCartesianPointList,
   IfcCircle,
+  IfcClothoid,
   IfcEllipse,
   IfcIndexedPolyCurve,
   IfcLine,
@@ -13,6 +14,7 @@ import type {
 } from "../generated/schema.ts";
 import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
 import type { Vec3 } from "../../types.ts";
+import { resolveClothoidCurveSegments } from "./curve-clothoid.ts";
 import { resolveConicCurveSegment } from "./curve-conic.ts";
 import { cartesianPointToVec3, resolveLineCurveSegment } from "./curve-line.ts";
 import { resolvePolynomialCurveSegments } from "./curve-polynomial.ts";
@@ -39,7 +41,8 @@ type RenderableCurve =
   | IfcEllipse
   | IfcTrimmedCurve
   | IfcLine
-  | IfcPolynomialCurve;
+  | IfcPolynomialCurve
+  | IfcClothoid;
 
 function distance(a: Vec3, b: Vec3): number {
   const dx = a.x - b.x;
@@ -215,6 +218,8 @@ export function resolveSupportedCurveSegments(
       return [resolveLineCurveSegment(curve)];
     case "IfcPolynomialCurve":
       return resolvePolynomialCurveSegments(curve);
+    case "IfcClothoid":
+      return resolveClothoidCurveSegments(curve);
     default: {
       const _exhaustive: never = curve;
       throw new Error(`Curve type is not supported yet: ${String(_exhaustive)}`);

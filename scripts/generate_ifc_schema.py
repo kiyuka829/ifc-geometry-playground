@@ -68,6 +68,7 @@ SUPPORTED_CURVE_ENTITIES = [
     "IfcEllipse",
     "IfcTrimmedCurve",
     "IfcPolynomialCurve",
+    "IfcClothoid",
     "IfcCompositeCurve",
 ]
 
