@@ -6,6 +6,7 @@ import type {
   IfcEllipse,
   IfcIndexedPolyCurve,
   IfcLine,
+  IfcPolynomialCurve,
   IfcPolyline,
   IfcSegmentIndexSelect,
   IfcTrimmedCurve,
@@ -14,6 +15,7 @@ import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
 import type { Vec3 } from "../../types.ts";
 import { resolveConicCurveSegment } from "./curve-conic.ts";
 import { cartesianPointToVec3, resolveLineCurveSegment } from "./curve-line.ts";
+import { resolvePolynomialCurveSegments } from "./curve-polynomial.ts";
 import { resolveTrimmedCurveSegments } from "./curve-trimmed.ts";
 import type {
   IndexedPolyCurveResolvedSegment,
@@ -36,7 +38,8 @@ type RenderableCurve =
   | IfcCircle
   | IfcEllipse
   | IfcTrimmedCurve
-  | IfcLine;
+  | IfcLine
+  | IfcPolynomialCurve;
 
 function distance(a: Vec3, b: Vec3): number {
   const dx = a.x - b.x;
@@ -210,6 +213,8 @@ export function resolveSupportedCurveSegments(
       return resolveTrimmedCurveSegments(curve);
     case "IfcLine":
       return [resolveLineCurveSegment(curve)];
+    case "IfcPolynomialCurve":
+      return resolvePolynomialCurveSegments(curve);
     default: {
       const _exhaustive: never = curve;
       throw new Error(`Curve type is not supported yet: ${String(_exhaustive)}`);
