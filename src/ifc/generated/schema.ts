@@ -417,6 +417,7 @@ export type IfcSupportedCurve =
   | IfcCircle
   | IfcEllipse
   | IfcTrimmedCurve
+  | IfcPolynomialCurve
   | IfcCompositeCurve;
 
 // ── Parameterized profile definitions ────────────────────────────

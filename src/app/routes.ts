@@ -160,6 +160,20 @@ export const routes: Route[] = [
     operationGroup: "curve-primitives",
   },
   {
+    hash: "#/examples/curve-polynomial",
+    title: "Polynomial Curve",
+    description:
+      "Display an unbounded IfcPolynomialCurve inside a local origin-centered region.",
+    sampleId: "curve-polynomial",
+    domain: "Curves",
+    difficulty: "intermediate",
+    exampleKind: "primary",
+    status: "available",
+    entity: "IfcPolynomialCurve",
+    dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
+  },
+  {
     hash: "#/examples/curve-circle",
     title: "Circle",
     description:
@@ -540,6 +554,15 @@ export const implementationMap: ImplementationMapItem[] = [
     description:
       "Infinite line represented from Pnt and Dir, with Magnitude used as the standalone display segment.",
     routeHash: "#/examples/curve-line",
+    dependsOn: ["IfcCurve"],
+  },
+  {
+    entity: "IfcPolynomialCurve",
+    domain: "Curves",
+    status: "available",
+    description:
+      "Unbounded polynomial curve displayed inside a local origin-centered X/Y/Z region before placement transform.",
+    routeHash: "#/examples/curve-polynomial",
     dependsOn: ["IfcCurve"],
   },
   {
