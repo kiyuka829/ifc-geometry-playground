@@ -152,7 +152,7 @@ export class PolynomialCoefficientEditor {
       del.type = "button";
       del.className = "point-delete-btn";
       del.title = "Remove coefficient";
-      del.textContent = "x";
+      del.textContent = "×";
       del.addEventListener("click", () => {
         this.coefficients[axis].splice(index, 1);
         this._refresh();

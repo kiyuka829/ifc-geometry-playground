@@ -338,6 +338,7 @@ export class ExamplePage {
         polynomialCoefficientEditorContainer,
         sample.polynomialCoefficientEditorConfig,
       );
+      this.currentPolynomialCoefficients = coefficientEditor.getCoefficients();
       coefficientEditor.onChange((coefficients) => {
         this.currentPolynomialCoefficients = coefficients;
         this._scheduleRebuild(sample.debounceMs ?? 0);
