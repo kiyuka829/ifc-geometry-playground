@@ -240,6 +240,24 @@ export interface PlacementEditorConfig {
   label?: string;
 }
 
+export type PolynomialCoefficientAxis = "x" | "y" | "z";
+
+export interface PolynomialCoefficients {
+  x: number[];
+  y: number[];
+  z: number[];
+}
+
+/** Configuration for editing IfcPolynomialCurve coefficient arrays. */
+export interface PolynomialCoefficientEditorConfig {
+  /** Initial coefficient arrays for X, Y, and Z. */
+  defaultCoefficients: PolynomialCoefficients;
+  /** Optional label shown above the editor. */
+  label?: string;
+  /** Numeric input step for coefficient values. */
+  step?: number;
+}
+
 /** Visibility flags passed to buildGeometry for sweep-based samples. */
 export interface SweepViewState {
   showPath: boolean;
@@ -292,6 +310,11 @@ export interface SampleDef {
    */
   placementEditorConfig?: PlacementEditorConfig;
   /**
+   * When set, ExamplePage renders coefficient editors for IfcPolynomialCurve.
+   * The current arrays are forwarded to buildGeometry as the optional tenth argument.
+   */
+  polynomialCoefficientEditorConfig?: PolynomialCoefficientEditorConfig;
+  /**
    * When set, ExamplePage renders sweep-view toggle buttons (path / local
    * frames / result). The current SweepViewState is forwarded to buildGeometry
    * as the optional eighth argument.
@@ -307,6 +330,7 @@ export interface SampleDef {
     placement?: IfcAxis2Placement3D,
     sweepView?: SweepViewState,
     indexedPolyCurve?: IfcIndexedPolyCurve,
+    polynomialCoefficients?: PolynomialCoefficients,
   ) => Mesh[];
   getIFCRepresentation: (params: ParamValues) => object;
 }

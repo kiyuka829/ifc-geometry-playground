@@ -7,6 +7,7 @@ import type {
   ExtrusionParams,
   Vec3,
   SweepViewState,
+  PolynomialCoefficients,
 } from "../types.ts";
 import type { IfcIndexedPolyCurve } from "../ifc/generated/schema.ts";
 import { SceneManager } from "../engine/scene.ts";
@@ -20,6 +21,7 @@ import { IndexedPolyCurveEditor } from "../ui/IndexedPolyCurveEditor.ts";
 import { ExtrusionEditor } from "../ui/ExtrusionEditor.ts";
 import { PlacementEditor } from "../ui/PlacementEditor.ts";
 import { SweepViewToggles } from "../ui/SweepViewToggles.ts";
+import { PolynomialCoefficientEditor } from "../ui/PolynomialCoefficientEditor.ts";
 import { buildPlacementAxesOverlay } from "../engine/overlays.ts";
 
 export class ExamplePage {
@@ -37,6 +39,8 @@ export class ExamplePage {
   private currentExtrusion: ExtrusionParams | undefined = undefined;
   private currentPlacement: IfcAxis2Placement3D | undefined = undefined;
   private currentSweepView: SweepViewState | undefined = undefined;
+  private currentPolynomialCoefficients: PolynomialCoefficients | undefined =
+    undefined;
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(appContainer: HTMLElement) {
@@ -81,6 +85,14 @@ export class ExamplePage {
         ) as IfcAxis2Placement3D)
       : undefined;
 
+    this.currentPolynomialCoefficients = sample.polynomialCoefficientEditorConfig
+      ? (JSON.parse(
+          JSON.stringify(
+            sample.polynomialCoefficientEditorConfig.defaultCoefficients,
+          ),
+        ) as PolynomialCoefficients)
+      : undefined;
+
     // Seed sweep view state from config defaults (if any)
     this.currentSweepView = sample.sweepViewConfig
       ? {
@@ -95,6 +107,9 @@ export class ExamplePage {
     const hasIndexedPolyCurveEditor = Boolean(sample.indexedPolyCurveEditorConfig);
     const hasExtrusionEditor = Boolean(sample.extrusionEditorConfig);
     const hasPlacementEditor = Boolean(sample.placementEditorConfig);
+    const hasPolynomialCoefficientEditor = Boolean(
+      sample.polynomialCoefficientEditorConfig,
+    );
     const hasSweepToggles = Boolean(sample.sweepViewConfig);
 
     this.appContainer.innerHTML = `
@@ -169,9 +184,19 @@ export class ExamplePage {
                 : ""
             }
             ${
+              hasPolynomialCoefficientEditor
+                ? `
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}" open>
+                <summary class="params-title">${sample.polynomialCoefficientEditorConfig!.label ?? "Coefficients"}</summary>
+                <div class="left-collapsible-content" id="polynomial-coefficient-editor-panel"></div>
+              </details>
+            `
+                : ""
+            }
+            ${
               hasPlacementEditor
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}">
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasPolynomialCoefficientEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}">
                 <summary class="params-title">${sample.placementEditorConfig!.label ?? "Placement"}</summary>
                 <div class="left-collapsible-content" id="placement-editor-panel"></div>
               </details>
@@ -302,6 +327,23 @@ export class ExamplePage {
       });
     }
 
+    const polynomialCoefficientEditorContainer = document.getElementById(
+      "polynomial-coefficient-editor-panel",
+    );
+    if (
+      polynomialCoefficientEditorContainer &&
+      sample.polynomialCoefficientEditorConfig
+    ) {
+      const coefficientEditor = new PolynomialCoefficientEditor(
+        polynomialCoefficientEditorContainer,
+        sample.polynomialCoefficientEditorConfig,
+      );
+      coefficientEditor.onChange((coefficients) => {
+        this.currentPolynomialCoefficients = coefficients;
+        this._scheduleRebuild(sample.debounceMs ?? 0);
+      });
+    }
+
     const stepperContainer = document.getElementById("stepper")!;
     const stepper = new Stepper(stepperContainer, sample.steps);
 
@@ -346,6 +388,7 @@ export class ExamplePage {
       this.currentPlacement,
       this.currentSweepView,
       this.currentIndexedPolyCurve,
+      this.currentPolynomialCoefficients,
     );
 
     // Show local coordinate axes when a placement editor is active

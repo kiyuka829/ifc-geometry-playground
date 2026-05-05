@@ -5,13 +5,16 @@ import type {
   IfcAxis2Placement3D,
   IfcProfileDef,
   ParamValues,
+  PolynomialCoefficients,
   SampleDef,
   SweepViewState,
   Vec3,
 } from "../../types.ts";
-import { getNumber } from "../../types.ts";
 import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
-import type { IfcPolynomialCurve } from "../generated/schema.ts";
+import type {
+  IfcIndexedPolyCurve,
+  IfcPolynomialCurve,
+} from "../generated/schema.ts";
 import { buildSupportedCurve } from "../operations/curve.ts";
 import {
   POLYNOMIAL_DISPLAY_MAX,
@@ -23,34 +26,26 @@ import {
   toIfcCurvePlacement,
 } from "./curve.conic.shared.ts";
 
-const COEFFICIENT_AXES = ["x", "y", "z"] as const;
-const COEFFICIENT_COUNT = 4;
+const DEFAULT_POLYNOMIAL_COEFFICIENTS: PolynomialCoefficients = {
+  x: [0, 1, 0, 0],
+  y: [0, -0.25, 0, 0.03],
+  z: [-3, 0, 0.06, 0],
+};
+
+function coefficientSet(coefficients: number[]): number[] | undefined {
+  return coefficients.length > 0 ? [...coefficients] : undefined;
+}
 
 function buildIfcPolynomialCurve(
-  params: ParamValues,
+  coefficients: PolynomialCoefficients,
   placement: IfcAxis2Placement3D,
 ): IfcPolynomialCurve {
   return {
     type: "IfcPolynomialCurve",
     position: toIfcCurvePlacement(placement),
-    coefficientsX: [
-      getNumber(params, "x0"),
-      getNumber(params, "x1"),
-      getNumber(params, "x2"),
-      getNumber(params, "x3"),
-    ],
-    coefficientsY: [
-      getNumber(params, "y0"),
-      getNumber(params, "y1"),
-      getNumber(params, "y2"),
-      getNumber(params, "y3"),
-    ],
-    coefficientsZ: [
-      getNumber(params, "z0"),
-      getNumber(params, "z1"),
-      getNumber(params, "z2"),
-      getNumber(params, "z3"),
-    ],
+    coefficientsX: coefficientSet(coefficients.x),
+    coefficientsY: coefficientSet(coefficients.y),
+    coefficientsZ: coefficientSet(coefficients.z),
   };
 }
 
@@ -99,34 +94,13 @@ function buildDisplayRegionBox(
   return box;
 }
 
-function buildCoefficientParameters(): SampleDef["parameters"] {
-  const defaults = {
-    x: [0, 1, 0, 0],
-    y: [0, -0.25, 0, 0.03],
-    z: [-3, 0, 0.06, 0],
-  } as const;
-
-  return COEFFICIENT_AXES.flatMap((axis) =>
-    Array.from({ length: COEFFICIENT_COUNT }, (_value, index) => ({
-      key: `${axis}${index}`,
-      label: `${axis.toUpperCase()} c${index}`,
-      type: "number" as const,
-      min: -5,
-      max: 5,
-      step: 0.01,
-      defaultValue: defaults[axis][index],
-      group: `Coefficients${axis.toUpperCase()}`,
-    })),
-  );
-}
-
 export const curvePolynomialSample: SampleDef = {
   id: "curve-polynomial",
   title: "Polynomial Curve (IfcPolynomialCurve)",
   description:
     "Inspect an unbounded IfcPolynomialCurve through coefficient sets for X, Y, and Z. " +
     "The standalone view clips the local curve to the origin-centered [-10, 10] display region before applying Position.",
-  parameters: buildCoefficientParameters(),
+  parameters: [],
   steps: [
     {
       id: "curve",
@@ -138,18 +112,28 @@ export const curvePolynomialSample: SampleDef = {
   placementEditorConfig: {
     defaultPlacement: DEFAULT_CURVE_PLACEMENT,
   },
+  polynomialCoefficientEditorConfig: {
+    defaultCoefficients: DEFAULT_POLYNOMIAL_COEFFICIENTS,
+    label: "Parameters",
+    step: 0.01,
+  },
   buildGeometry: (
     scene: Scene,
-    params: ParamValues,
+    _params: ParamValues,
     _stepIndex: number,
     _profile?: IfcProfileDef,
     _path?: Vec3[],
     _extrusion?: ExtrusionParams,
     placement?: IfcAxis2Placement3D,
     _sweepView?: SweepViewState,
+    _indexedPolyCurve?: IfcIndexedPolyCurve,
+    coefficients?: PolynomialCoefficients,
   ): Mesh[] => {
     const activePlacement = placement ?? DEFAULT_CURVE_PLACEMENT;
-    const curve = buildIfcPolynomialCurve(params, activePlacement);
+    const curve = buildIfcPolynomialCurve(
+      coefficients ?? DEFAULT_POLYNOMIAL_COEFFICIENTS,
+      activePlacement,
+    );
 
     return [
       buildDisplayRegionBox(scene, curve),
@@ -158,6 +142,9 @@ export const curvePolynomialSample: SampleDef = {
       }),
     ];
   },
-  getIFCRepresentation: (params: ParamValues) =>
-    buildIfcPolynomialCurve(params, DEFAULT_CURVE_PLACEMENT),
+  getIFCRepresentation: (_params: ParamValues) =>
+    buildIfcPolynomialCurve(
+      DEFAULT_POLYNOMIAL_COEFFICIENTS,
+      DEFAULT_CURVE_PLACEMENT,
+    ),
 };

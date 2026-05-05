@@ -779,6 +779,42 @@ a.map-entity:hover {
   border-color: #4fc3f7;
 }
 
+/* Polynomial coefficient editor */
+.polynomial-coefficient-editor {
+  margin-bottom: 4px;
+}
+
+.coefficient-axis-section + .coefficient-axis-section {
+  margin-top: 12px;
+}
+
+.coefficient-axis-heading {
+  border-bottom: 1px solid #1a2a4a;
+  padding-bottom: 3px;
+}
+
+.coefficient-values-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.coefficient-row .point-index {
+  width: 24px;
+}
+
+.coefficient-value-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.coefficient-empty-state {
+  color: #6a8aaa;
+  font-size: 0.76em;
+  padding: 2px 0 4px;
+}
+
 /* Indexed PolyCurve Editor */
 .indexed-polycurve-editor {
   margin-bottom: 4px;
