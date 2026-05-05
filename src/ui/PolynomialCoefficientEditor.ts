@@ -15,14 +15,23 @@ const AXES: Array<{
 ];
 
 const DEFAULT_COEFFICIENT_STEP = 0.01;
+const MIN_COEFFICIENT_COUNT = 2;
 
 function cloneCoefficients(
   coefficients: PolynomialCoefficients,
 ): PolynomialCoefficients {
+  const ensureMinimumLength = (values: number[]): number[] => {
+    const normalized = [...values];
+    while (normalized.length < MIN_COEFFICIENT_COUNT) {
+      normalized.push(0);
+    }
+    return normalized;
+  };
+
   return {
-    x: [...coefficients.x],
-    y: [...coefficients.y],
-    z: [...coefficients.z],
+    x: ensureMinimumLength(coefficients.x),
+    y: ensureMinimumLength(coefficients.y),
+    z: ensureMinimumLength(coefficients.z),
   };
 }
 
@@ -89,13 +98,6 @@ export class PolynomialCoefficientEditor {
       list.appendChild(this._buildCoefficientRow(axis, axisLabel, value, index));
     });
 
-    if (this.coefficients[axis].length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "coefficient-empty-state";
-      empty.textContent = "No coefficients";
-      list.appendChild(empty);
-    }
-
     section.appendChild(list);
 
     const addBtn = document.createElement("button");
@@ -145,7 +147,7 @@ export class PolynomialCoefficientEditor {
     });
     row.appendChild(input);
 
-    if (this._canRemoveCoefficient(axis)) {
+    if (this._canRemoveCoefficient(axis, index)) {
       const del = document.createElement("button");
       del.type = "button";
       del.className = "point-delete-btn";
@@ -166,17 +168,14 @@ export class PolynomialCoefficientEditor {
     return row;
   }
 
-  private _canRemoveCoefficient(axis: PolynomialCoefficientAxis): boolean {
-    const axisLength = this.coefficients[axis].length;
-    if (axisLength > 1) return true;
-    if (axisLength === 0) return false;
-
-    const remainingDefinedAxes = AXES.filter(({ key }) => {
-      if (key === axis) return false;
-      return this.coefficients[key].length > 0;
-    }).length;
-
-    return remainingDefinedAxes >= 2;
+  private _canRemoveCoefficient(
+    axis: PolynomialCoefficientAxis,
+    index: number,
+  ): boolean {
+    return (
+      index >= MIN_COEFFICIENT_COUNT &&
+      this.coefficients[axis].length > MIN_COEFFICIENT_COUNT
+    );
   }
 
   private _refresh(): void {

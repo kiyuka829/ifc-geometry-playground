@@ -809,12 +809,6 @@ a.map-entity:hover {
   min-width: 0;
 }
 
-.coefficient-empty-state {
-  color: #6a8aaa;
-  font-size: 0.76em;
-  padding: 2px 0 4px;
-}
-
 /* Indexed PolyCurve Editor */
 .indexed-polycurve-editor {
   margin-bottom: 4px;
