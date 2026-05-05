@@ -143,7 +143,7 @@ export function clothoidLocalPointToWorld(
     default: {
       const _exhaustive: never = position;
       throw new Error(
-        `IfcClothoid position is not supported yet: ${String(_exhaustive)}`,
+        `IfcClothoid position is not supported yet: ${(_exhaustive as { type: string }).type}`,
       );
     }
   }
@@ -215,9 +215,25 @@ export function resolveClothoidCurveSegments(
   );
   const delta = (displayMax - displayMin) / segmentCount;
 
-  const localPoints: Vec3[] = [];
-  for (let index = 0; index <= segmentCount; index += 1) {
-    localPoints.push(evaluateLocalPoint(curve, displayMin + delta * index));
+  const a = curve.clothoidConstant;
+  const aSquared = a * a;
+  const sign = a >= 0 ? 1 : -1;
+
+  // Seed the first point with a one-time integration from s=0 to displayMin.
+  const seed = evaluateLocalPoint(curve, displayMin);
+  let { x, y } = seed;
+
+  // Build subsequent points incrementally using the exact clothoid tangent angle
+  // theta(s) = sign * s² / (2A²), so each step is O(1) — total O(segmentCount).
+  const localPoints: Vec3[] = [{ x, y, z: 0 }];
+  let currentS = displayMin;
+  for (let index = 0; index < segmentCount; index += 1) {
+    const sMid = currentS + delta / 2;
+    const thetaMid = sign * (sMid * sMid) / (2 * aSquared);
+    x += delta * Math.cos(thetaMid);
+    y += delta * Math.sin(thetaMid);
+    currentS += delta;
+    localPoints.push({ x, y, z: 0 });
   }
 
   const segments: ResolvedCurveSegment[] = [];
