@@ -146,6 +146,20 @@ export const routes: Route[] = [
     operationGroup: "curve-primitives",
   },
   {
+    hash: "#/examples/curve-bspline-with-knots",
+    title: "B-Spline With Knots",
+    description:
+      "Edit control points, knot multiplicities, and explicit knot values for an IfcBSplineCurveWithKnots.",
+    sampleId: "curve-bspline-with-knots",
+    domain: "Curves",
+    difficulty: "advanced",
+    exampleKind: "primary",
+    status: "available",
+    entity: "IfcBSplineCurveWithKnots",
+    dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
+  },
+  {
     hash: "#/examples/curve-line",
     title: "Line",
     description:

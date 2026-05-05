@@ -961,6 +961,83 @@ a.map-entity:hover {
   border-color: #4fc3f7;
 }
 
+/* B-Spline Curve With Knots Editor */
+.bspline-editor {
+  margin-bottom: 4px;
+}
+
+.bspline-section + .bspline-section {
+  margin-top: 10px;
+}
+
+.bspline-degree-row,
+.bspline-knot-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78em;
+}
+
+.bspline-degree-label {
+  color: #90caf9;
+  min-width: 58px;
+}
+
+.bspline-number-input {
+  width: 64px;
+  background: #0d1b2e;
+  border: 1px solid #1a2a4a;
+  border-radius: 3px;
+  color: #c0cce0;
+  padding: 2px 4px;
+  font-size: 0.82em;
+  font-family: monospace;
+}
+
+.bspline-number-input:focus {
+  outline: none;
+  border-color: #4fc3f7;
+}
+
+.bspline-points-list,
+.bspline-knots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.bspline-knot-row {
+  display: grid;
+  grid-template-columns: 32px 14px 64px 14px 64px 22px;
+  background: #0a1424;
+  border: 1px solid #1a2a4a;
+  border-radius: 5px;
+  padding: 6px;
+}
+
+.bspline-validation {
+  border-radius: 4px;
+  font-size: 0.76em;
+  line-height: 1.35;
+  margin-top: 10px;
+  padding: 6px 8px;
+}
+
+.bspline-validation-ok {
+  background: #0d2a1a;
+  border: 1px solid #2e7d32;
+  color: #8fd694;
+}
+
+.bspline-validation-error {
+  background: #2a1218;
+  border: 1px solid #8a2a3a;
+  color: #ff9aa8;
+}
+
 /* Extrusion Editor */
 .extrusion-editor {
   margin-bottom: 4px;
