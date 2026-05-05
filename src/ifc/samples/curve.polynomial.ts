@@ -10,7 +10,6 @@ import type {
   Vec3,
 } from "../../types.ts";
 import { getNumber } from "../../types.ts";
-import { getOrCreateSolidMaterial } from "../../engine/materials.ts";
 import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
 import type { IfcPolynomialCurve } from "../generated/schema.ts";
 import { buildSupportedCurve } from "../operations/curve.ts";
@@ -53,21 +52,6 @@ function buildIfcPolynomialCurve(
       getNumber(params, "z3"),
     ],
   };
-}
-
-function buildPlacementMarker(scene: Scene, placement: IfcAxis2Placement3D): Mesh {
-  const marker = MeshBuilder.CreateSphere(
-    "curve_polynomial_origin",
-    { diameter: 0.24, segments: 16 },
-    scene,
-  );
-  marker.position = ifcToBabylonVector(placement.location);
-  marker.material = getOrCreateSolidMaterial(
-    scene,
-    "curve_polynomial_origin_material",
-    new Color3(1, 0.75, 0.2),
-  );
-  return marker;
 }
 
 function buildDisplayRegionBox(
@@ -169,7 +153,6 @@ export const curvePolynomialSample: SampleDef = {
 
     return [
       buildDisplayRegionBox(scene, curve),
-      buildPlacementMarker(scene, activePlacement),
       ...buildSupportedCurve(scene, curve, "curve_polynomial_result", {
         curveColor: new Color3(0.35, 0.85, 0.95),
       }),
