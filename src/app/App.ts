@@ -21,6 +21,7 @@ import { curvePolylineSample } from "../ifc/samples/curve.polyline.ts";
 import { curveIndexedPolyCurveSample } from "../ifc/samples/curve.indexed-polycurve.ts";
 import { curveLineSample } from "../ifc/samples/curve.line.ts";
 import { curvePolynomialSample } from "../ifc/samples/curve.polynomial.ts";
+import { curveClothoidSample } from "../ifc/samples/curve.clothoid.ts";
 import { curveCircleSample } from "../ifc/samples/curve.circle.ts";
 import { curveEllipseSample } from "../ifc/samples/curve.ellipse.ts";
 import { curveTrimmedCircleSample } from "../ifc/samples/curve.trimmed-circle.ts";
@@ -33,6 +34,7 @@ const samples: Record<string, SampleDef> = {
   "curve-indexed-polycurve": curveIndexedPolyCurveSample,
   "curve-line": curveLineSample,
   "curve-polynomial": curvePolynomialSample,
+  "curve-clothoid": curveClothoidSample,
   "curve-circle": curveCircleSample,
   "curve-ellipse": curveEllipseSample,
   "curve-trimmed-circle": curveTrimmedCircleSample,

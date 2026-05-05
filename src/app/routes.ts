@@ -174,6 +174,20 @@ export const routes: Route[] = [
     operationGroup: "curve-primitives",
   },
   {
+    hash: "#/examples/curve-clothoid",
+    title: "Clothoid",
+    description:
+      "Display an unbounded IfcClothoid inside a local origin-centered region.",
+    sampleId: "curve-clothoid",
+    domain: "Curves",
+    difficulty: "intermediate",
+    exampleKind: "primary",
+    status: "available",
+    entity: "IfcClothoid",
+    dependsOn: ["IfcCurve"],
+    operationGroup: "curve-primitives",
+  },
+  {
     hash: "#/examples/curve-circle",
     title: "Circle",
     description:
