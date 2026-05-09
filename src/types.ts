@@ -2,6 +2,7 @@ import type { Scene } from "@babylonjs/core";
 import type { Mesh } from "@babylonjs/core";
 import type {
   IfcAreaParameterizedProfileDef,
+  IfcBSplineCurveWithKnots,
   IfcIndexedPolyCurve,
   IfcProfileTypeEnum,
 } from "./ifc/generated/schema.ts";
@@ -216,6 +217,14 @@ export interface IndexedPolyCurveEditorConfig {
   label?: string;
 }
 
+/** Configuration for editing IfcBSplineCurveWithKnots parameters. */
+export interface BSplineCurveWithKnotsEditorConfig {
+  /** Initial IFC B-spline curve, including control points and knot data. */
+  defaultCurve: IfcBSplineCurveWithKnots;
+  /** Optional label shown above the editor. */
+  label?: string;
+}
+
 /** Extrusion parameters edited as a single reusable unit. */
 export interface ExtrusionParams {
   /** Positive distance to extrude along extrudedDirection. */
@@ -298,6 +307,11 @@ export interface SampleDef {
    */
   indexedPolyCurveEditorConfig?: IndexedPolyCurveEditorConfig;
   /**
+   * When set, ExamplePage renders a BSplineCurveWithKnots editor. The current
+   * IfcBSplineCurveWithKnots is forwarded to buildGeometry as the optional eleventh argument.
+   */
+  bsplineCurveWithKnotsEditorConfig?: BSplineCurveWithKnotsEditorConfig;
+  /**
    * When set, ExamplePage renders an ExtrusionEditor widget that lets the user
    * edit depth and extrudedDirection. The current ExtrusionParams is forwarded
    * to buildGeometry as the optional sixth argument.
@@ -331,6 +345,7 @@ export interface SampleDef {
     sweepView?: SweepViewState,
     indexedPolyCurve?: IfcIndexedPolyCurve,
     polynomialCoefficients?: PolynomialCoefficients,
+    bsplineCurveWithKnots?: IfcBSplineCurveWithKnots,
   ) => Mesh[];
   getIFCRepresentation: (params: ParamValues) => object;
 }

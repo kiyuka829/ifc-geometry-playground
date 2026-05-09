@@ -19,6 +19,7 @@ import { sweptDiskBasicSample } from "../ifc/samples/swept-disk.basic.ts";
 import { revolvedRectangleSample } from "../ifc/samples/revolved.rectangle.ts";
 import { curvePolylineSample } from "../ifc/samples/curve.polyline.ts";
 import { curveIndexedPolyCurveSample } from "../ifc/samples/curve.indexed-polycurve.ts";
+import { curveBSplineWithKnotsSample } from "../ifc/samples/curve.bspline-with-knots.ts";
 import { curveLineSample } from "../ifc/samples/curve.line.ts";
 import { curvePolynomialSample } from "../ifc/samples/curve.polynomial.ts";
 import { curveClothoidSample } from "../ifc/samples/curve.clothoid.ts";
@@ -32,6 +33,7 @@ import type { SampleDef } from "../types.ts";
 const samples: Record<string, SampleDef> = {
   "curve-polyline": curvePolylineSample,
   "curve-indexed-polycurve": curveIndexedPolyCurveSample,
+  "curve-bspline-with-knots": curveBSplineWithKnotsSample,
   "curve-line": curveLineSample,
   "curve-polynomial": curvePolynomialSample,
   "curve-clothoid": curveClothoidSample,

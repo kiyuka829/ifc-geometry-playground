@@ -9,7 +9,10 @@ import type {
   SweepViewState,
   PolynomialCoefficients,
 } from "../types.ts";
-import type { IfcIndexedPolyCurve } from "../ifc/generated/schema.ts";
+import type {
+  IfcBSplineCurveWithKnots,
+  IfcIndexedPolyCurve,
+} from "../ifc/generated/schema.ts";
 import { SceneManager } from "../engine/scene.ts";
 import { ViewportCamera } from "../engine/viewport-camera.ts";
 import { ViewportControls } from "../ui/ViewportControls.ts";
@@ -18,6 +21,7 @@ import { Stepper } from "../ui/Stepper.ts";
 import { ProfileEditor } from "../ui/ProfileEditor.ts";
 import { PathEditor } from "../ui/PathEditor.ts";
 import { IndexedPolyCurveEditor } from "../ui/IndexedPolyCurveEditor.ts";
+import { BSplineCurveWithKnotsEditor } from "../ui/BSplineCurveWithKnotsEditor.ts";
 import { ExtrusionEditor } from "../ui/ExtrusionEditor.ts";
 import { PlacementEditor } from "../ui/PlacementEditor.ts";
 import { SweepViewToggles } from "../ui/SweepViewToggles.ts";
@@ -36,6 +40,8 @@ export class ExamplePage {
   private currentProfile: IfcProfileDef | undefined = undefined;
   private currentPath: Vec3[] | undefined = undefined;
   private currentIndexedPolyCurve: IfcIndexedPolyCurve | undefined = undefined;
+  private currentBSplineCurveWithKnots: IfcBSplineCurveWithKnots | undefined =
+    undefined;
   private currentExtrusion: ExtrusionParams | undefined = undefined;
   private currentPlacement: IfcAxis2Placement3D | undefined = undefined;
   private currentSweepView: SweepViewState | undefined = undefined;
@@ -71,6 +77,15 @@ export class ExamplePage {
         ) as IfcIndexedPolyCurve)
       : undefined;
 
+    this.currentBSplineCurveWithKnots =
+      sample.bsplineCurveWithKnotsEditorConfig
+        ? (JSON.parse(
+            JSON.stringify(
+              sample.bsplineCurveWithKnotsEditorConfig.defaultCurve,
+            ),
+          ) as IfcBSplineCurveWithKnots)
+        : undefined;
+
     // Seed extrusion from config default (if any)
     this.currentExtrusion = sample.extrusionEditorConfig
       ? (JSON.parse(
@@ -105,6 +120,9 @@ export class ExamplePage {
     const hasProfileEditor = Boolean(sample.profileEditorConfig);
     const hasPathEditor = Boolean(sample.pathEditorConfig);
     const hasIndexedPolyCurveEditor = Boolean(sample.indexedPolyCurveEditorConfig);
+    const hasBSplineCurveWithKnotsEditor = Boolean(
+      sample.bsplineCurveWithKnotsEditorConfig,
+    );
     const hasExtrusionEditor = Boolean(sample.extrusionEditorConfig);
     const hasPlacementEditor = Boolean(sample.placementEditorConfig);
     const hasPolynomialCoefficientEditor = Boolean(
@@ -154,9 +172,19 @@ export class ExamplePage {
                 : ""
             }
             ${
-              hasExtrusionEditor
+              hasBSplineCurveWithKnotsEditor
                 ? `
               <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor ? " left-panel-section-mt" : ""}" open>
+                <summary class="params-title">${sample.bsplineCurveWithKnotsEditorConfig!.label ?? "B-Spline Curve With Knots"}</summary>
+                <div class="left-collapsible-content" id="bspline-curve-with-knots-editor-panel"></div>
+              </details>
+            `
+                : ""
+            }
+            ${
+              hasExtrusionEditor
+                ? `
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasBSplineCurveWithKnotsEditor ? " left-panel-section-mt" : ""}" open>
                 <summary class="params-title">${sample.extrusionEditorConfig!.label ?? "Extrusion"}</summary>
                 <div class="left-collapsible-content" id="extrusion-editor-panel"></div>
               </details>
@@ -176,7 +204,7 @@ export class ExamplePage {
             ${
               sample.parameters.length > 0
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasSweepToggles ? " left-panel-section-mt" : ""}" open>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasBSplineCurveWithKnotsEditor || hasExtrusionEditor || hasSweepToggles ? " left-panel-section-mt" : ""}" open>
                 <summary class="params-title">Parameters</summary>
                 <div class="left-collapsible-content" id="param-panel"></div>
               </details>
@@ -186,7 +214,7 @@ export class ExamplePage {
             ${
               hasPolynomialCoefficientEditor
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}" open>
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasBSplineCurveWithKnotsEditor || hasExtrusionEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}" open>
                 <summary class="params-title">${sample.polynomialCoefficientEditorConfig!.label ?? "Coefficients"}</summary>
                 <div class="left-collapsible-content" id="polynomial-coefficient-editor-panel"></div>
               </details>
@@ -196,7 +224,7 @@ export class ExamplePage {
             ${
               hasPlacementEditor
                 ? `
-              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasExtrusionEditor || hasPolynomialCoefficientEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}">
+              <details class="left-collapsible${hasProfileEditor || hasPathEditor || hasIndexedPolyCurveEditor || hasBSplineCurveWithKnotsEditor || hasExtrusionEditor || hasPolynomialCoefficientEditor || hasSweepToggles || sample.parameters.length > 0 ? " left-panel-section-mt" : ""}">
                 <summary class="params-title">${sample.placementEditorConfig!.label ?? "Placement"}</summary>
                 <div class="left-collapsible-content" id="placement-editor-panel"></div>
               </details>
@@ -270,6 +298,23 @@ export class ExamplePage {
       );
       indexedPolyCurveEditor.onChange((curve) => {
         this.currentIndexedPolyCurve = curve;
+        this._scheduleRebuild(sample.debounceMs ?? 0);
+      });
+    }
+
+    const bsplineCurveWithKnotsEditorContainer = document.getElementById(
+      "bspline-curve-with-knots-editor-panel",
+    );
+    if (
+      bsplineCurveWithKnotsEditorContainer &&
+      sample.bsplineCurveWithKnotsEditorConfig
+    ) {
+      const bsplineCurveWithKnotsEditor = new BSplineCurveWithKnotsEditor(
+        bsplineCurveWithKnotsEditorContainer,
+        sample.bsplineCurveWithKnotsEditorConfig,
+      );
+      bsplineCurveWithKnotsEditor.onChange((curve) => {
+        this.currentBSplineCurveWithKnots = curve;
         this._scheduleRebuild(sample.debounceMs ?? 0);
       });
     }
@@ -390,6 +435,7 @@ export class ExamplePage {
       this.currentSweepView,
       this.currentIndexedPolyCurve,
       this.currentPolynomialCoefficients,
+      this.currentBSplineCurveWithKnots,
     );
 
     // Show local coordinate axes when a placement editor is active

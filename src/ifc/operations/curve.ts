@@ -1,6 +1,7 @@
 import { Color3, Mesh, MeshBuilder } from "@babylonjs/core";
 import type { Scene, StandardMaterial } from "@babylonjs/core";
 import type {
+  IfcBSplineCurveWithKnots,
   IfcCartesianPointList,
   IfcCircle,
   IfcClothoid,
@@ -14,6 +15,10 @@ import type {
 } from "../generated/schema.ts";
 import { ifcToBabylonVector } from "../../engine/ifc-coordinates.ts";
 import type { Vec3 } from "../../types.ts";
+import {
+  getBSplineCurveControlPoints,
+  resolveBSplineCurveWithKnotsSegments,
+} from "./curve-bspline.ts";
 import { resolveClothoidCurveSegments } from "./curve-clothoid.ts";
 import { resolveConicCurveSegment } from "./curve-conic.ts";
 import { cartesianPointToVec3, resolveLineCurveSegment } from "./curve-line.ts";
@@ -35,6 +40,7 @@ const DEFAULT_ARC_SEGMENTS = 32;
 const EPSILON = 1e-9;
 
 type RenderableCurve =
+  | IfcBSplineCurveWithKnots
   | IfcPolyline
   | IfcIndexedPolyCurve
   | IfcCircle
@@ -220,6 +226,8 @@ export function resolveSupportedCurveSegments(
       return resolvePolynomialCurveSegments(curve);
     case "IfcClothoid":
       return resolveClothoidCurveSegments(curve);
+    case "IfcBSplineCurveWithKnots":
+      return resolveBSplineCurveWithKnotsSegments(curve);
     default: {
       const _exhaustive: never = curve;
       throw new Error(`Curve type is not supported yet: ${String(_exhaustive)}`);
@@ -345,6 +353,45 @@ export function buildIndexedPolyCurvePointMarkers(
   radius = 0.12,
 ): Mesh[] {
   return getIndexedPolyCurveControlPoints(curve).map((point, index) => {
+    const marker = MeshBuilder.CreateSphere(
+      `${name}_${index}`,
+      { diameter: radius * 2, segments: 16 },
+      scene,
+    );
+    marker.position = ifcToBabylonVector(point);
+    marker.material = material;
+    return marker;
+  });
+}
+
+export function buildBSplineCurveControlPolygon(
+  scene: Scene,
+  curve: IfcBSplineCurveWithKnots,
+  name: string,
+  color = new Color3(0.75, 0.78, 0.82),
+): Mesh {
+  const controlPoints = getBSplineCurveControlPoints(curve);
+  if (controlPoints.length < 2) {
+    return new Mesh(`${name}_empty`, scene);
+  }
+
+  const lines = MeshBuilder.CreateLines(
+    name,
+    { points: controlPoints.map(ifcToBabylonVector) },
+    scene,
+  );
+  lines.color = color;
+  return lines;
+}
+
+export function buildBSplineCurvePointMarkers(
+  scene: Scene,
+  curve: IfcBSplineCurveWithKnots,
+  material: StandardMaterial,
+  name: string,
+  radius = 0.12,
+): Mesh[] {
+  return getBSplineCurveControlPoints(curve).map((point, index) => {
     const marker = MeshBuilder.CreateSphere(
       `${name}_${index}`,
       { diameter: radius * 2, segments: 16 },
