@@ -970,8 +970,7 @@ a.map-entity:hover {
   margin-top: 10px;
 }
 
-.bspline-degree-row,
-.bspline-knot-row {
+.bspline-degree-row {
   display: flex;
   align-items: center;
   gap: 4px;

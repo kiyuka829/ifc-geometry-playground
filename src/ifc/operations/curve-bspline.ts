@@ -115,6 +115,9 @@ export function validateBSplineCurveWithKnots(
     );
   }
 
+  if (!Number.isInteger(curve.degree)) {
+    errors.push("ConsistentBSpline: Degree must be an integer.");
+  }
   if (degree < 1) {
     errors.push("ConsistentBSpline: Degree must be at least 1.");
   }
@@ -175,6 +178,7 @@ export function resolveBSplineCurveWithKnotsSegments(
   const validation = validateBSplineCurveWithKnots(curve);
   if (!validation.valid) return [];
 
+  const degree = Math.floor(curve.degree);
   const controlPoints = getBSplineCurveControlPoints(curve);
   const expandedKnots = expandKnots(curve.knotMultiplicities, curve.knots);
   const segmentCount = Math.max(
@@ -185,7 +189,7 @@ export function resolveBSplineCurveWithKnotsSegments(
   const points: Vec3[] = [];
   for (let index = 0; index <= segmentCount; index += 1) {
     points.push(
-      evaluateBSpline(index / segmentCount, curve.degree, controlPoints, expandedKnots),
+      evaluateBSpline(index / segmentCount, degree, controlPoints, expandedKnots),
     );
   }
 

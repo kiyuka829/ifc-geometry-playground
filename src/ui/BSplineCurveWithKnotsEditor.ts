@@ -189,7 +189,7 @@ export class BSplineCurveWithKnotsEditor {
       const del = document.createElement("button");
       del.className = "point-delete-btn";
       del.title = "Remove control point";
-      del.textContent = "x";
+      del.textContent = "×";
       del.addEventListener("click", () => {
         const points = this.points;
         points.splice(index, 1);
@@ -282,7 +282,7 @@ export class BSplineCurveWithKnotsEditor {
       const del = document.createElement("button");
       del.className = "point-delete-btn";
       del.title = "Remove knot";
-      del.textContent = "x";
+      del.textContent = "×";
       del.addEventListener("click", () => {
         this.curve.knotMultiplicities.splice(index, 1);
         this.curve.knots.splice(index, 1);
